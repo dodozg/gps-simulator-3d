@@ -140,9 +140,14 @@ class GPSSimulator:
         tex_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "earth_texture.jpg")
         if os.path.exists(tex_path):
             try:
-                # prevent_seam=False -> u wrapa kontinuirano 0..1 oko punih 360°;
-                # default True mapira samo pola sfere pa zrcali teksturu.
-                sphere.texture_map_to_sphere(inplace=True, prevent_seam=False)
+                # prevent_seam=False -> u wrapa kontinuirano 0..1 oko punih 360°
+                # (default True mapira samo pola sfere pa zrcali teksturu).
+                # center=(0,0,0) -> mapiranje oko Zemljinog središta, čisto i monotono.
+                sphere.texture_map_to_sphere(center=(0, 0, 0), inplace=True, prevent_seam=False)
+                # VTK stavlja v=0 na sjeverni pol, a u slici je gore sjever -> flip v.
+                tc = sphere.active_texture_coordinates
+                tc[:, 1] = 1.0 - tc[:, 1]
+                sphere.active_texture_coordinates = tc
                 tex = pv.read_texture(tex_path)
                 self.earth_tex_actor = self.plotter.add_mesh(
                     sphere, texture=tex, name="earth_tex", pickable=False,
