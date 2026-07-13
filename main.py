@@ -1,7 +1,8 @@
 import os
+import time
+import traceback
 import pyvista as pv
 import numpy as np
-import time
 from satellite import WalkerDeltaConstellation
 from receiver import Receiver
 from physics_engine import R_EARTH, calculate_terrain_elevation
@@ -57,6 +58,9 @@ def terrain_colors(elevations):
 
 
 class GPSSimulator:
+    TARGET_FRAME_S = 0.02    # ciljano trajanje jednog framea (~50 FPS)
+    MAX_REAL_DT_S = 0.1      # gornja granica realnog dt-a (protiv skokova sim-vremena)
+
     def __init__(self):
         pv.set_plot_theme("dark")
         self.plotter = pv.Plotter(title="GPS Simulator 3D", window_size=[WIN_W, WIN_H])
@@ -65,7 +69,6 @@ class GPSSimulator:
 
         self.constellation = WalkerDeltaConstellation()
         self.receiver = Receiver()
-        self.start_time = time.time()
         self.time_scale = 100.0
 
         self.gt_pos = None
@@ -350,101 +353,120 @@ class GPSSimulator:
         d = R_EARTH * 3.4
         self.plotter.camera_position = [(d * 0.95, -d * 0.85, d * 0.55), (0, 0, 0), (0, 0, 1)]
 
+    def _step(self, sim_time, frame_dt):
+        """Jedan korak simulacije + osvježavanje prikaza (bez render/sleep)."""
+        positions = self.constellation.update_all(sim_time)
+        signals = self.receiver.receive_signals(self.constellation, sim_time)
+        visible_ids = [s["sat_id"] for s in signals]
+
+        for sat_id, pos in positions.items():
+            actor = self.plotter.actors.get(sat_id)
+            if actor:
+                actor.position = pos
+                actor.GetProperty().SetColor(*(C_GREEN if sat_id in visible_ids else (0.34, 0.39, 0.5)))
+
+        # Orbitni prstenovi prate Zemljinu rotaciju (ECEF = Rz(-theta) * inercijalno)
+        theta_deg = np.degrees(OMEGA_E * sim_time)
+        for ring in self.orbit_actors:
+            ring.orientation = (0.0, 0.0, -theta_deg)
+
+        if self.gt_pos is None:
+            return
+
+        if self.kinematic_mode:
+            self.gt_pos = self.gt_pos + self.kinematic_velocity * (frame_dt * self.time_scale)
+            lat, lon, _ = ecef_to_lla(self.gt_pos[0], self.gt_pos[1], self.gt_pos[2])
+            h = calculate_terrain_elevation(lat, lon)
+            self.gt_pos = np.array(lla_to_ecef(lat, lon, h + 500.0))
+            self.receiver.set_position(self.gt_pos)
+            gt_actor = self.plotter.actors.get("gt_marker")
+            if gt_actor:
+                gt_actor.position = self.gt_pos
+
+        self._update_rays([s["sat_pos"] for s in signals])
+
+        self.calc_pos, dop = self.receiver.solve_position()
+        if self.calc_pos is not None:
+            calc_actor = self.plotter.actors.get("calc_marker")
+            if calc_actor:
+                calc_actor.SetVisibility(True)
+                calc_actor.position = self.calc_pos
+
+            glat, glon, galt = ecef_to_lla(*self.gt_pos)
+            clat, clon, calt = ecef_to_lla(*self.calc_pos)
+            error = float(np.linalg.norm(self.calc_pos - self.gt_pos))
+            truth_label = "FLYING" if self.kinematic_mode else "TRUTH"
+            state = "TRACKING" if self.kinematic_mode else "FIX ACQUIRED"
+            self.txt_status.SetInput(
+                f" {state}\n"
+                f"{self._coord_line(truth_label, glat, glon, galt)}\n"
+                f"{self._coord_line('EST', clat, clon, calt)}\n"
+                f" ERROR  {error:6.1f} m"
+            )
+
+            sats_num = len(visible_ids)
+            gdop_str = f"{dop:6.2f}" if dop is not None else "   N/A"
+            vel = np.linalg.norm(self.receiver.x_ekf[3:6]) if self.receiver.ekf_initialized else 0.0
+            clk_us = self.receiver.clock_bias * 1e6
+            self.txt_tel.SetInput(
+                " TELEMETRY\n"
+                " ---------\n"
+                f" SATS   {sats_num:>2d} / {len(self.constellation.satellites)}\n"
+                f" GDOP   {gdop_str}\n"
+                f" VEL    {vel:6.2f} m/s\n"
+                f" CLK    {clk_us:7.1f} us"
+            )
+
+            raim = getattr(self.receiver, "raim_alarm", "")
+            if raim:
+                self.txt_raim.SetInput(f" ! {raim}")
+            self.txt_raim.SetVisibility(bool(raim))
+        else:
+            self.txt_status.SetInput(" EKF LOST\n premalo satelita ili\n RAIM odbacio sve")
+            self.txt_tel.SetInput(" TELEMETRY\n ---------\n no solution")
+            raim = getattr(self.receiver, "raim_alarm", "")
+            if raim:
+                self.txt_raim.SetInput(f" ! {raim}")
+            self.txt_raim.SetVisibility(bool(raim))
+
     def run(self):
         self.plotter.show(interactive_update=True, auto_close=False)
         self._frame_camera()
 
-        try:
-            while not getattr(self.plotter, "_closed", False):
-                if getattr(self.plotter, "ren_win", None) is None:
+        self.sim_time = 0.0
+        last_wall = time.time()
+        consec_errors = 0
+
+        while not getattr(self.plotter, "_closed", False):
+            if getattr(self.plotter, "ren_win", None) is None:
+                break
+            frame_start = time.time()
+
+            # Sim-vrijeme akumuliramo iz OGRANIČENOG realnog dt-a * time_scale, pa
+            # kratka stanka (npr. GC pauza) ne ubaci golemi skok u model sata/gibanja.
+            real_dt = min(frame_start - last_wall, self.MAX_REAL_DT_S)
+            last_wall = frame_start
+            self.sim_time += real_dt * self.time_scale
+
+            try:
+                self._step(self.sim_time, real_dt)
+                consec_errors = 0
+            except Exception:
+                # Ne gutamo tiho: ispišemo trace i nastavimo; nakon niza grešaka stanemo.
+                consec_errors += 1
+                traceback.print_exc()
+                if consec_errors >= 5:
+                    print("[GPS Sim] Previše uzastopnih grešaka u petlji — prekidam.")
                     break
 
-                curr_sim_time = (time.time() - self.start_time) * self.time_scale
-                positions = self.constellation.update_all(curr_sim_time)
-                signals = self.receiver.receive_signals(self.constellation, curr_sim_time)
-                visible_ids = [s["sat_id"] for s in signals]
-
-                for sat_id, pos in positions.items():
-                    actor = self.plotter.actors.get(sat_id)
-                    if actor:
-                        actor.position = pos
-                        actor.GetProperty().SetColor(*(C_GREEN if sat_id in visible_ids else (0.34, 0.39, 0.5)))
-
-                # Orbitni prstenovi prate Zemljinu rotaciju (ECEF = Rz(-theta) * inercijalno)
-                theta_deg = np.degrees(OMEGA_E * curr_sim_time)
-                for ring in self.orbit_actors:
-                    ring.orientation = (0.0, 0.0, -theta_deg)
-
-                if self.gt_pos is not None:
-                    if self.kinematic_mode:
-                        dt_sim = 0.02 * self.time_scale
-                        self.gt_pos = self.gt_pos + self.kinematic_velocity * dt_sim
-                        lat, lon, _ = ecef_to_lla(self.gt_pos[0], self.gt_pos[1], self.gt_pos[2])
-                        h = calculate_terrain_elevation(lat, lon)
-                        self.gt_pos = np.array(lla_to_ecef(lat, lon, h + 500.0))
-                        self.receiver.set_position(self.gt_pos)
-                        gt_actor = self.plotter.actors.get("gt_marker")
-                        if gt_actor:
-                            gt_actor.position = self.gt_pos
-
-                    # Signalne zrake do praćenih satelita
-                    self._update_rays([s["sat_pos"] for s in signals])
-
-                    self.calc_pos, dop = self.receiver.solve_position()
-                    if self.calc_pos is not None:
-                        calc_actor = self.plotter.actors.get("calc_marker")
-                        if calc_actor:
-                            calc_actor.SetVisibility(True)
-                            calc_actor.position = self.calc_pos
-
-                        glat, glon, galt = ecef_to_lla(*self.gt_pos)
-                        clat, clon, calt = ecef_to_lla(*self.calc_pos)
-                        error = float(np.linalg.norm(self.calc_pos - self.gt_pos))
-                        truth_label = "FLYING" if self.kinematic_mode else "TRUTH"
-                        state = "TRACKING" if self.kinematic_mode else "FIX ACQUIRED"
-                        self.txt_status.SetInput(
-                            f" {state}\n"
-                            f"{self._coord_line(truth_label, glat, glon, galt)}\n"
-                            f"{self._coord_line('EST', clat, clon, calt)}\n"
-                            f" ERROR  {error:6.1f} m"
-                        )
-
-                        sats_num = len(visible_ids)
-                        gdop_str = f"{dop:6.2f}" if dop is not None else "   N/A"
-                        vel = np.linalg.norm(self.receiver.x_ekf[3:6]) if self.receiver.ekf_initialized else 0.0
-                        clk_us = self.receiver.clock_bias * 1e6
-                        self.txt_tel.SetInput(
-                            " TELEMETRY\n"
-                            " ---------\n"
-                            f" SATS   {sats_num:>2d} / {len(self.constellation.satellites)}\n"
-                            f" GDOP   {gdop_str}\n"
-                            f" VEL    {vel:6.2f} m/s\n"
-                            f" CLK    {clk_us:7.1f} us"
-                        )
-
-                        raim = getattr(self.receiver, "raim_alarm", "")
-                        if raim:
-                            self.txt_raim.SetInput(f" ! {raim}")
-                            self.txt_raim.SetVisibility(True)
-                        else:
-                            self.txt_raim.SetVisibility(False)
-                    else:
-                        self.txt_status.SetInput(" EKF LOST\n premalo satelita ili\n RAIM odbacio sve")
-                        self.txt_tel.SetInput(" TELEMETRY\n ---------\n no solution")
-                        raim = getattr(self.receiver, "raim_alarm", "")
-                        self.txt_raim.SetVisibility(bool(raim))
-                        if raim:
-                            self.txt_raim.SetInput(f" ! {raim}")
-
-                if getattr(self.plotter, "_closed", False):
-                    break
-
+            if getattr(self.plotter, "_closed", False):
+                break
+            try:
                 self.plotter.update()
-                time.sleep(0.02)
-        except Exception:
-            pass
-        finally:
-            pass
+            except Exception:
+                break  # prozor je vjerojatno zatvoren
+
+            time.sleep(max(0.0, self.TARGET_FRAME_S - (time.time() - frame_start)))
 
 
 if __name__ == "__main__":
