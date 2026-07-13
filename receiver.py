@@ -3,21 +3,48 @@ from physics_engine import C, calculate_ionospheric_delay, calculate_tropospheri
 from utils import ecef_to_lla
 import signal_processing
 
+# --- EKF parametri šuma (dokumentirano) ---------------------------------------
+# Mjerni šum R: pseudoudaljenost u ovom simulatoru nosi rezidualni multipath,
+# troposferu i ephemeris pogrešku. Modeliramo standardnu devijaciju kao funkciju
+# elevacije jer atmosfersko mapiranje (1/sin(elev)) pojačava pogrešku pri niskim
+# elevacijama:   sigma(elev) = SIGMA_ZENITH / sin(elev)
+# SIGMA_ZENITH=40 je podešen tako da NIS/dof ~ 1 (filter je statistički
+# konzistentan): stvarni šum je dominiran pristranim multipath-om pa je 3-4x
+# veći od naivne procjene od ~12 m. Vidi benchmark.py za mjerenje.
+SIGMA_ZENITH = 40.0     # [m] devijacija pseudoudaljenosti u zenitu
+MIN_SIN_ELEV = 0.1      # granica (~5.7°) da R ne eksplodira na horizontu
+
+# Procesni šum Q (nesigurnost modela gibanja/sata) po jedinici vremena [/s].
+# Veći iznos = filter više vjeruje mjerenjima nego predviđanju.
+Q_POS = 0.5             # [m^2/s]   šum položaja
+Q_VEL = 1.0             # [ (m/s)^2/s ] šum brzine
+Q_BIAS = 5.0            # [m^2/s]   šum pomaka sata (c*bias)
+Q_DRIFT = 1.0           # [ (m/s)^2/s ] šum drifta sata (c*drift)
+
+
 class Receiver:
-    def __init__(self, pos=np.array([0.0, 0.0, 0.0])):
+    def __init__(self, pos=np.array([0.0, 0.0, 0.0]), rng=None):
         self.pos = pos
+        # Generator slučajnih brojeva za sve izvore šuma (dijeli se s konstelacijom
+        # radi reproducibilnosti). None -> svjež default_rng (nedeterministički).
+        self.rng = rng if rng is not None else np.random.default_rng()
         self.clock_bias = 0.0 # [s]
         self.clock_drift = 1e-6 # [s/s] Početni drift za TCXO kvarc oscilator (1 ppm)
         self.h0 = 1e-19 # Allan variance parametri za kvarc
-        self.h2 = 1e-20 
+        self.h2 = 1e-20
         self.last_update_time = 0.0
         self.raim_alarm = ""
-        
+
         # EKF State
         self.ekf_initialized = False
         self.x_ekf = np.zeros(8) # [x, y, z, vx, vy, vz, c*bias, c*drift]
         self.P_ekf = np.eye(8) * 1e6
         self.ekf_last_time = 0.0
+
+        # Dijagnostika konzistentnosti filtera (NIS = Normalized Innovation Squared).
+        # Za konzistentan filter NIS/dof ~ 1 (prati chi-kvadrat s dof = broj mjerenja).
+        self.nis = 0.0
+        self.nis_dof = 0
 
     def set_position(self, pos):
         self.pos = pos
@@ -58,7 +85,7 @@ class Receiver:
         dt = current_time - self.last_update_time
         if dt > 0:
             self.clock_bias, self.clock_drift = simulate_clock_noise(
-                dt, self.clock_bias, self.clock_drift, self.h0, self.h2
+                dt, self.clock_bias, self.clock_drift, self.h0, self.h2, rng=self.rng
             )
         self.last_update_time = current_time
         
@@ -107,7 +134,7 @@ class Receiver:
             # L1 Obrada
             iono_delay_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'])
             rx_signal_l1, int_blocks_l1 = signal_processing.simulate_rf_channel(
-                prn=sig['l1']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l1+tropo_delay_meters, snr_db=-10
+                prn=sig['l1']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l1+tropo_delay_meters, snr_db=-10, rng=self.rng
             )
             local_prn_l1 = signal_processing.generate_prn(sat.sat_id + "_L1")
             measured_pr_l1 = signal_processing.decode_signal(rx_signal_l1, local_prn_l1, int_blocks_l1)
@@ -115,7 +142,7 @@ class Receiver:
             # L2 Obrada
             iono_delay_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'])
             rx_signal_l2, int_blocks_l2 = signal_processing.simulate_rf_channel(
-                prn=sig['l2']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l2+tropo_delay_meters, snr_db=-10
+                prn=sig['l2']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l2+tropo_delay_meters, snr_db=-10, rng=self.rng
             )
             local_prn_l2 = signal_processing.generate_prn(sat.sat_id + "_L2")
             measured_pr_l2 = signal_processing.decode_signal(rx_signal_l2, local_prn_l2, int_blocks_l2)
@@ -127,6 +154,13 @@ class Receiver:
             
             # Dodajemo pogrešku sata prijemnika (bias) na kombinaciju
             iono_free_pr += (self.clock_bias * C)
+
+            # Ubrizgavamo STVARNU grešku satelitskog sata (relativnost + Allan + eventualni spoof),
+            # a zatim oduzimamo BROADCAST korekciju iz navigacijske poruke.
+            # Za ispravan satelit se ova dva člana ponište (kao u stvarnom GPS-u);
+            # za spoofani satelit ostaje rezidual od 6 km koji RAIM mora uhvatiti.
+            iono_free_pr += sig['sat_clock_m']
+            iono_free_pr -= sig['broadcast_clock_m']
             
             self.received_signals.append({
                 'sat_id': sig['id'],
@@ -159,14 +193,14 @@ class Receiver:
         """
         if len(visible_pairs) <= max_sats:
             return visible_pairs
-            
-        import random
+
         best_dop = float('inf')
         best_combo = visible_pairs[:max_sats]
-        
+
         # Testiramo 20 nasumičnih kombinacija (Greedy-Random pristup za brzinu)
         for _ in range(20):
-            combo = random.sample(visible_pairs, max_sats)
+            idx = self.rng.choice(len(visible_pairs), size=max_sats, replace=False)
+            combo = [visible_pairs[i] for i in idx]
             dop = self.calculate_gdop(combo)
             if dop < best_dop:
                 best_dop = dop
@@ -229,13 +263,8 @@ class Receiver:
         F[2, 5] = dt # z += vz * dt
         F[6, 7] = dt # c*bias += c*drift * dt
         
-        # Procesni šum Q (nesigurnost modela)
-        # Veći šum znači da filter više "vjeruje" novim mjerenjima nego predviđanju
-        q_pos = 0.5
-        q_vel = 1.0
-        q_bias = 5.0
-        q_drift = 1.0
-        Q = np.diag([q_pos, q_pos, q_pos, q_vel, q_vel, q_vel, q_bias, q_drift]) * dt
+        # Procesni šum Q (nesigurnost modela) — parametri dokumentirani na vrhu modula.
+        Q = np.diag([Q_POS, Q_POS, Q_POS, Q_VEL, Q_VEL, Q_VEL, Q_BIAS, Q_DRIFT]) * dt
         
         # Predviđanje stanja i kovarijance
         x_pred = F @ self.x_ekf
@@ -246,6 +275,10 @@ class Receiver:
         H_valid = []
         Z_valid = []
         h_x_valid = []
+        R_diag = []  # dijagonala mjernog šuma, po satelitu (ovisi o elevaciji)
+
+        # Lokalni zenit za računanje elevacije (iz trenutne procjene položaja)
+        up = x_pred[:3] / max(np.linalg.norm(x_pred[:3]), 1.0)
         # Prvo izračunamo sve inovacije kako bismo našli medijanu (zajedničku pogrešku sata)
         all_innovations = []
         for sig in self.received_signals:
@@ -279,34 +312,46 @@ class Receiver:
             H_row[1] = diff[1] / r_est
             H_row[2] = diff[2] / r_est
             H_row[6] = 1.0 # c*bias
-            
+
             H_valid.append(H_row)
             Z_valid.append(sig['pseudorange'])
             h_x_valid.append(h_x_val)
-            
+
+            # Adaptivni mjerni šum: sigma raste s 1/sin(elev). diff = est - sat,
+            # pa je smjer prema satelitu -diff; sin(elev) = up · (sat - est)/r.
+            sin_elev = np.dot(up, -diff / r_est)
+            sin_elev = max(sin_elev, MIN_SIN_ELEV)
+            R_diag.append((SIGMA_ZENITH / sin_elev) ** 2)
+
         if len(H_valid) < 4:
             return None, None # RAIM odbacio previše satelita
-            
+
         H = np.array(H_valid)
         Z = np.array(Z_valid)
         h_x = np.array(h_x_valid)
-        
-        # Mjerni šum R (Sada imamo multipath, troposferu, efemeride...)
-        # Procjenjujemo da je pogreška pseudoudaljenosti oko 15-30 metara
-        R = np.eye(len(H_valid)) * 400.0 # 20m standardna devijacija (20^2 = 400)
-        
+
+        # Mjerni šum R: dijagonala s elevacijski ovisnim varijancama (vidi vrh modula).
+        R = np.diag(R_diag)
+
         # Inovacijska kovarijanca S
         S = H @ P_pred @ H.T + R
-        
+
         # Inovacija (razlika između mjerenog i predviđenog)
         Y = Z - h_x
         
         # Kalman gain K
         try:
-            K = P_pred @ H.T @ np.linalg.inv(S)
+            S_inv = np.linalg.inv(S)
         except np.linalg.LinAlgError:
             return x_pred[:3], None # Fallback ako je matrica singularna
-            
+        K = P_pred @ H.T @ S_inv
+
+        # NIS (Normalized Innovation Squared) — dijagnostika konzistentnosti.
+        # Za dobro podešen filter NIS/dof ~ 1. Trajno >1 znači preoptimističan R
+        # (filter podcjenjuje šum); <1 znači prekonzervativan.
+        self.nis = float(Y @ S_inv @ Y)
+        self.nis_dof = len(H_valid)
+
         # Ažurirano stanje
         self.x_ekf = x_pred + K @ Y
         

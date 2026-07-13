@@ -47,25 +47,21 @@ class GPSSimulator:
         self.kinematic_mode = not self.kinematic_mode
 
     def _setup_scene(self):
-        # Veća rezolucija za bolji prikaz terena
+        # WGS-84 elipsoid s proceduralnim terenom.
+        # Krećemo od jedinične sfere (samo smjerovi), pa svaki smjer preslikamo na
+        # elipsoid preko lla_to_ecef s pripadnom visinom terena. Time je geometrija
+        # globusa geodetski konzistentna s ostatkom sustava: klik na površinu vraća
+        # visinu ≈ teren (a ne ~14 km greške koju bi dala sferna aproksimacija).
         sphere = pv.Sphere(radius=R_EARTH, theta_resolution=150, phi_resolution=150)
-        
-        points = sphere.points
-        lat_lon = [ecef_to_lla(p[0], p[1], p[2]) for p in points]
-        
-        # Realistične visine
-        elevations = []
-        for lat, lon, _ in lat_lon:
-            h = calculate_terrain_elevation(lat, lon)
-            elevations.append(h)
-            
-        elevations = np.array(elevations)
-        
-        # Primjena terena (visina)
-        new_radii = R_EARTH + elevations
-        norms = np.linalg.norm(points, axis=1)
-        sphere.points = points * (new_radii / norms)[:, np.newaxis]
-        
+        dirs = sphere.points / np.linalg.norm(sphere.points, axis=1)[:, np.newaxis]
+        lats = np.degrees(np.arcsin(np.clip(dirs[:, 2], -1.0, 1.0)))
+        lons = np.degrees(np.arctan2(dirs[:, 1], dirs[:, 0]))
+
+        elevations = np.array([calculate_terrain_elevation(la, lo)
+                               for la, lo in zip(lats, lons)])
+        sphere.points = np.array([lla_to_ecef(la, lo, h)
+                                  for la, lo, h in zip(lats, lons, elevations)])
+
         # Uklonili smo scalars="Elevation" i cmap="terrain" zbog pogreške s OpenGL shaderima
         # Zemlja će sada biti jednobojna, ali teren i dalje ostaje fizički točan
         self.earth_actor = self.plotter.add_mesh(
@@ -104,11 +100,13 @@ class GPSSimulator:
 
     def on_click(self, point):
         if point is None: return
-        dist = np.linalg.norm(point)
-        # S obzirom na to da imamo teren, tolerancija mora obuhvatiti te promjene
-        if dist < R_EARTH - 20000 or dist > R_EARTH + 20000: return
-        
-        # Više ne projiciramo strogo na R_EARTH, već koristimo točno mjesto klika na terenu
+        # Klik prihvaćamo geodetski: točka mora biti blizu površine elipsoida.
+        # Teren je u rasponu ~ -11..+9 km, pa ±20 km sigurno obuhvaća površinu,
+        # a odbacuje slučajne pogotke satelita (na ~20 000 km visine).
+        _, _, click_alt = ecef_to_lla(point[0], point[1], point[2])
+        if abs(click_alt) > 20000: return
+
+        # Koristimo točno mjesto klika na terenu (ECEF).
         self.gt_pos = np.array(point)
         
         gt_actor = self.plotter.actors.get("gt_marker")

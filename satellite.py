@@ -1,5 +1,5 @@
 import numpy as np
-from physics_engine import calculate_orbital_position, R_EARTH, get_relativistic_drift_rate, simulate_clock_noise, generate_ephemeris_error, get_dynamic_relativistic_offset
+from physics_engine import calculate_orbital_position, R_EARTH, get_relativistic_drift_rate, simulate_clock_noise, generate_ephemeris_error, get_dynamic_relativistic_offset, C
 import signal_processing
 
 class Satellite:
@@ -30,25 +30,25 @@ class Satellite:
         self.prn_code_l1 = signal_processing.generate_prn(self.sat_id + "_L1")
         self.prn_code_l2 = signal_processing.generate_prn(self.sat_id + "_L2")
 
-    def update_position(self, t):
+    def update_position(self, t, rng=None):
         self.current_pos, E = calculate_orbital_position(
             self.a, self.e, self.i, self.lan, self.w, self.m0, t
         )
-        
+
         dt = t - self.last_update_time
         if dt > 0:
             # Update clock offset: offset = drift_rate * time + noise
             self.clock_bias, self.clock_drift = simulate_clock_noise(
-                dt, self.clock_bias, self.clock_drift, self.h0, self.h2
+                dt, self.clock_bias, self.clock_drift, self.h0, self.h2, rng=rng
             )
-            
+
         dyn_rel = get_dynamic_relativistic_offset(self.a, self.e, E)
         self.total_bias = self.clock_bias + dyn_rel
-        
+
         # Prijemnik dobiva ephemeris s malom pogreškom
-        self.broadcast_pos = self.current_pos + generate_ephemeris_error()
+        self.broadcast_pos = self.current_pos + generate_ephemeris_error(rng=rng)
         self.last_update_time = t
-        
+
         return self.current_pos
 
     def get_signal(self, system_time):
@@ -56,16 +56,28 @@ class Satellite:
         Emits two signals (L1 and L2) containing the satellite's position, time, and PRN codes.
         """
         sat_time = system_time + self.total_bias
-        
+
+        # STVARNA satelitska pogreška sata pretvorena u metre (ulazi u pseudoudaljenost).
+        # Ovo je fizička greška koju prijemnik VIDI u mjerenju.
+        sat_clock_error_m = self.total_bias * C
+
+        # BROADCAST korekcija sata: ono što bi navigacijska poruka (af0/af1 + relativistički
+        # član) prenijela pa prijemnik od toga oduzme. Za ispravan satelit modeliramo cijeli
+        # poznati bias -> net efekt ~0 (kao u stvarnom GPS-u). Spoof NIJE u broadcast poruci.
+        broadcast_clock_m = self.total_bias * C
+
         # Ako je satelit kompromitiran (RAIM test) i prošlo je malo vremena (da EKF konvergira)
         if self.is_spoofed and system_time > 200.0:
-            sat_time += 2e-5 # 6 kilometara lažne udaljenosti!
-            
+            sat_time += 2e-5           # 6 km lažne udaljenosti (za prikaz u sat_time)
+            sat_clock_error_m += 6000.0 # ...ista greška ubrizgana u stvarno mjerenje (bez broadcast korekcije!)
+
         return {
             'id': self.sat_id,
             'pos': self.current_pos.copy(), # Stvarna pozicija za fiziku kanala
             'broadcast_pos': self.broadcast_pos.copy(), # Ono što prijemnik misli da je pozicija
             'time': sat_time,
+            'sat_clock_m': sat_clock_error_m,       # injektirana greška satelitskog sata [m]
+            'broadcast_clock_m': broadcast_clock_m, # korekcija koju prijemnik primjenjuje [m]
             'l1': {
                 'freq': 1575.42e6,
                 'prn': self.prn_code_l1
@@ -78,11 +90,13 @@ class Satellite:
 
 
 class WalkerDeltaConstellation:
-    def __init__(self, t_total=24, p_planes=6, f_factor=1, alt=20200000.0, inc=55.0):
+    def __init__(self, t_total=24, p_planes=6, f_factor=1, alt=20200000.0, inc=55.0, rng=None):
         """
         Initializes a Walker Delta constellation (T/P/F).
         Default is GPS-like: 24/6/1, 20,200km altitude, 55 deg inclination.
+        rng: np.random.Generator koji dijele svi izvori šuma (None -> default_rng).
         """
+        self.rng = rng if rng is not None else np.random.default_rng()
         self.satellites = []
         self.a = R_EARTH + alt
         self.e = 0.015  # Ekscentrična orbita za Phase 6
@@ -106,5 +120,5 @@ class WalkerDeltaConstellation:
     def update_all(self, t):
         positions = {}
         for sat in self.satellites:
-            positions[sat.sat_id] = sat.update_position(t)
+            positions[sat.sat_id] = sat.update_position(t, rng=self.rng)
         return positions

@@ -16,11 +16,14 @@ def generate_prn(sat_id):
     # Generiranje niza od -1 i 1
     return rng.choice([-1.0, 1.0], size=PRN_LENGTH)
 
-def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10):
+def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10, rng=None):
     """
     Simulira prolazak signala kroz prostor i atmosferu.
     Pravi signal je kontinuiran. Mi ovdje simuliramo "prozor" koji prijemnik hvata.
+    rng: np.random.Generator za multipath/AWGN (None -> svjež default_rng).
     """
+    if rng is None:
+        rng = np.random.default_rng()
     total_delay_meters = distance + iono_delay_meters
     
     # Koliko cijelih PRN kodova je stalo u udaljenost (Integer Ambiguity)
@@ -46,8 +49,8 @@ def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10):
     
     # Multipath simulacija: Zakašnjela i prigušena kopija signala (odbijanje od tla/zgrada)
     # Dodatno kašnjenje od 10 do 100 metara
-    multipath_extra_dist = np.random.uniform(10.0, 100.0)
-    multipath_attenuation = np.random.uniform(0.2, 0.6) # Prigušenje (20% do 60% originalne amplitude)
+    multipath_extra_dist = rng.uniform(10.0, 100.0)
+    multipath_attenuation = rng.uniform(0.2, 0.6) # Prigušenje (20% do 60% originalne amplitude)
     
     mp_total_delay = total_delay_meters + multipath_extra_dist
     mp_shift_chips = (mp_total_delay % code_length_meters) / METERS_PER_CHIP
@@ -60,7 +63,7 @@ def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10):
     # Dodavanje AWGN (šuma)
     signal_power = np.mean(combined_signal**2)
     noise_power = signal_power / (10 ** (snr_db / 10))
-    noise = np.random.normal(0, np.sqrt(noise_power), PRN_LENGTH)
+    noise = rng.normal(0, np.sqrt(noise_power), PRN_LENGTH)
     
     received_signal = combined_signal + noise
     

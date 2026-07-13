@@ -19,6 +19,14 @@ def calculate_terrain_elevation(lat, lon):
     else:
         return h * 11000.0 # Doline do ~11 km
 
+def get_orbital_period(a):
+    """
+    Vraća orbitalni period (u sekundama) za veliku poluos 'a' prema
+    trećem Keplerovom zakonu: T = 2*pi*sqrt(a^3 / mu).
+    Za GPS visinu (a ~ 26.560 km) rezultat je ~11.97 sati.
+    """
+    return 2.0 * np.pi * np.sqrt(a**3 / MU)
+
 def calculate_orbital_position(a, e, i, lan, w, m0, t):
     """
     Kalkulira poziciju satelita koristeći Keplerove elemente.
@@ -135,33 +143,36 @@ def calculate_sagnac_correction(sat_pos, receiver_pos):
     correction = (omega_e / C) * (sat_pos[0] * receiver_pos[1] - sat_pos[1] * receiver_pos[0])
     return correction
 
-def simulate_clock_noise(dt, current_bias, current_drift, h0, h2):
+def simulate_clock_noise(dt, current_bias, current_drift, h0, h2, rng=None):
     """
     Simulira ponašanje realnog oscilatora (kvarc ili rubidij) koristeći Allanovu varijancu.
     h0: White frequency noise (slučajni hod faze)
     h2: Random walk frequency noise (slučajni hod frekvencije)
+    rng: np.random.Generator za reproducibilnost (None -> svjež default_rng).
     """
+    if rng is None:
+        rng = np.random.default_rng()
     # White noise na frekvenciji (utječe na fazu/bias)
-    w_freq = np.random.normal(0, np.sqrt(h0 / 2.0))
+    w_freq = rng.normal(0, np.sqrt(h0 / 2.0))
     # Random walk na frekvenciji (utječe na drift)
-    rw_freq = np.random.normal(0, np.sqrt(2.0 * np.pi**2 * h2 * dt))
+    rw_freq = rng.normal(0, np.sqrt(2.0 * np.pi**2 * h2 * dt))
     
     new_drift = current_drift + rw_freq
     new_bias = current_bias + current_drift * dt + w_freq * np.sqrt(dt)
     
     return new_bias, new_drift
 
-def generate_ephemeris_error():
+def generate_ephemeris_error(rng=None):
     """
     Simulira pogrešku efemerida u prenesenoj navigacijskoj poruci.
     Obično je to pogreška od par metara u 3D prostoru.
+    rng: np.random.Generator za reproducibilnost (None -> svjež default_rng).
     Vraća 3D vektor pogreške (x, y, z) u metrima.
     """
+    if rng is None:
+        rng = np.random.default_rng()
     # Pogreška je oko 1-2 metra po osi za moderne GPS satelite
-    error_x = np.random.normal(0, 1.5)
-    error_y = np.random.normal(0, 1.5)
-    error_z = np.random.normal(0, 1.5)
-    return np.array([error_x, error_y, error_z])
+    return rng.normal(0, 1.5, size=3)
 
 def calculate_tropospheric_delay(sat_pos, receiver_pos):
     """
