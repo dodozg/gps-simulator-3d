@@ -140,7 +140,9 @@ class GPSSimulator:
         tex_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "earth_texture.jpg")
         if os.path.exists(tex_path):
             try:
-                sphere.texture_map_to_sphere(inplace=True)
+                # prevent_seam=False -> u wrapa kontinuirano 0..1 oko punih 360°;
+                # default True mapira samo pola sfere pa zrcali teksturu.
+                sphere.texture_map_to_sphere(inplace=True, prevent_seam=False)
                 tex = pv.read_texture(tex_path)
                 self.earth_tex_actor = self.plotter.add_mesh(
                     sphere, texture=tex, name="earth_tex", pickable=False,
