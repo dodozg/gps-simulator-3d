@@ -1,13 +1,16 @@
 @echo off
 REM ============================================================
-REM  GPS_Simulator_3D  -  pytest test suite
-REM  Pokrece sve testove iz tests/ (bez GPU-a).
+REM  GPS_Simulator_3D  -  pytest test suite (bez GPU-a)
 REM ============================================================
 setlocal
 cd /d "%~dp0"
-set "PYTHONPATH=%~dp0.venv\Lib\site-packages"
+set "PY=%~dp0.venv\Scripts\python.exe"
+"%PY%" -c "import numpy" >nul 2>&1 || (
+    set "PY=python"
+    set "PYTHONPATH=%~dp0.venv\Lib\site-packages"
+)
 
-python -m pytest %*
+"%PY%" -m pytest %*
 
 echo.
 pause

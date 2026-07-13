@@ -23,6 +23,9 @@ Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
 ## Instalacija
 
+Na Windowsu je najlakše dvokliknuti **`setup.bat`** — kreira svjež `.venv` i
+instalira sve ovisnosti (GUI + testovi). Ručno:
+
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate     |  Linux/macOS: source .venv/bin/activate
@@ -33,6 +36,10 @@ pip install -r requirements-dev.txt
 # Puni GUI (3D vizualizacija):
 pip install -r requirements-viz.txt
 ```
+
+Launcheri (`run_simulator.bat`, `run_benchmark.bat`, `run_tests.bat`) koriste
+`.venv\Scripts\python.exe`, a ako on ne radi padaju na sistemski Python +
+`PYTHONPATH` na `.venv` pakete.
 
 ## Pokretanje
 
