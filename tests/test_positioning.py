@@ -73,3 +73,30 @@ def test_raim_rejects_spoofed_satellite():
     assert any("SAT_0_0" in a for a in alarms)
     # Unatoč lažnih 6 km na jednom satelitu, rješenje ostaje upotrebljivo.
     assert errors[-1] < 200.0
+
+
+def test_raim_screen_handles_clean_and_multiple_outliers():
+    rx = Receiver(np.array(lla_to_ecef(45.0, 15.0, 100.0)))
+    # Čiste inovacije (normalni multipath, desetci metara) -> nista se ne odbacuje.
+    clean = [12.0, -8.0, 25.0, -15.0, 5.0, -20.0, 18.0]
+    assert rx._raim_screen(clean) == set()
+    # Dva gruba blundera (6 km i 3 km) medju dobrima -> oba se odbacuju (iterativno).
+    inn = [10.0, -5.0, 6000.0, 20.0, -12.0, 3000.0, 8.0]
+    assert rx._raim_screen(inn) == {2, 5}
+
+
+def test_selection_is_deterministic_and_no_cheat():
+    rng = np.random.default_rng(0)
+    constellation = WalkerDeltaConstellation(rng=rng)
+    constellation.update_all(0.0)
+    gt = np.array(lla_to_ecef(0.0, 0.0, 0.0))
+    rx = Receiver(gt, rng=rng)
+    pairs = [(s, s.get_signal(0.0)) for s in constellation.satellites]
+    # Iz procjene: deterministicki (isti ulaz -> isti izlaz) i tocno max_sats.
+    a = rx.select_best_satellites(pairs, max_sats=6, ref_pos=gt)
+    b = rx.select_best_satellites(pairs, max_sats=6, ref_pos=gt)
+    assert len(a) == 6
+    assert [x[0].sat_id for x in a] == [x[0].sat_id for x in b]
+    # Hladan start (bez procjene) uzima sve (do granice), ne optimizira geometriju.
+    cold = rx.select_best_satellites(pairs, max_sats=6, ref_pos=None)
+    assert len(cold) >= 6

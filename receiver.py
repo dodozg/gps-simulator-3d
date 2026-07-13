@@ -8,10 +8,12 @@ import signal_processing
 # troposferu i ephemeris pogrešku. Modeliramo standardnu devijaciju kao funkciju
 # elevacije jer atmosfersko mapiranje (1/sin(elev)) pojačava pogrešku pri niskim
 # elevacijama:   sigma(elev) = SIGMA_ZENITH / sin(elev)
-# SIGMA_ZENITH=40 je podešen tako da NIS/dof ~ 1 (filter je statistički
-# konzistentan): stvarni šum je dominiran pristranim multipath-om pa je 3-4x
-# veći od naivne procjene od ~12 m. Vidi benchmark.py za mjerenje.
-SIGMA_ZENITH = 40.0     # [m] devijacija pseudoudaljenosti u zenitu
+# SIGMA_ZENITH=48 je podešen tako da NIS/dof ~ 1 (filter je statistički
+# konzistentan): stvarni šum je dominiran pristranim multipath-om pa je ~4x
+# veći od naivne procjene od ~12 m. Vrijednost je recentrirana s 40 na 48 nakon
+# što determinističko biranje po GDOP-u uključuje i niže-elevacijske satelite
+# (bolja geometrija, ali veći šum). Vidi benchmark.py za mjerenje.
+SIGMA_ZENITH = 48.0     # [m] devijacija pseudoudaljenosti u zenitu
 MIN_SIN_ELEV = 0.1      # granica (~5.7°) da R ne eksplodira na horizontu
 
 # Procesni šum Q (nesigurnost modela gibanja/sata) po jedinici vremena [/s].
@@ -20,6 +22,15 @@ Q_POS = 0.5             # [m^2/s]   šum položaja
 Q_VEL = 1.0             # [ (m/s)^2/s ] šum brzine
 Q_BIAS = 5.0            # [m^2/s]   šum pomaka sata (c*bias)
 Q_DRIFT = 1.0           # [ (m/s)^2/s ] šum drifta sata (c*drift)
+
+# --- RAIM parametri (iterativna, robusna detekcija outliera) ------------------
+# Odbacujemo satelit čija inovacija odstupa od medijane više od RAIM_K robusnih
+# sigma (MAD skala) I više od apsolutnog praga RAIM_MIN_ABS. Postupak je
+# iterativan (najveći outlier prvo) pa hvata i više istovremeno pokvarenih
+# satelita, a MAD skala se prilagođava razini šuma umjesto fiksnog praga.
+RAIM_K = 6.0            # broj robusnih sigma za odbacivanje
+RAIM_MIN_ABS = 600.0    # [m] apsolutni prag (ispod = normalni multipath, ne diramo)
+RAIM_MIN_SATS = 5       # ne odbacuj ako bi ostalo < 4 satelita za rješenje
 
 
 class Receiver:
@@ -122,8 +133,10 @@ class Receiver:
             sig['true_dist'] = true_dist
             visible_signals.append((sat, sig))
             
-        # Pametna selekcija najboljih satelita (DOP Optimization)
-        selected_pairs = self.select_best_satellites(visible_signals, max_sats=6)
+        # Pametna selekcija najboljih satelita (DOP Optimization) iz PROCIJENJENE
+        # pozicije (EKF), ne iz prave. Prije prvog fixa nemamo procjenu -> None.
+        est_pos = self.x_ekf[:3].copy() if self.ekf_initialized else None
+        selected_pairs = self.select_best_satellites(visible_signals, max_sats=6, ref_pos=est_pos)
         
         for sat, sig in selected_pairs:
             true_dist = sig['true_dist']
@@ -172,10 +185,11 @@ class Receiver:
             
         return self.received_signals
 
-    def calculate_gdop(self, satellite_pairs):
+    def calculate_gdop(self, satellite_pairs, ref_pos):
+        """GDOP podskupa satelita gledano iz ref_pos (procijenjene pozicije)."""
         H = []
         for sat, sig in satellite_pairs:
-            vec = sig['broadcast_pos'] - self.pos
+            vec = sig['broadcast_pos'] - ref_pos
             r = np.linalg.norm(vec)
             if r == 0: r = 1.0
             H.append([vec[0]/r, vec[1]/r, vec[2]/r, 1.0])
@@ -183,30 +197,77 @@ class Receiver:
         try:
             cov = np.linalg.inv(H.T @ H)
             return np.sqrt(np.trace(cov))
-        except:
+        except np.linalg.LinAlgError:
             return float('inf')
 
-    def select_best_satellites(self, visible_pairs, max_sats=6):
-        """
-        DOP Optimization: Bira podgrupu satelita koja minimizira GDOP,
-        štedeći procesorsko vrijeme i bateriju prijemnika.
+    def _elevation(self, pair, ref_pos):
+        """Elevacijski kut satelita gledano iz ref_pos."""
+        _, sig = pair
+        vec = sig['broadcast_pos'] - ref_pos
+        n = np.linalg.norm(vec)
+        rp = np.linalg.norm(ref_pos)
+        if n == 0 or rp == 0:
+            return 0.0
+        up = ref_pos / rp
+        return np.arcsin(np.clip(np.dot(up, vec / n), -1.0, 1.0))
+
+    def select_best_satellites(self, visible_pairs, max_sats=6, ref_pos=None):
+        """Bira podskup satelita s najboljom geometrijom (najniži GDOP).
+
+        Determinističko pohlepno biranje umjesto ranijeg nasumičnog Monte-Carla,
+        i to iz PROCIJENJENE pozicije (ref_pos) — ne iz prave pozicije koju pravi
+        prijemnik ne zna. Prije prvog fixa (ref_pos=None) nema procjene geometrije
+        pa uzimamo sve vidljive (do granice) za robusnu LS inicijalizaciju.
         """
         if len(visible_pairs) <= max_sats:
             return visible_pairs
 
-        best_dop = float('inf')
-        best_combo = visible_pairs[:max_sats]
+        if ref_pos is None:
+            # Hladan start: bez procjene ne možemo optimizirati geometriju.
+            return visible_pairs[:max(max_sats, 8)]
 
-        # Testiramo 20 nasumičnih kombinacija (Greedy-Random pristup za brzinu)
-        for _ in range(20):
-            idx = self.rng.choice(len(visible_pairs), size=max_sats, replace=False)
-            combo = [visible_pairs[i] for i in idx]
-            dop = self.calculate_gdop(combo)
-            if dop < best_dop:
-                best_dop = dop
-                best_combo = combo
-                
-        return best_combo
+        # Pohlepno: seedaj s najviše elevacije (dok ih je < 4 GDOP nije definiran),
+        # zatim dodaji satelit koji najviše smanji GDOP.
+        remaining = list(visible_pairs)
+        chosen = []
+        while len(chosen) < max_sats and remaining:
+            best, best_score = None, float('inf')
+            for cand in remaining:
+                trial = chosen + [cand]
+                if len(trial) < 4:
+                    score = -self._elevation(cand, ref_pos)  # veća elevacija = bolji seed
+                else:
+                    score = self.calculate_gdop(trial, ref_pos)
+                if score < best_score:
+                    best_score, best = score, cand
+            chosen.append(best)
+            remaining.remove(best)
+        return chosen
+
+    def _raim_screen(self, innovations):
+        """Iterativna robusna RAIM detekcija: vrati skup indeksa za odbacivanje.
+
+        U svakom koraku nađe satelit čija inovacija najviše odstupa od medijane;
+        ako prelazi RAIM_K robusnih sigma (MAD skala) I apsolutni prag
+        RAIM_MIN_ABS, odbaci ga i ponovi. Tako hvata i više istovremeno pokvarenih
+        satelita, a MAD skala se prilagođava razini šuma (bez fiksnog praga).
+        """
+        inn = np.asarray(innovations, dtype=float)
+        active = list(range(len(inn)))
+        rejected = set()
+        while len(active) >= RAIM_MIN_SATS:
+            vals = inn[active]
+            med = np.median(vals)
+            mad = 1.4826 * np.median(np.abs(vals - med))
+            scale = max(mad, SIGMA_ZENITH)
+            resid = np.abs(vals - med)
+            k = int(np.argmax(resid))
+            if resid[k] > RAIM_K * scale and resid[k] > RAIM_MIN_ABS:
+                rejected.add(active[k])
+                active.pop(k)
+            else:
+                break
+        return rejected
 
     def solve_position(self, max_iter=10, tolerance=1.0):
         """
@@ -294,19 +355,21 @@ class Receiver:
             innovation = pr - h_x_val
             all_innovations.append((innovation, h_x_val, diff, r_est))
             
-        if len(all_innovations) > 0:
-            median_inn = np.median([x[0] for x in all_innovations])
-        else:
-            median_inn = 0.0
+        # RAIM: iterativno robusno odbacivanje outliera (vidi _raim_screen).
+        innov_list = [x[0] for x in all_innovations]
+        rejected = self._raim_screen(innov_list) if self.ekf_initialized else set()
+        if rejected:
+            kept = [innov_list[i] for i in range(len(innov_list)) if i not in rejected]
+            med_kept = np.median(kept) if kept else 0.0
+            worst = max(abs(innov_list[i] - med_kept) for i in rejected)
+            ids = ", ".join(self.received_signals[i]['sat_id'] for i in sorted(rejected))
+            self.raim_alarm = f"RAIM ALARM: Rejected {ids} (Err: {worst:.0f}m)"
 
         for i, sig in enumerate(self.received_signals):
-            innovation, h_x_val, diff, r_est = all_innovations[i]
-            
-            # RAIM CHECK: Odbaci samo prave uljeze (udaljene od medijane)
-            if self.ekf_initialized and abs(innovation - median_inn) > 1000.0:
-                self.raim_alarm = f"RAIM ALARM: Rejected {sig['sat_id']} (Err: {abs(innovation - median_inn):.0f}m)"
+            if i in rejected:
                 continue
-                
+            innovation, h_x_val, diff, r_est = all_innovations[i]
+
             H_row = np.zeros(8)
             H_row[0] = diff[0] / r_est
             H_row[1] = diff[1] / r_est
