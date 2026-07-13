@@ -16,6 +16,7 @@ C_DIM   = (0.56, 0.63, 0.74)   # sekundarni tekst
 C_PANEL = (0.05, 0.07, 0.11)   # pozadina panela
 
 WIN_W, WIN_H = 1280, 800
+OMEGA_E = 7.2921159e-5         # rad/s — Zemljina rotacija (kao u physics_engine)
 
 
 def terrain_colors(elevations):
@@ -141,11 +142,62 @@ class GPSSimulator:
         self.plotter.actors["gt_marker"].SetVisibility(False)
         self.plotter.actors["calc_marker"].SetVisibility(False)
 
+        # Orbitni prstenovi (6 ravnina) — inercijalna geometrija, svaki frame se
+        # zarotira za Zemljin kut pa se poklapaju s trenutnim ECEF položajima satelita.
+        self._add_orbit_rings()
+
         # Sateliti
         sat_geom = pv.Sphere(radius=180000, theta_resolution=10, phi_resolution=10)
         for sat in self.constellation.satellites:
             self.plotter.add_mesh(sat_geom, color=(0.4, 0.45, 0.55), name=sat.sat_id,
                                   lighting=False, pickable=False, show_scalar_bar=False)
+
+        # Signalne zrake prijemnik -> praćeni sateliti (dinamički se osvježavaju)
+        self.ray_mesh = pv.PolyData()
+        self.ray_mesh.points = np.zeros((2, 3))
+        self.ray_mesh.lines = np.array([2, 0, 1])
+        self.ray_actor = self.plotter.add_mesh(
+            self.ray_mesh, color=C_GREEN, line_width=1, opacity=0.35,
+            lighting=False, pickable=False, show_scalar_bar=False)
+        self.ray_actor.SetVisibility(False)
+
+    def _add_orbit_rings(self):
+        self.orbit_actors = []
+        a, e = self.constellation.a, self.constellation.e
+        inc, w = np.radians(self.constellation.i), np.radians(self.constellation.w)
+        E = np.linspace(0.0, 2.0 * np.pi, 160)
+        x_orb = a * (np.cos(E) - e)
+        y_orb = a * np.sqrt(1.0 - e**2) * np.sin(E)
+        # Rz(w) -> Rx(inc) -> Rz(lan), isti redoslijed kao calculate_orbital_position
+        x1 = x_orb * np.cos(w) - y_orb * np.sin(w)
+        y1 = x_orb * np.sin(w) + y_orb * np.cos(w)
+        x2, y2, z2 = x1, y1 * np.cos(inc), y1 * np.sin(inc)
+        for lan_deg in sorted({s.lan for s in self.constellation.satellites}):
+            lan = np.radians(lan_deg)
+            X = x2 * np.cos(lan) - y2 * np.sin(lan)
+            Y = x2 * np.sin(lan) + y2 * np.cos(lan)
+            pts = np.column_stack([X, Y, z2])
+            actor = self.plotter.add_mesh(pv.MultipleLines(points=pts), color=C_CYAN,
+                                          line_width=1, opacity=0.16, lighting=False,
+                                          pickable=False, show_scalar_bar=False)
+            self.orbit_actors.append(actor)
+
+    def _update_rays(self, sat_positions):
+        if self.gt_pos is None or not sat_positions:
+            self.ray_actor.SetVisibility(False)
+            return
+        n = len(sat_positions)
+        pts = np.empty((2 * n, 3))
+        pts[0::2] = self.gt_pos
+        pts[1::2] = np.asarray(sat_positions)
+        conn = np.empty((n, 3), dtype=np.int64)
+        conn[:, 0] = 2
+        conn[:, 1] = np.arange(0, 2 * n, 2)
+        conn[:, 2] = np.arange(1, 2 * n, 2)
+        self.ray_mesh.points = pts
+        self.ray_mesh.lines = conn.ravel()
+        self.ray_mesh.Modified()
+        self.ray_actor.SetVisibility(True)
 
     def _add_starfield(self):
         rng = np.random.default_rng(42)
@@ -280,6 +332,11 @@ class GPSSimulator:
                         actor.position = pos
                         actor.GetProperty().SetColor(*(C_GREEN if sat_id in visible_ids else (0.34, 0.39, 0.5)))
 
+                # Orbitni prstenovi prate Zemljinu rotaciju (ECEF = Rz(-theta) * inercijalno)
+                theta_deg = np.degrees(OMEGA_E * curr_sim_time)
+                for ring in self.orbit_actors:
+                    ring.orientation = (0.0, 0.0, -theta_deg)
+
                 if self.gt_pos is not None:
                     if self.kinematic_mode:
                         dt_sim = 0.02 * self.time_scale
@@ -291,6 +348,9 @@ class GPSSimulator:
                         gt_actor = self.plotter.actors.get("gt_marker")
                         if gt_actor:
                             gt_actor.position = self.gt_pos
+
+                    # Signalne zrake do praćenih satelita
+                    self._update_rays([s["sat_pos"] for s in signals])
 
                     self.calc_pos, dop = self.receiver.solve_position()
                     if self.calc_pos is not None:
