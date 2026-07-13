@@ -1,5 +1,4 @@
-numpy
-scipy
-matplotlib
-pyvista
-PyQt5
+# Core runtime — simulacijski engine i headless testovi (bez GUI-ja).
+# Jedina stvarna ovisnost jezgre je numpy; scipy/matplotlib iz starije
+# liste nisu se nigdje koristili pa su uklonjeni.
+numpy>=2.0,<3

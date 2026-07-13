@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Moduli engine-a su u korijenu repozitorija (flat layout); dodaj ga na
+# import put da testovi u tests/ mogu raditi `from receiver import Receiver`.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-v"

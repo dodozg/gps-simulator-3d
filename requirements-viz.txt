@@ -1,0 +1,6 @@
+# 3D vizualizacija (GUI iz main.py). Instalira jezgru + rendering.
+-r requirements.txt
+pyvista>=0.44,<1
+# Qt backend je opcionalan — treba samo za interaktivne Qt prozore;
+# zadani VTK render prozor iz pyviste radi i bez njega.
+PyQt5>=5.15,<6
