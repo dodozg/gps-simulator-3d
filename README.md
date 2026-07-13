@@ -37,10 +37,15 @@ pip install -r requirements-viz.txt
 ## Pokretanje
 
 ```bash
-python main.py          # 3D simulator (klik na Zemlju; 'D' = DMS, 'M' = kinematski način)
+python main.py          # 3D simulator (na Windowsu: dvoklik run_simulator.bat)
 python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 pytest                  # test suite
 ```
+
+Kontrole u 3D prikazu: **klik** na Zemlju postavlja prijemnik, **D** prebacuje
+DMS format, **M** uključuje kinematički način (let), **T** prebacuje između
+hipsometrijskog reljefa i stvarne satelitske teksture (NASA Blue Marble,
+`earth_texture.jpg`, javna domena).
 
 ## Testovi
 

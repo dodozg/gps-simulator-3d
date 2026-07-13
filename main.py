@@ -1,3 +1,4 @@
+import os
 import pyvista as pv
 import numpy as np
 import time
@@ -85,12 +86,23 @@ class GPSSimulator:
         self.plotter.add_key_event("m", self.toggle_kinematic)
         self.plotter.add_key_event("M", self.toggle_kinematic)
         self.kinematic_velocity = np.array([100.0, 50.0, 0.0])  # [m/s]
+        self.plotter.add_key_event("t", self.toggle_texture)
+        self.plotter.add_key_event("T", self.toggle_texture)
 
     def toggle_dms(self):
         self.use_dms = not self.use_dms
 
     def toggle_kinematic(self):
         self.kinematic_mode = not self.kinematic_mode
+
+    def toggle_texture(self):
+        if self.earth_tex_actor is None:
+            return
+        self.show_texture = not self.show_texture
+        self.earth_tex_actor.SetVisibility(self.show_texture)
+        self.earth_actor.SetVisibility(not self.show_texture)
+        self.earth_tex_actor.SetPickable(self.show_texture)
+        self.earth_actor.SetPickable(not self.show_texture)
 
     # ---------------------------------------------------------------- scena ---
     def _setup_scene(self):
@@ -118,6 +130,25 @@ class GPSSimulator:
             ambient=0.28, diffuse=0.85, specular=0.12, specular_power=12,
             show_scalar_bar=False,
         )
+
+        # Opcionalna stvarna tekstura kontinenata (NASA Blue Marble, javna domena).
+        # Prekidač 'T' prebacuje između hipsometrijskog reljefa i satelitske slike.
+        # Ista geometrija: teren je geometrijski podpikselno malen pa tekstura
+        # izgleda kao prava Zemlja (lon=0 u sredini slike -> poklapa se s meridijanom).
+        self.earth_tex_actor = None
+        self.show_texture = False
+        tex_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "earth_texture.jpg")
+        if os.path.exists(tex_path):
+            try:
+                sphere.texture_map_to_sphere(inplace=True)
+                tex = pv.read_texture(tex_path)
+                self.earth_tex_actor = self.plotter.add_mesh(
+                    sphere, texture=tex, name="earth_tex", pickable=False,
+                    lighting=True, smooth_shading=True, ambient=0.30, diffuse=0.9,
+                    specular=0.10, specular_power=10, show_scalar_bar=False)
+                self.earth_tex_actor.SetVisibility(False)
+            except Exception:
+                self.earth_tex_actor = None
 
         # Atmosferski halo: prozirna sfera, prednje plohe skrivene -> rub-glow
         atmo = pv.Sphere(radius=R_EARTH * 1.025, theta_resolution=90, phi_resolution=90)
@@ -257,7 +288,7 @@ class GPSSimulator:
 
         # Kontrole
         ctl = self.plotter.add_text(
-            " CLICK   postavi prijemnik\n [ D ]   DMS format\n [ M ]   kinematicki nacin",
+            " CLICK   postavi prijemnik\n [ D ]   DMS format\n [ M ]   kinematicki nacin\n [ T ]   tekstura / reljef",
             position=(28, H - 108), font_size=13, color=C_TEXT, name="controls")
         self._panel(ctl, C_TEXT, size=13)
 
