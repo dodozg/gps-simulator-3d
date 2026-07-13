@@ -21,20 +21,36 @@ WIN_W, WIN_H = 1280, 800
 def terrain_colors(elevations):
     """Hipsometrijsko bojanje terena po visini -> (N,3) uint8 RGB.
 
-    Vrijednosti < 0 su "more" (batimetrija, plavo), >= 0 su "kopno"
-    (zeleno -> smeđe -> sivo -> snijeg). Linearno se interpolira između
-    kontrolnih točaka, pa je prijelaz gladak. Koristi se kao per-vertex RGB
-    (rgb=True) čime se izbjegava scalars+cmap put koji je rušio OpenGL shader.
+    Boje se normaliziraju na STVARNI raspon podataka odvojeno za more i kopno
+    (granica je razina mora, 0 m): more se rasteže od obale do najdublje točke,
+    a kopno od obale do najvišeg vrha. Time snijeg (bijelo) pada samo na prave
+    vrhove, umjesto da se pola globusa zabijeli kad teren ima velike amplitude.
+    Koristi se kao per-vertex RGB (rgb=True) -> izbjegava scalars+cmap shader bug.
     """
-    stops = [-8000, -500,   0,  400, 1000, 2500, 4500, 6500]
-    r     = [    9,   28,  62,  110,  172,  140,  155,  242]
-    g     = [   30,   92, 132,  158,  150,  102,  146,  244]
-    b     = [   72,  152,  74,   88,   96,   70,  132,  250]
     e = np.asarray(elevations, dtype=float)
     out = np.empty((e.size, 3), dtype=np.uint8)
-    out[:, 0] = np.interp(e, stops, r).astype(np.uint8)
-    out[:, 1] = np.interp(e, stops, g).astype(np.uint8)
-    out[:, 2] = np.interp(e, stops, b).astype(np.uint8)
+
+    sea = e < 0.0
+    land = ~sea
+
+    # More: batimetrija (0 uz obalu -> 1 najdublje). Tirkizno plitko -> tamna navy.
+    if sea.any():
+        e_min = e[sea].min()
+        depth = np.clip(e[sea] / e_min, 0.0, 1.0) if e_min < 0 else np.zeros(sea.sum())
+        d_stops = [0.0, 0.35, 1.0]
+        out[sea, 0] = np.interp(depth, d_stops, [ 34,  22,   7])
+        out[sea, 1] = np.interp(depth, d_stops, [126,  84,  22])
+        out[sea, 2] = np.interp(depth, d_stops, [158, 168,  66])
+
+    # Kopno: hipsometrija (0 uz obalu -> 1 vrh). Zeleno -> tan -> smeđe -> sivo -> snijeg.
+    if land.any():
+        e_max = e[land].max()
+        height = np.clip(e[land] / e_max, 0.0, 1.0) if e_max > 0 else np.zeros(land.sum())
+        h_stops = [0.0, 0.18, 0.42, 0.62, 0.82, 0.93, 1.0]
+        out[land, 0] = np.interp(height, h_stops, [ 58,  98, 172, 138, 120, 190, 246])
+        out[land, 1] = np.interp(height, h_stops, [128, 158, 156,  98, 112, 188, 246])
+        out[land, 2] = np.interp(height, h_stops, [ 68,  82, 104,  64, 104, 196, 250])
+
     return out
 
 
@@ -80,10 +96,11 @@ class GPSSimulator:
         self._add_starfield()
 
         # WGS-84 elipsoid s proceduralnim terenom.
-        # Krećemo od jedinične sfere (samo smjerovi), pa svaki smjer preslikamo na
-        # elipsoid preko lla_to_ecef s pripadnom visinom terena. Time je geometrija
-        # geodetski konzistentna: klik na površinu vraća visinu ≈ teren.
-        sphere = pv.Sphere(radius=R_EARTH, theta_resolution=180, phi_resolution=180)
+        # Koristimo icosphere (geodezijska sfera) umjesto UV-sfere: trokuti su
+        # ravnomjerni pa nema stapanja meridijana u polovima (bez "štipanja"/pruga).
+        # Svaki smjer preslikamo na elipsoid preko lla_to_ecef s visinom terena,
+        # pa je geometrija geodetski konzistentna: klik vraća visinu ≈ teren.
+        sphere = pv.Icosphere(radius=R_EARTH, nsub=6)
         dirs = sphere.points / np.linalg.norm(sphere.points, axis=1)[:, np.newaxis]
         lats = np.degrees(np.arcsin(np.clip(dirs[:, 2], -1.0, 1.0)))
         lons = np.degrees(np.arctan2(dirs[:, 1], dirs[:, 0]))
