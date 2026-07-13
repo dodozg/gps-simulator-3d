@@ -19,6 +19,7 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `main.py`             | PyVista GUI (jedini dio koji treba GPU/render) |
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
+| `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
@@ -48,6 +49,7 @@ Launcheri (`run_simulator.bat`, `run_benchmark.bat`, `run_tests.bat`) koriste
 python main.py          # 3D simulator (na Windowsu: dvoklik run_simulator.bat)
 python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
+python rtk.py           # carrier-phase RTK demo (cm-precizno)
 pytest                  # test suite
 ```
 
