@@ -4,3 +4,5 @@ pyvista>=0.44,<1
 # Qt backend je opcionalan — treba samo za interaktivne Qt prozore;
 # zadani VTK render prozor iz pyviste radi i bez njega.
 PyQt5>=5.15,<6
+# 2D grafovi za skyplot.py (skyplot + GDOP/greška/NIS). Radi headless (Agg).
+matplotlib>=3.7,<4
