@@ -11,7 +11,8 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 
 | Modul | Uloga |
 |-------|-------|
-| `physics_engine.py`   | Orbite, atmosfera (iono/tropo), relativnost, modeli satova, teren |
+| `physics_engine.py`   | Orbite, atmosfera (iono/tropo), relativnost, modeli satova |
+| `terrain.py`          | Pravi globalni DEM (NASA SRTM) + bilinearna interpolacija visina |
 | `satellite.py`        | Walker-Delta konstelacija i satelitski satovi |
 | `signal_processing.py`| PRN kodovi, RF kanal, FFT korelacija |
 | `receiver.py`         | LS inicijalizacija + EKF + RAIM + DOP selekcija |
@@ -22,6 +23,10 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
+
+Teren je stvarni globalni DEM (`terrain_dem.npz`, izveden iz NASA SRTM RAMP2,
+javna domena) — oceani na razini mora, planine na pravim mjestima. Datoteka je
+uključena; `fetch_terrain.py` je regenerira/finije (`--width`).
 
 ## Instalacija
 

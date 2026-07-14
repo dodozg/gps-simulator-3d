@@ -6,18 +6,14 @@ MU = 3.986004418e14 # m^3/s^2
 J2 = 1.08262668e-3 # Earth's J2 perturbation coefficient
 
 def calculate_terrain_elevation(lat, lon):
+    """Visina terena [m] na (lat, lon). Delegira na `terrain` modul (pravi DEM).
+
+    Prije je ovo bila čista suma sinusa koja je posvuda stvarala lažne planine do
+    ~9 km i blokirala vidljivost satelita (npr. Tokio -> 0 satelita). Sada koristi
+    stvarni globalni DEM (NASA SRTM) uz proceduralni fallback. Vidi `terrain.py`.
     """
-    Proceduralna funkcija za generiranje visina terena (planine i doline).
-    Kombinacija frekvencija stvara lažne kontinente.
-    """
-    h = np.sin(np.radians(lon)*2) * np.cos(np.radians(lat)*3)
-    h += 0.5 * np.sin(np.radians(lon)*5) * np.cos(np.radians(lat)*4)
-    h += 0.25 * np.sin(np.radians(lon)*10)
-    
-    if h > 0:
-        return h * 8800.0 # Planine do ~8.8 km
-    else:
-        return h * 11000.0 # Doline do ~11 km
+    import terrain
+    return terrain.elevation(lat, lon)
 
 def get_orbital_period(a):
     """

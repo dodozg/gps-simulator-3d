@@ -120,8 +120,8 @@ class GPSSimulator:
         dirs = sphere.points / np.linalg.norm(sphere.points, axis=1)[:, np.newaxis]
         lats = np.degrees(np.arcsin(np.clip(dirs[:, 2], -1.0, 1.0)))
         lons = np.degrees(np.arctan2(dirs[:, 1], dirs[:, 0]))
-        elevations = np.array([calculate_terrain_elevation(la, lo)
-                               for la, lo in zip(lats, lons)])
+        import terrain
+        elevations = terrain.elevation_array(lats, lons)   # vektorizirano iz pravog DEM-a
         sphere.points = np.array([lla_to_ecef(la, lo, h)
                                   for la, lo, h in zip(lats, lons, elevations)])
 
