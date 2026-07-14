@@ -1,0 +1,28 @@
+{
+  "lessons": [
+    {
+      "id": "why-four-sats",
+      "title": "Zašto trebaš 4 satelita?",
+      "summary": "3 nepoznanice položaja + 1 za pogrešku sata prijemnika.",
+      "steps": []
+    },
+    {
+      "id": "gdop-geometry",
+      "title": "GDOP i geometrija",
+      "summary": "Kako raspored satelita množi grešku; podigni masku i gledaj PDOP.",
+      "steps": []
+    },
+    {
+      "id": "ionosphere-time",
+      "title": "Ionosfera i doba dana",
+      "summary": "Klobuchar krivulja: vrh oko 14 h, tanki pod noću.",
+      "steps": []
+    },
+    {
+      "id": "raim-integrity",
+      "title": "RAIM — zaštita integriteta",
+      "summary": "Naivni spoof RAIM uhvati; koordinirani spoof NE.",
+      "steps": []
+    }
+  ]
+}

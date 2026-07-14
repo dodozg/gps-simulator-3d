@@ -1,0 +1,6 @@
+# Web kontrolni centar (#12) — backend. Engine je i dalje samo numpy;
+# ovo je tanki FastAPI adapter oko postojećih modula.
+-r requirements.txt
+fastapi>=0.110
+uvicorn[standard]>=0.27
+httpx>=0.27          # za TestClient (test_web_backend.py)

@@ -1,0 +1,147 @@
+{
+  "GDOP": {
+    "term": "GDOP — Geometric Dilution of Precision",
+    "short": "Mjera koliko geometrija satelita množi grešku mjerenja.",
+    "long": "Kad su sateliti lijepo raspoređeni po nebu, GDOP je nizak (~2) i greška je mala. Ako su zbijeni na jednom dijelu neba, GDOP raste (>6) i ista greška mjerenja daje puno veću grešku pozicije. Zato prijemnik bira satelite s dobrom geometrijom.",
+    "related": ["PDOP", "elevation mask"]
+  },
+  "PDOP": {
+    "term": "PDOP — Position Dilution of Precision",
+    "short": "Kao GDOP, ali samo za 3D položaj (bez sata).",
+    "long": "PDOP opisuje utjecaj geometrije satelita na grešku položaja (x, y, z). Niže je bolje. Više sustava (GPS+Galileo+…) znači više satelita i niži PDOP.",
+    "related": ["GDOP", "ISB"]
+  },
+  "RAIM": {
+    "term": "RAIM — Receiver Autonomous Integrity Monitoring",
+    "short": "Prijemnik sam otkriva pokvareni satelit i izbaci ga.",
+    "long": "Ako jedan satelit šalje pogrešnu udaljenost (kvar ili spoofing), njegovo mjerenje 'ne pristaje' uz ostale. RAIM to prepozna po velikom rezidualu i odbaci ga. Ali ako je napad KONZISTENTAN (svi lažni podaci se slažu), RAIM ga ne vidi — to je njegovo temeljno ograničenje.",
+    "related": ["spoofing", "NIS"]
+  },
+  "NIS": {
+    "term": "NIS — Normalized Innovation Squared",
+    "short": "Provjera je li filtar (EKF) statistički zdrav.",
+    "long": "NIS/dof mjeri slaže li se stvarna greška mjerenja s onom koju filtar OČEKUJE. Ako je oko 1, filtar je dobro podešen. Trajno >1 znači da podcjenjuje šum, <1 da je prekonzervativan.",
+    "related": ["EKF", "GDOP"]
+  },
+  "EKF": {
+    "term": "EKF — Extended Kalman Filter",
+    "short": "Algoritam koji glađe procjenjuje položaj kroz vrijeme.",
+    "long": "Umjesto da svaku sekundu računa položaj od nule, EKF kombinira prethodnu procjenu (i kretanje) s novim mjerenjima. Rezultat je stabilnija, manje 'skakutava' pozicija te procjena brzine i pogreške sata prijemnika.",
+    "related": ["NIS", "pseudorange"]
+  },
+  "PRN": {
+    "term": "PRN — Pseudo-Random Noise kod",
+    "short": "Jedinstveni 'potpis' svakog satelita u signalu.",
+    "long": "Svaki satelit odašilje poseban pseudoslučajni niz. Prijemnik ga korelira s vlastitom kopijom da prepozna satelit i izmjeri kašnjenje signala (a time i udaljenost).",
+    "related": ["pseudorange", "C/N0"]
+  },
+  "pseudorange": {
+    "term": "Pseudoudaljenost",
+    "short": "Izmjerena udaljenost do satelita — s pogreškom sata.",
+    "long": "Dobiva se iz vremena putovanja signala × brzina svjetlosti. Zove se 'pseudo' jer sat prijemnika nije savršen, pa svakoj udaljenosti dodaje isti nepoznati pomak. Zato treba 4 satelita: 3 za položaj + 1 za sat.",
+    "related": ["PRN", "EKF"]
+  },
+  "ephemeris": {
+    "term": "Efemeride",
+    "short": "Podaci o tome gdje se satelit točno nalazi.",
+    "long": "Satelit odašilje svoje orbitalne parametre pa prijemnik zna njegov položaj. Mala pogreška efemerida (par metara) izravno ulazi u grešku pozicije.",
+    "related": ["pseudorange"]
+  },
+  "ionosphere": {
+    "term": "Ionosfera",
+    "short": "Nabijeni sloj atmosfere koji usporava GPS signal.",
+    "long": "Slobodni elektroni na 60–1000 km visine kašnjenje signala ovisno o frekvenciji i dobu dana (najjače oko 14 h lokalno). Modelira se Klobuchar modelom ili poništava dvofrekvencijski (iono-free).",
+    "related": ["Klobuchar", "iono-free", "troposphere"]
+  },
+  "Klobuchar": {
+    "term": "Klobuchar model",
+    "short": "Standardni GPS model ionosferskog kašnjenja.",
+    "short_alt": "",
+    "long": "Opisuje dnevnu krivulju ionosfere s 8 koeficijenata iz navigacijske poruke: kosinusni 'brijeg' danju s vrhom oko 14 h, tanki pod noću. Jednofrekvencijski prijemnik njime korigira ~50% pogreške.",
+    "related": ["ionosphere", "iono-free"]
+  },
+  "troposphere": {
+    "term": "Troposfera",
+    "short": "Donji, vlažni sloj atmosfere — kašnjenje neovisno o frekvenciji.",
+    "long": "Vodena para i zrak usporavaju signal ~2.4 m u zenitu, više pri niskim elevacijama. Za razliku od ionosfere, jednaka je za sve frekvencije pa se ne poništava iono-free kombinacijom.",
+    "related": ["ionosphere"]
+  },
+  "iono-free": {
+    "term": "Iono-free kombinacija",
+    "short": "Spoj dvije frekvencije (L1/L2) koji poništi ionosferu.",
+    "long": "Kako ionosfersko kašnjenje ovisi o 1/f², posebna kombinacija mjerenja na L1 i L2 ga matematički ukloni. Zato profesionalni prijemnici koriste dvije frekvencije.",
+    "related": ["ionosphere", "Klobuchar"]
+  },
+  "Sagnac": {
+    "term": "Sagnac efekt",
+    "short": "Korekcija zbog Zemljine rotacije tijekom putovanja signala.",
+    "long": "Dok signal putuje ~70 ms do prijemnika, Zemlja se malo zarotira. Bez te korekcije (par metara) položaj bi bio pomaknut.",
+    "related": ["pseudorange"]
+  },
+  "multipath": {
+    "term": "Multipath (višestazno prostiranje)",
+    "short": "Signal koji stigne i nakon odbijanja od zgrada/tla.",
+    "long": "Reflektirana kopija signala stiže malo kasnije i kvari mjerenje udaljenosti. Glavni je izvor greške u gradovima; niski sateliti su najosjetljiviji.",
+    "related": ["C/N0", "elevation mask"]
+  },
+  "elevation mask": {
+    "term": "Maska elevacije",
+    "short": "Najniži kut iznad horizonta na kojem se satelit koristi.",
+    "long": "Sateliti nisko nad horizontom imaju slabiji signal i više atmosferske/multipath greške. Prijemnik ih ispod praga (npr. 5–15°) ignorira. U 'urbanom kanjonu' zgrade dižu efektivnu masku pa GPS sam ostane bez dovoljno satelita.",
+    "related": ["multipath", "GDOP", "PDOP"]
+  },
+  "C/N0": {
+    "term": "C/N0 — omjer nosioca i šuma",
+    "short": "Jakost satelitskog signala (dB-Hz).",
+    "long": "Veći C/N0 (~45 dB-Hz) znači čist signal i točno mjerenje; niži (ispod ~30) znači gubitak praćenja. Jamming ga obara dizanjem šumnog poda.",
+    "related": ["jamming", "PRN"]
+  },
+  "RTK": {
+    "term": "RTK — Real-Time Kinematic",
+    "short": "Centimetarsko pozicioniranje pomoću faze nosioca.",
+    "long": "Umjesto koda (~metri), RTK mjeri fazu vala nosioca (~milimetri) i uspoređuje s poznatom baznom stanicom (double-differencing). Nakon što razriješi cjelobrojnu neodređenost, točnost je centimetarska.",
+    "related": ["ambiguity", "pseudorange"]
+  },
+  "ambiguity": {
+    "term": "Integer ambiguity (cjelobrojna neodređenost)",
+    "short": "Nepoznati cijeli broj valnih duljina u RTK-u.",
+    "long": "Faza nosioca daje ulomak valne duljine, ali ne i koliko ih je cijelih stalo u put. RTK taj cijeli broj razriješi; kad je fiksiran, rješenje je centimetarsko.",
+    "related": ["RTK"]
+  },
+  "ISB": {
+    "term": "ISB — Inter-System Bias",
+    "short": "Pomak zbog različitih vremenskih skala GNSS sustava.",
+    "long": "GPS, Galileo, GLONASS i BeiDou imaju svaki svoju vremensku skalu. Kad ih se kombinira, prijemnik mora procijeniti dodatni pomak (bias) po sustavu kao dodatnu nepoznanicu.",
+    "related": ["PDOP", "Walker-Delta"]
+  },
+  "Walker-Delta": {
+    "term": "Walker-Delta konstelacija",
+    "short": "Pravilan raspored satelita po orbitalnim ravninama.",
+    "long": "Notacija T/P/F: T satelita u P ravnina s faznim pomakom F. GPS je 24/6/1 — 24 satelita u 6 ravnina. Osigurava da je posvuda na Zemlji vidljivo dovoljno satelita.",
+    "related": ["ephemeris", "ISB"]
+  },
+  "spoofing": {
+    "term": "Spoofing",
+    "short": "Lažni GPS signali koji obmanjuju prijemnik.",
+    "long": "Napadač šalje krivotvorene signale da prijemnik izračuna POGREŠAN položaj a da to ne primijeti. Koordinirani (konzistentni) spoof RAIM ne hvata — pozicija tiho 'odšeta' na napadačevu metu.",
+    "related": ["RAIM", "meaconing", "jamming"]
+  },
+  "meaconing": {
+    "term": "Meaconing",
+    "short": "Snimanje i reemitiranje pravih signala s kašnjenjem.",
+    "long": "Napadač reemitira autentične signale sa zajedničkim kašnjenjem. Kako je pomak jednak svima, EKF ga upije u sat prijemnika i položaj se ne pomakne — sam po sebi manje opasan od koordiniranog spoofa.",
+    "related": ["spoofing", "EKF"]
+  },
+  "jamming": {
+    "term": "Jamming (ometanje)",
+    "short": "Zaglušivanje signala jakim šumom — uskraćivanje usluge.",
+    "long": "Za razliku od spoofinga (obmana), jamming samo diže šumni pod pa C/N0 padne i sateliti ispadnu iz praćenja. Rezultat je gubitak fixa. RAIM tu ne pomaže jer nema lažnih mjerenja, nego nedostatak signala.",
+    "related": ["C/N0", "spoofing"]
+  },
+  "LOS": {
+    "term": "LOS — Line of Sight (optička vidljivost)",
+    "short": "Nesmetan put signala od satelita do prijemnika.",
+    "long": "Ako brdo ili zgrada presiječe put, satelit se ne vidi. Simulator to provjerava raycastingom kroz stvarni teren (DEM).",
+    "related": ["elevation mask", "multipath"]
+  }
+}

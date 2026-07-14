@@ -1,0 +1,28 @@
+{
+  "lessons": [
+    {
+      "id": "why-four-sats",
+      "title": "Why do you need 4 satellites?",
+      "summary": "3 position unknowns + 1 for the receiver clock error.",
+      "steps": []
+    },
+    {
+      "id": "gdop-geometry",
+      "title": "GDOP and geometry",
+      "summary": "How satellite spread multiplies error; raise the mask and watch PDOP.",
+      "steps": []
+    },
+    {
+      "id": "ionosphere-time",
+      "title": "The ionosphere and time of day",
+      "summary": "Klobuchar curve: peak around 14:00, thin floor at night.",
+      "steps": []
+    },
+    {
+      "id": "raim-integrity",
+      "title": "RAIM — integrity protection",
+      "summary": "A naive spoof is caught by RAIM; a coordinated spoof is not.",
+      "steps": []
+    }
+  ]
+}

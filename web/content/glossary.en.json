@@ -1,0 +1,146 @@
+{
+  "GDOP": {
+    "term": "GDOP — Geometric Dilution of Precision",
+    "short": "How much satellite geometry multiplies your measurement error.",
+    "long": "When satellites are spread nicely across the sky, GDOP is low (~2) and error is small. If they are bunched in one part of the sky, GDOP grows (>6) and the same measurement error yields a much larger position error. That is why the receiver picks satellites with good geometry.",
+    "related": ["PDOP", "elevation mask"]
+  },
+  "PDOP": {
+    "term": "PDOP — Position Dilution of Precision",
+    "short": "Like GDOP but only for the 3D position (excluding the clock).",
+    "long": "PDOP captures how satellite geometry affects the position (x, y, z) error. Lower is better. More systems (GPS+Galileo+…) means more satellites and a lower PDOP.",
+    "related": ["GDOP", "ISB"]
+  },
+  "RAIM": {
+    "term": "RAIM — Receiver Autonomous Integrity Monitoring",
+    "short": "The receiver detects and rejects a faulty satellite on its own.",
+    "long": "If one satellite reports a wrong range (fault or spoofing), its measurement does not 'fit' with the others. RAIM spots the large residual and drops it. But if an attack is CONSISTENT (all fake data agrees), RAIM cannot see it — that is its fundamental limit.",
+    "related": ["spoofing", "NIS"]
+  },
+  "NIS": {
+    "term": "NIS — Normalized Innovation Squared",
+    "short": "A check that the filter (EKF) is statistically healthy.",
+    "long": "NIS/dof measures whether the real measurement error matches what the filter EXPECTS. Around 1 means well tuned. Persistently >1 means it underestimates noise, <1 means it is over-conservative.",
+    "related": ["EKF", "GDOP"]
+  },
+  "EKF": {
+    "term": "EKF — Extended Kalman Filter",
+    "short": "The algorithm that smoothly estimates position over time.",
+    "long": "Instead of solving position from scratch each second, the EKF blends the previous estimate (and motion) with new measurements. The result is a stabler, less jumpy position plus estimates of velocity and the receiver clock error.",
+    "related": ["NIS", "pseudorange"]
+  },
+  "PRN": {
+    "term": "PRN — Pseudo-Random Noise code",
+    "short": "Each satellite's unique 'signature' in the signal.",
+    "long": "Every satellite broadcasts a distinct pseudo-random sequence. The receiver correlates it with its own copy to identify the satellite and measure the signal delay (hence the range).",
+    "related": ["pseudorange", "C/N0"]
+  },
+  "pseudorange": {
+    "term": "Pseudorange",
+    "short": "The measured distance to a satellite — with a clock error.",
+    "long": "Derived from signal travel time × speed of light. It is 'pseudo' because the receiver clock is imperfect and adds the same unknown offset to every range. That is why you need 4 satellites: 3 for position + 1 for the clock.",
+    "related": ["PRN", "EKF"]
+  },
+  "ephemeris": {
+    "term": "Ephemeris",
+    "short": "Data describing exactly where a satellite is.",
+    "long": "The satellite broadcasts its orbital parameters so the receiver knows its position. A small ephemeris error (a few metres) feeds directly into the position error.",
+    "related": ["pseudorange"]
+  },
+  "ionosphere": {
+    "term": "Ionosphere",
+    "short": "A charged atmospheric layer that slows the GPS signal.",
+    "long": "Free electrons at 60–1000 km delay the signal depending on frequency and time of day (strongest around 14:00 local). Modelled with the Klobuchar model or cancelled with dual-frequency (iono-free).",
+    "related": ["Klobuchar", "iono-free", "troposphere"]
+  },
+  "Klobuchar": {
+    "term": "Klobuchar model",
+    "short": "The standard GPS model of ionospheric delay.",
+    "long": "Describes the daily ionosphere curve from 8 coefficients in the navigation message: a cosine 'hump' during the day peaking near 14:00, a thin floor at night. A single-frequency receiver removes ~50% of the error with it.",
+    "related": ["ionosphere", "iono-free"]
+  },
+  "troposphere": {
+    "term": "Troposphere",
+    "short": "The lower, wet atmosphere — delay independent of frequency.",
+    "long": "Water vapour and air slow the signal ~2.4 m at the zenith, more at low elevations. Unlike the ionosphere, it is the same for all frequencies, so the iono-free combination does not cancel it.",
+    "related": ["ionosphere"]
+  },
+  "iono-free": {
+    "term": "Iono-free combination",
+    "short": "A mix of two frequencies (L1/L2) that cancels the ionosphere.",
+    "long": "Because ionospheric delay scales as 1/f², a special combination of L1 and L2 measurements removes it mathematically. That is why professional receivers use two frequencies.",
+    "related": ["ionosphere", "Klobuchar"]
+  },
+  "Sagnac": {
+    "term": "Sagnac effect",
+    "short": "A correction for Earth's rotation during signal travel.",
+    "long": "While the signal travels ~70 ms to the receiver, the Earth rotates slightly. Without this correction (a few metres) the position would be offset.",
+    "related": ["pseudorange"]
+  },
+  "multipath": {
+    "term": "Multipath",
+    "short": "Signal that also arrives after bouncing off buildings/ground.",
+    "long": "A reflected copy of the signal arrives slightly later and corrupts the range measurement. It is the main error source in cities; low-elevation satellites are the most affected.",
+    "related": ["C/N0", "elevation mask"]
+  },
+  "elevation mask": {
+    "term": "Elevation mask",
+    "short": "The lowest angle above the horizon at which a satellite is used.",
+    "long": "Satellites low on the horizon have weaker signals and more atmospheric/multipath error. The receiver ignores those below a threshold (e.g. 5–15°). In an 'urban canyon', buildings raise the effective mask so GPS alone runs short of satellites.",
+    "related": ["multipath", "GDOP", "PDOP"]
+  },
+  "C/N0": {
+    "term": "C/N0 — carrier-to-noise ratio",
+    "short": "Satellite signal strength (dB-Hz).",
+    "long": "A higher C/N0 (~45 dB-Hz) means a clean signal and accurate measurement; lower (below ~30) means loss of lock. Jamming drives it down by raising the noise floor.",
+    "related": ["jamming", "PRN"]
+  },
+  "RTK": {
+    "term": "RTK — Real-Time Kinematic",
+    "short": "Centimetre positioning using the carrier phase.",
+    "long": "Instead of the code (~metres), RTK measures the carrier wave phase (~millimetres) and compares against a known base station (double-differencing). Once the integer ambiguity is resolved, accuracy is centimetre-level.",
+    "related": ["ambiguity", "pseudorange"]
+  },
+  "ambiguity": {
+    "term": "Integer ambiguity",
+    "short": "The unknown whole number of wavelengths in RTK.",
+    "long": "Carrier phase gives a fraction of a wavelength but not how many whole ones fit in the path. RTK resolves that integer; once fixed, the solution is centimetre-level.",
+    "related": ["RTK"]
+  },
+  "ISB": {
+    "term": "ISB — Inter-System Bias",
+    "short": "An offset from the different time scales of GNSS systems.",
+    "long": "GPS, Galileo, GLONASS and BeiDou each run their own time scale. When combined, the receiver must estimate an extra per-system offset (bias) as an additional unknown.",
+    "related": ["PDOP", "Walker-Delta"]
+  },
+  "Walker-Delta": {
+    "term": "Walker-Delta constellation",
+    "short": "A regular arrangement of satellites across orbital planes.",
+    "long": "Notation T/P/F: T satellites in P planes with phasing F. GPS is 24/6/1 — 24 satellites in 6 planes. It guarantees that enough satellites are visible everywhere on Earth.",
+    "related": ["ephemeris", "ISB"]
+  },
+  "spoofing": {
+    "term": "Spoofing",
+    "short": "Fake GPS signals that deceive the receiver.",
+    "long": "An attacker transmits forged signals so the receiver computes a WRONG position without noticing. A coordinated (consistent) spoof evades RAIM — the position silently 'walks' to the attacker's target.",
+    "related": ["RAIM", "meaconing", "jamming"]
+  },
+  "meaconing": {
+    "term": "Meaconing",
+    "short": "Recording and rebroadcasting real signals with a delay.",
+    "long": "The attacker re-emits authentic signals with a common delay. Because the offset is equal for all, the EKF absorbs it into the receiver clock and the position does not move — on its own less dangerous than a coordinated spoof.",
+    "related": ["spoofing", "EKF"]
+  },
+  "jamming": {
+    "term": "Jamming",
+    "short": "Drowning the signal in strong noise — denial of service.",
+    "long": "Unlike spoofing (deception), jamming merely raises the noise floor so C/N0 drops and satellites fall out of lock. The result is loss of fix. RAIM cannot help because there are no fake measurements, just missing signal.",
+    "related": ["C/N0", "spoofing"]
+  },
+  "LOS": {
+    "term": "LOS — Line of Sight",
+    "short": "An unobstructed path from satellite to receiver.",
+    "long": "If a hill or building crosses the path, the satellite is not visible. The simulator checks this by raycasting through real terrain (a DEM).",
+    "related": ["elevation mask", "multipath"]
+  }
+}

@@ -60,6 +60,7 @@ class Receiver:
         # Za konzistentan filter NIS/dof ~ 1 (prati chi-kvadrat s dof = broj mjerenja).
         self.nis = 0.0
         self.nis_dof = 0
+        self.last_solution = {}   # {sat_id: {residual_m, rejected}} — za web UI (#12)
 
     def set_position(self, pos):
         self.pos = pos
@@ -70,6 +71,7 @@ class Receiver:
         self.P_ekf = np.eye(8) * 1e6
         self.raim_alarm = ""
         self.ekf_last_time = 0.0
+        self.last_solution = {}
 
     def check_los(self, sat_pos, rec_pos):
         """
@@ -370,6 +372,14 @@ class Receiver:
             worst = max(abs(innov_list[i] - med_kept) for i in rejected)
             ids = ", ".join(self.received_signals[i]['sat_id'] for i in sorted(rejected))
             self.raim_alarm = f"RAIM ALARM: Rejected {ids} (Err: {worst:.0f}m)"
+
+        # Dijagnostika po satelitu za vanjske potrošače (web UI): rezidual inovacije
+        # i je li ga RAIM odbacio. Samo se sprema — ne utječe na rješenje.
+        self.last_solution = {
+            sig['sat_id']: {'residual_m': float(all_innovations[i][0]),
+                            'rejected': i in rejected}
+            for i, sig in enumerate(self.received_signals)
+        }
 
         for i, sig in enumerate(self.received_signals):
             if i in rejected:

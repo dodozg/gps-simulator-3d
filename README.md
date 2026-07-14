@@ -18,6 +18,7 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `receiver.py`         | LS inicijalizacija + EKF + RAIM + DOP selekcija |
 | `utils.py`            | Geodezija: LLA ↔ ECEF na WGS-84 elipsoidu, DMS format |
 | `main.py`             | PyVista GUI (jedini dio koji treba GPU/render) |
+| `web/`                | Web kontrolni centar + GPS učilište (FastAPI + CesiumJS) |
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
@@ -93,6 +94,13 @@ Kontrole u 3D prikazu: **klik** na Zemlju postavlja prijemnik, **D** prebacuje
 DMS format, **M** uključuje kinematički način (let), **T** prebacuje između
 hipsometrijskog reljefa i stvarne satelitske teksture (NASA Blue Marble,
 `earth_texture.jpg`, javna domena).
+
+## Web kontrolni centar + GPS učilište
+
+Moderno web sučelje (3D globus na CesiumJS, živa simulacija, telemetrija i
+edukativni pojmovnik na klik, dvojezično HR/EN) koje postojeći numpy engine
+koristi izravno preko FastAPI backenda. Na Windowsu: `build_web.bat` (jednom,
+traži Node 18+) pa `run_webapp.bat`. Detalji u [`web/README.md`](web/README.md).
 
 ## Testovi
 

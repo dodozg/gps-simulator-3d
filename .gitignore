@@ -4,6 +4,10 @@ spoofing.png
 iono.png
 multignss.png
 
+# Web frontend (build ide u lokalni dir izvan G:, vidi build_web.bat)
+web/frontend/node_modules/
+web/frontend/dist/
+
 # Python
 .venv/
 venv/

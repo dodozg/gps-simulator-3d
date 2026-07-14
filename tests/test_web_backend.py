@@ -1,0 +1,72 @@
+"""Web backend (#12): serijalizacija, REST eksperimenti i WebSocket živa sim.
+
+Preskače se ako web ovisnosti (fastapi/httpx) nisu instalirane — CI (numpy+pytest)
+ostaje zelen bez njih. Lokalno: pip install -r requirements-web.txt + httpx.
+"""
+import pytest
+
+pytest.importorskip("fastapi")
+pytest.importorskip("httpx")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from web.backend.app import app  # noqa: E402
+from web.backend.sim_session import SimSession  # noqa: E402
+from web.backend.serialize import state_frame, to_jsonable  # noqa: E402
+
+client = TestClient(app)
+
+
+def test_health_and_constellation():
+    assert client.get("/api/health").json()["status"] == "ok"
+    con = client.get("/api/constellation").json()
+    assert con["gps"]["n_sats"] == 24 and len(con["gps"]["planes"]) == 6
+    assert set(con["systems"]) == {"GPS", "GAL", "GLO", "BDS"}
+
+
+def test_to_jsonable_handles_nan_and_numpy():
+    import numpy as np
+    out = to_jsonable({"a": np.array([1.0, np.nan, np.inf]), "b": np.int64(3)})
+    assert out["a"] == [1.0, None, None] and out["b"] == 3
+
+
+def test_experiment_endpoints():
+    r = client.post("/api/rtk", json={"rover": {"lat": 45.815, "lon": 15.982, "alt": 120},
+                                      "base": {"lat": 45.815, "lon": 16.05, "alt": 120}}).json()
+    assert r["ok"] and r["fixed_err_m"] < 0.1
+    r = client.post("/api/multignss", json={"lat": 45.815, "lon": 15.982, "mask_deg": 10}).json()
+    assert r["all"][0] > r["gps"][0]                       # više satelita s više sustava
+    r = client.post("/api/iono", json={"lat": 45.815, "lon": 15.982}).json()
+    assert 13 <= r["peak"][0] <= 15                         # vrh oko 14 h
+
+
+def test_scenario_list_and_compare():
+    files = [s["file"] for s in client.get("/api/scenario/list").json()["scenarios"]]
+    assert "zagreb_clean.json" in files
+    r = client.post("/api/scenario/compare", json={"file": "jamming_naive_spoof.json"}).json()
+    assert r["mode"] == "raim"
+    assert r["a"]["result"]["median_err"] < r["b"]["result"]["median_err"] / 5
+
+
+def test_state_frame_shape():
+    s = SimSession(seed=1234)
+    s.set_receiver(45.815, 15.982, 120.0)
+    for _ in range(30):
+        s.advance(1.0)
+    f = state_frame(s)
+    assert f["sats_total"] == 24 and f["receiver"]["placed"]
+    assert len(f["satellites"]) == 24
+    assert f["receiver"]["ekf_initialized"]
+
+
+def test_websocket_live_sim_converges():
+    with client.websocket_connect("/ws/sim") as ws:
+        ws.receive_json()                                   # početni frame
+        ws.send_json({"type": "set_receiver", "lat": 45.815, "lon": 15.982, "alt": 120})
+        ws.send_json({"type": "time_scale", "value": 200})
+        ws.send_json({"type": "play"})
+        f = None
+        for _ in range(12):
+            f = ws.receive_json()
+        assert f["receiver"]["placed"] and f["receiver"]["ekf_initialized"]
+        assert f["sats_tracked"] >= 4
