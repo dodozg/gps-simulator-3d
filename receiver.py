@@ -45,6 +45,9 @@ class Receiver:
         self.h2 = 1e-20
         self.last_update_time = 0.0
         self.raim_alarm = ""
+        # Doba dana [s od ponoći UTC] za Klobuchar ionosferu (50400 = 14:00, dnevni
+        # vrh TEC-a). Sim vrijeme se dodaje pa ionosfera evoluira kroz scenarij.
+        self.iono_tow0 = 50400.0
 
         # EKF State
         self.ekf_initialized = False
@@ -144,16 +147,17 @@ class Receiver:
             # 3. Atmosfersko kašnjenje
             tropo_delay_meters = calculate_tropospheric_delay(sig['pos'], self.pos)
             
-            # L1 Obrada
-            iono_delay_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'])
+            # L1 Obrada — Klobuchar ionosfera ovisna o dobu dana (#7)
+            iono_tow = self.iono_tow0 + current_time
+            iono_delay_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'], gps_tow_s=iono_tow)
             rx_signal_l1, int_blocks_l1 = signal_processing.simulate_rf_channel(
                 prn=sig['l1']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l1+tropo_delay_meters, snr_db=-10, rng=self.rng
             )
             local_prn_l1 = signal_processing.generate_prn(sat.sat_id + "_L1")
             measured_pr_l1 = signal_processing.decode_signal(rx_signal_l1, local_prn_l1, int_blocks_l1)
             
-            # L2 Obrada
-            iono_delay_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'])
+            # L2 Obrada (isto doba dana; iono-free kombinacija ga poništava)
+            iono_delay_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'], gps_tow_s=iono_tow)
             rx_signal_l2, int_blocks_l2 = signal_processing.simulate_rf_channel(
                 prn=sig['l2']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l2+tropo_delay_meters, snr_db=-10, rng=self.rng
             )

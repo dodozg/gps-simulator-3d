@@ -97,37 +97,86 @@ def get_relativistic_drift_rate(a):
     """
     return 4.46e-10 # Ogruba aproksimacija drift rate-a (sec/sec)
 
-def calculate_ionospheric_delay(sat_pos, receiver_pos, frequency_hz=1575.42e6):
+# Klobuchar koeficijenti (α = amplituda, β = period) — tipične vrijednosti iz
+# GPS navigacijske poruke za umjerenu solarnu aktivnost. Ovo su isti parametri
+# koje bi jednofrekvencijski prijemnik dobio emitirane i primijenio.
+KLOBUCHAR_ALPHA = (1.1176e-8, -7.4506e-9, -5.9605e-8, 1.1921e-7)
+KLOBUCHAR_BETA = (1.0035e5, -3.2768e4, -1.9661e5, 1.9661e5)
+
+F_L1 = 1575.42e6
+
+
+def klobuchar_delay(lat_deg, lon_deg, elev_rad, az_rad, gps_tow_s,
+                    alpha=KLOBUCHAR_ALPHA, beta=KLOBUCHAR_BETA):
+    """Klobuchar ionosfersko kašnjenje na L1 [sekunde] — ovisno o dobu dana.
+
+    Standardni GPS algoritam (semicircles): amplituda kosinusnog dnevnog vala
+    raste danju (vrh ~14:00 lokalno) i pada na noćni pod. Ovisi o probojnoj
+    točki (IPP), geomagnetskoj širini i lokalnom vremenu. Vrati kašnjenje u
+    sekundama za L1; za drugu frekvenciju skaliraj s (F_L1/f)^2.
     """
-    Jednostavan model ionosferskog kašnjenja ovisno o elevaciji i frekvenciji.
-    Kašnjenje je obrnuto proporcionalno kvadratu frekvencije.
-    Vraća kašnjenje u metrima.
+    sc = 1.0 / np.pi                       # rad -> semicircles (1 sc = 180°)
+    phi_u = lat_deg / 180.0                # geodetska širina/dužina u semicircles
+    lam_u = lon_deg / 180.0
+    E = elev_rad * sc                      # elevacija u semicircles
+
+    psi = 0.0137 / (E + 0.11) - 0.022      # Zemljin središnji kut (sc)
+    phi_i = phi_u + psi * np.cos(az_rad)
+    phi_i = np.clip(phi_i, -0.416, 0.416)  # IPP širina, ograničena
+    lam_i = lam_u + psi * np.sin(az_rad) / np.cos(phi_i * np.pi)
+    phi_m = phi_i + 0.064 * np.cos((lam_i - 1.617) * np.pi)   # geomagnetska širina
+
+    t = 43200.0 * lam_i + gps_tow_s        # lokalno vrijeme [s]
+    t = t % 86400.0
+
+    amp = sum(alpha[n] * phi_m**n for n in range(4))
+    amp = max(amp, 0.0)
+    per = sum(beta[n] * phi_m**n for n in range(4))
+    per = max(per, 72000.0)
+
+    x = 2.0 * np.pi * (t - 50400.0) / per  # 50400 s = 14:00 lokalno (vrh)
+    F = 1.0 + 16.0 * (0.53 - E) ** 3       # faktor kosine (obliquity)
+    if abs(x) < 1.57:
+        return F * (5e-9 + amp * (1.0 - x*x/2.0 + x**4/24.0))
+    return F * 5e-9                         # noćni pod
+
+
+def calculate_ionospheric_delay(sat_pos, receiver_pos, frequency_hz=F_L1,
+                                gps_tow_s=None):
+    """Ionosfersko kašnjenje [m] ~ 1/f^2.
+
+    Ako je `gps_tow_s` zadan, koristi PRAVI Klobuchar model (ovisan o dobu dana i
+    geometriji, vidi `klobuchar_delay`); inače pada na jednostavan konstantni
+    zenitni model (7 m) radi kompatibilnosti.
     """
-    # Vektor od prijemnika do satelita
     vec = sat_pos - receiver_pos
     dist = np.linalg.norm(vec)
-    
     if dist == 0:
         return 0.0
-        
-    # Jedinični vektori
+
     vec_dir = vec / dist
-    rec_dir = receiver_pos / np.linalg.norm(receiver_pos)
-    
-    # Elevacijski kut (sin(elev) = dot product lokalnog zenita i smjera signala)
-    sin_elev = np.dot(rec_dir, vec_dir)
-    
-    if sin_elev < 0.05: # Manje od ~3 stupnja
-        sin_elev = 0.05
-        
-    # Zenitno kašnjenje je otprilike 5 do 15 metara za L1 frekvenciju
-    f_l1 = 1575.42e6
-    base_zenith_delay = 7.0 
-    zenith_delay_meters = base_zenith_delay * ((f_l1 / frequency_hz)**2)
-    
-    # Mapping funkcija: 1 / sin(elev) aproksimira kosi put kroz sloj
-    delay = zenith_delay_meters / sin_elev
-    return delay
+    up = receiver_pos / np.linalg.norm(receiver_pos)
+    sin_elev = np.dot(up, vec_dir)
+
+    if gps_tow_s is None:
+        # Stari jednostavni model (konstantni zenit / sin(elev)).
+        if sin_elev < 0.05:
+            sin_elev = 0.05
+        zenith = 7.0 * ((F_L1 / frequency_hz) ** 2)
+        return zenith / sin_elev
+
+    # Klobuchar: treba elevaciju, azimut i geodetsku širinu/dužinu prijemnika.
+    elev = np.arcsin(np.clip(sin_elev, -1.0, 1.0))
+    lat = np.degrees(np.arcsin(np.clip(up[2], -1.0, 1.0)))
+    lon = np.degrees(np.arctan2(receiver_pos[1], receiver_pos[0]))
+    east = np.cross(np.array([0.0, 0.0, 1.0]), up)
+    n = np.linalg.norm(east)
+    east = east / n if n > 1e-9 else np.array([1.0, 0.0, 0.0])
+    north = np.cross(up, east)
+    az = np.arctan2(np.dot(vec_dir, east), np.dot(vec_dir, north))
+
+    sec_l1 = klobuchar_delay(lat, lon, elev, az, gps_tow_s)
+    return C * sec_l1 * ((F_L1 / frequency_hz) ** 2)
 
 def calculate_sagnac_correction(sat_pos, receiver_pos):
     """

@@ -22,6 +22,7 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
+| `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
@@ -35,6 +36,11 @@ tiho odvuku poziciju — RAIM ne alarmira, temeljno ograničenje), **naivni
 multi-SV** (nezavisni pomaci — robusni RAIM ih izolira), **meaconing** (uniformno
 kašnjenje — upije se u sat prijemnika), **jamming** (J/N ruši broj satelita i
 gubi fix). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
+
+Ionosfera je pravi **Klobuchar model** (`physics_engine.klobuchar_delay`), ovisan
+o dobu dana (vrh TEC-a ~14:00 lokalno, noćni pod) i geometriji. Prijemnik injektira
+kašnjenje na L1/L2 pa ga iono-free kombinacija poništava; `iono.py` crta dnevnu
+krivulju i ovisnost o elevaciji.
 
 ## Instalacija
 
@@ -64,6 +70,7 @@ python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
 python rtk.py           # carrier-phase RTK demo (cm-precizno)
 python spoofing.py --attack coordinated --plot   # spoofing/jamming lab -> spoofing.png
+python iono.py          # Klobuchar dnevna ionosfera -> iono.png
 pytest                  # test suite
 ```
 
