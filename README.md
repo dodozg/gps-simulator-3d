@@ -21,12 +21,20 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
+| `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
 Teren je stvarni globalni DEM (`terrain_dem.npz`, izveden iz NASA SRTM RAMP2,
 javna domena) — oceani na razini mora, planine na pravim mjestima. Datoteka je
 uključena; `fetch_terrain.py` je regenerira/finije (`--width`).
+
+`spoofing.py` je laboratorij napada koji se ubrizgavaju na razinu mjerenja pa
+prolaze kroz pravi EKF/RAIM: **koordinirani spoof** (konzistentna lažna mjerenja
+tiho odvuku poziciju — RAIM ne alarmira, temeljno ograničenje), **naivni
+multi-SV** (nezavisni pomaci — robusni RAIM ih izolira), **meaconing** (uniformno
+kašnjenje — upije se u sat prijemnika), **jamming** (J/N ruši broj satelita i
+gubi fix). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
 
 ## Instalacija
 
@@ -55,6 +63,7 @@ python main.py          # 3D simulator (na Windowsu: dvoklik run_simulator.bat)
 python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
 python rtk.py           # carrier-phase RTK demo (cm-precizno)
+python spoofing.py --attack coordinated --plot   # spoofing/jamming lab -> spoofing.png
 pytest                  # test suite
 ```
 
