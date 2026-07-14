@@ -13,22 +13,28 @@ const COL = {
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
 };
 
-// Fizički vjerodostojan raspon |ECEF| za sve što crtamo: površina ~6.37e6 m,
-// GNSS sateliti MEO ~2.66e7, BDS GEO/IGSO ~4.22e7. Točka bliža ishodištu od
-// donje granice je duboko u Zemlji (npr. kolabirana EKF procjena) i Cesium je
-// NE MOŽE projicirati -> Cartographic.fromCartesian vrati undefined pa render
-// loop pukne ("Cannot read properties of undefined (reading 'longitude')").
-const R_MIN = 1e6;   // 1000 km od središta — ispod svake stvarne točke
-const R_MAX = 1e9;   // daleko iza GEO — štit od divergentne procjene
+// Cesium svaki frame za točke/oznake/polilinije PREDRAČUNA 2D-projiciranu
+// poziciju: projection.project(Cartographic.fromCartesian(pos)). Ako pos mapira
+// na undefined kartografsku (točka u središtu Zemlje, ili NaN), project dobije
+// undefined -> "Cannot read properties of undefined (reading 'longitude')" i
+// render loop se TRAJNO zaustavi. Zato ovdje radimo TOČNO istu provjeru koju
+// Cesium radi interno i odbacimo poziciju koja se ne može projicirati.
+const _scratch = new Cesium.Cartesian3();
+function projectable(c: Cesium.Cartesian3): boolean {
+  if (!Number.isFinite(c.x) || !Number.isFinite(c.y) || !Number.isFinite(c.z)) return false;
+  // fromCartesian vrati undefined ako se točka ne može spustiti na elipsoid
+  // (npr. središte). Isti poziv koji Cesium radi u primitives.update.
+  return Cesium.Cartographic.fromCartesian(c, Cesium.Ellipsoid.WGS84, undefined) !== undefined;
+}
 
-// Vrati Cartesian3 samo ako su komponente konačne i magnituda projicirabilna;
-// inače null (pozivatelj tada sakrije entitet umjesto da sruši render).
+// Vrati Cartesian3 samo ako je konačan i Cesium ga MOŽE projicirati; inače null
+// (pozivatelj tada sakrije entitet umjesto da sruši render loop).
 function c3(e: [number, number, number] | null | undefined): Cesium.Cartesian3 | null {
   if (!e) return null;
   const [x, y, z] = e;
   if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return null;
-  const r = Math.hypot(x, y, z);
-  if (r < R_MIN || r > R_MAX) return null;
+  Cesium.Cartesian3.fromElements(x, y, z, _scratch);
+  if (!projectable(_scratch)) return null;
   return new Cesium.Cartesian3(x, y, z);
 }
 
@@ -77,6 +83,25 @@ export class Globe {
     this.viewer.clock.shouldAnimate = false;
     this.viewer.camera.flyHome(0);
 
+    // Sigurnosna mreža: Cesium nakon greške u render loopu TRAJNO stane i prikaže
+    // crveni panel. Naši se podaci mijenjaju 10 Hz i loše stanje (npr. divergentna
+    // procjena) je prolazno, pa gušimo panel i nastavljamo loop. Ako greška bude
+    // uporna (>20 uzastopnih), odustanemo da ne opteretimo CPU.
+    const widget = this.viewer.cesiumWidget as unknown as {
+      showErrorPanel: (t: string, m?: string, e?: unknown) => void;
+    };
+    widget.showErrorPanel = () => { /* bez crvenog panela */ };
+    let renderFails = 0;
+    s.postRender.addEventListener(() => { renderFails = 0; });   // uspješan frame -> reset
+    s.renderError.addEventListener((_scene, err) => {
+      renderFails += 1;
+      if (renderFails <= 20) {
+        this.viewer.useDefaultRenderLoop = true;                 // nastavi (prolazna greška)
+      } else if (renderFails === 21) {
+        console.error("[globe] render loop zaustavljen nakon uzastopnih grešaka", err);
+      }
+    });
+
     // Dvoklik na globus postavlja prijemnik.
     const handler = this.viewer.screenSpaceEventHandler;
     handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -84,6 +109,7 @@ export class Globe {
       const cart = this.viewer.camera.pickEllipsoid(m.position, s.globe.ellipsoid);
       if (!cart) return;
       const carto = Cesium.Cartographic.fromCartesian(cart);
+      if (!carto) return;
       onPlace(Cesium.Math.toDegrees(carto.latitude), Cesium.Math.toDegrees(carto.longitude));
     }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
   }
@@ -96,6 +122,9 @@ export class Globe {
   private _buildOrbits(): void {
     if (!this.meta) return;
     const { a, i, w, planes } = this.meta.gps;
+    // Ako meta sadrži nekonačnu vrijednost, orbitne točke bi bile NaN -> polilinija
+    // sruši render (project(undefined)). Radije ne crtaj orbite nego sruši globus.
+    if (![a, i, w].every(Number.isFinite) || !planes.every(Number.isFinite)) return;
     const inc = Cesium.Math.toRadians(i);
     const wr = Cesium.Math.toRadians(w);
     const N = 128;
@@ -126,6 +155,7 @@ export class Globe {
   private _updateOrbits(simTime: number): void {
     if (!this.meta) return;
     const theta = this.meta.omega_e * simTime; // ECEF = Rz(-theta) * inercijalno
+    if (!Number.isFinite(theta)) return;
     const ct = Math.cos(theta), st = Math.sin(theta);
     this.orbitEntities.forEach((ent, idx) => {
       if (!this.show.orbits) { ent.show = false; return; }
