@@ -24,6 +24,7 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
 | `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |
+| `scenario.py`         | Snimanje/reprodukcija scenarija (JSON) + usporedba algoritama |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
@@ -47,6 +48,11 @@ krivulju i ovisnost o elevaciji.
 Svaki sustav unosi konstantni **inter-system bias** (različite vremenske skale) koji
 prijemnik procjenjuje kao dodatno stanje uz položaj i vlastiti sat. Više satelita =
 niži PDOP i fix i tamo gdje GPS sam vidi < 4 satelita (npr. maska 30° = urbani kanjon).
+
+`scenario.py` sprema cijeli scenarij (lokacija/vrijeme/kvar/seed) u **JSON** pa je
+reprodukcija deterministička (bajt-identične metrike). `run` odvrti scenarij,
+`compare` uspoređuje algoritme (RAIM on/off) ili dva scenarija, `record` snima novi.
+Bundlani primjeri su u `scenarios/` (vedro, teren, koordinirani/naivni spoof).
 
 ## Instalacija
 
@@ -78,6 +84,8 @@ python rtk.py           # carrier-phase RTK demo (cm-precizno)
 python spoofing.py --attack coordinated --plot   # spoofing/jamming lab -> spoofing.png
 python iono.py          # Klobuchar dnevna ionosfera -> iono.png
 python multignss.py     # GPS+GAL+GLO+BDS: dostupnost/PDOP/ISB -> multignss.png
+python scenario.py list                                  # bundlani JSON scenariji
+python scenario.py compare scenarios/jamming_naive_spoof.json   # RAIM on vs off
 pytest                  # test suite
 ```
 

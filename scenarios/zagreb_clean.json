@@ -1,0 +1,11 @@
+{
+  "name": "zagreb_clean",
+  "description": "Zagreb, vedro nebo, bez kvarova - referentna izvedba",
+  "lat": 45.815,
+  "lon": 15.982,
+  "alt": 120.0,
+  "seconds": 300,
+  "seed": 1234,
+  "iono_tow0": 50400.0,
+  "attack": null
+}

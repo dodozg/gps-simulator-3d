@@ -1,0 +1,11 @@
+{
+  "name": "tokyo_terrain",
+  "description": "Tokio - stvarni teren (nekad davao 0 satelita, sada rjesava)",
+  "lat": 35.68,
+  "lon": 139.69,
+  "alt": 40.0,
+  "seconds": 300,
+  "seed": 1234,
+  "iono_tow0": 50400.0,
+  "attack": null
+}

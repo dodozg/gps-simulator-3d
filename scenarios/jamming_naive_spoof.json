@@ -1,0 +1,17 @@
+{
+  "name": "naive_spoof",
+  "description": "Naivni multi-SV spoof (2 satelita x 5 km) - robusni RAIM ih izolira",
+  "lat": 45.815,
+  "lon": 15.982,
+  "alt": 120.0,
+  "seconds": 300,
+  "seed": 1234,
+  "iono_tow0": 50400.0,
+  "attack": {
+    "type": "naive",
+    "n": 2,
+    "bias_m": 5000.0,
+    "start": 60.0,
+    "end": 240.0
+  }
+}

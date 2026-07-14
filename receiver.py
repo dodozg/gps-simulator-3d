@@ -45,6 +45,7 @@ class Receiver:
         self.h2 = 1e-20
         self.last_update_time = 0.0
         self.raim_alarm = ""
+        self.raim_enabled = True   # dopušta usporedbu algoritama sa/bez RAIM-a (#10)
         # Doba dana [s od ponoći UTC] za Klobuchar ionosferu (50400 = 14:00, dnevni
         # vrh TEC-a). Sim vrijeme se dodaje pa ionosfera evoluira kroz scenarij.
         self.iono_tow0 = 50400.0
@@ -361,7 +362,8 @@ class Receiver:
             
         # RAIM: iterativno robusno odbacivanje outliera (vidi _raim_screen).
         innov_list = [x[0] for x in all_innovations]
-        rejected = self._raim_screen(innov_list) if self.ekf_initialized else set()
+        rejected = (self._raim_screen(innov_list)
+                    if (self.ekf_initialized and self.raim_enabled) else set())
         if rejected:
             kept = [innov_list[i] for i in range(len(innov_list)) if i not in rejected]
             med_kept = np.median(kept) if kept else 0.0
