@@ -13,8 +13,15 @@ const COL = {
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
 };
 
-function c3(e: [number, number, number]): Cesium.Cartesian3 {
-  return new Cesium.Cartesian3(e[0], e[1], e[2]);
+// Vrati Cartesian3 samo ako su sve komponente konačne; inače null.
+// Backend za nekonačne vrijednosti šalje null (serialize._num) -> u JS-u
+// new Cartesian3(null,...) daje NaN, a NaN poziciju Cesium sruši pri
+// projekciji ("Cannot read properties of undefined (reading 'longitude')").
+function c3(e: [number, number, number] | null | undefined): Cesium.Cartesian3 | null {
+  if (!e) return null;
+  const [x, y, z] = e;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return null;
+  return new Cesium.Cartesian3(x, y, z);
 }
 
 export class Globe {
@@ -122,12 +129,12 @@ export class Globe {
     });
   }
 
-  private _satEntity(sat: SatFrame): Cesium.Entity {
+  private _satEntity(sat: SatFrame, pos: Cesium.Cartesian3): Cesium.Entity {
     let e = this.sats.get(sat.id);
     if (!e) {
       e = this.viewer.entities.add({
         id: `sat:${sat.id}`,
-        position: c3(sat.ecef),
+        position: pos,
         point: { pixelSize: 7, color: COL.sat, outlineColor: Cesium.Color.BLACK, outlineWidth: 1 },
         label: {
           text: sat.id, font: "11px monospace", fillColor: Cesium.Color.WHITE,
@@ -145,9 +152,12 @@ export class Globe {
     // sateliti
     const seen = new Set<string>();
     for (const sat of frame.satellites) {
+      const pos = c3(sat.ecef);
+      if (!pos) { const ex = this.sats.get(sat.id); if (ex) ex.show = false; continue; }
       seen.add(sat.id);
-      const e = this._satEntity(sat);
-      (e.position as Cesium.ConstantPositionProperty).setValue(c3(sat.ecef));
+      const e = this._satEntity(sat, pos);
+      e.show = true;
+      (e.position as Cesium.ConstantPositionProperty).setValue(pos);
       const col = sat.rejected ? COL.rejected : sat.tracked ? COL.tracked : COL.sat;
       e.point!.color = new Cesium.ConstantProperty(col);
       e.point!.pixelSize = new Cesium.ConstantProperty(sat.tracked ? 9 : 6);
@@ -162,27 +172,32 @@ export class Globe {
 
   private _updateReceiver(frame: StateFrame): void {
     const rx = frame.receiver;
-    if (rx.placed && rx.truth) {
-      const pos = c3(rx.truth.ecef);
+    const roverPos = rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
+    if (roverPos) {
       if (!this.rover) {
         this.rover = this.viewer.entities.add({
-          position: pos,
+          position: roverPos,
           point: { pixelSize: 12, color: COL.rover, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
           billboard: undefined,
         });
       } else {
-        (this.rover.position as Cesium.ConstantPositionProperty).setValue(pos);
+        this.rover.show = true;
+        (this.rover.position as Cesium.ConstantPositionProperty).setValue(roverPos);
       }
+    } else if (this.rover) {
+      this.rover.show = false;
     }
-    if (rx.ekf_initialized && rx.estimate) {
-      const pos = c3(rx.estimate.ecef);
+
+    const estPos = rx.ekf_initialized && rx.estimate ? c3(rx.estimate.ecef) : null;
+    if (estPos) {
       if (!this.estimate) {
         this.estimate = this.viewer.entities.add({
-          position: pos,
+          position: estPos,
           point: { pixelSize: 9, color: COL.estimate, outlineColor: Cesium.Color.BLACK, outlineWidth: 1 },
         });
       } else {
-        (this.estimate.position as Cesium.ConstantPositionProperty).setValue(pos);
+        this.estimate.show = true;
+        (this.estimate.position as Cesium.ConstantPositionProperty).setValue(estPos);
       }
     } else if (this.estimate) {
       this.estimate.show = false;
@@ -192,13 +207,15 @@ export class Globe {
   private _updateRays(frame: StateFrame): void {
     const rx = frame.receiver;
     const seen = new Set<string>();
-    if (this.show.rays && rx.placed && rx.truth) {
-      const rover = c3(rx.truth.ecef);
+    const rover = this.show.rays && rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
+    if (rover) {
       for (const sat of frame.satellites) {
         if (!sat.tracked) continue;
+        const satPos = c3(sat.ecef);
+        if (!satPos) continue;
         seen.add(sat.id);
         let ray = this.rays.get(sat.id);
-        const pts = [rover, c3(sat.ecef)];
+        const pts = [rover, satPos];
         if (!ray) {
           ray = this.viewer.entities.add({
             polyline: { positions: pts, width: 1.2, material: COL.ray, arcType: Cesium.ArcType.NONE },
