@@ -3,8 +3,9 @@ from physics_engine import calculate_orbital_position, R_EARTH, get_relativistic
 import signal_processing
 
 class Satellite:
-    def __init__(self, sat_id, a, e, i, lan, w, m0):
+    def __init__(self, sat_id, a, e, i, lan, w, m0, system="GPS"):
         self.sat_id = sat_id
+        self.system = system          # GPS / GAL / GLO / BDS (za multi-GNSS, #6)
         self.a = a
         self.e = e
         self.i = i
@@ -116,6 +117,50 @@ class WalkerDeltaConstellation:
         # RAIM: Namjerno kvarimo prvi satelit
         if len(self.satellites) > 0:
             self.satellites[0].is_spoofed = True
+
+    def update_all(self, t):
+        positions = {}
+        for sat in self.satellites:
+            positions[sat.sat_id] = sat.update_position(t, rng=self.rng)
+        return positions
+
+
+# Realni orbitalni parametri po sustavu + tipični inter-system bias (ISB) u
+# metrima (GPS = referenca 0). ISB nastaje jer svaki sustav ima svoju vremensku
+# skalu; prijemnik ga mora procijeniti kao dodatno stanje (vidi multignss.py).
+GNSS_SYSTEMS = {
+    "GPS": dict(t=24, p=6, f=1, alt=20200e3, inc=55.0, isb_m=0.0),
+    "GAL": dict(t=24, p=3, f=1, alt=23222e3, inc=56.0, isb_m=12.5),   # Galileo
+    "GLO": dict(t=24, p=3, f=1, alt=19100e3, inc=64.8, isb_m=-8.0),   # GLONASS
+    "BDS": dict(t=24, p=3, f=1, alt=21500e3, inc=55.0, isb_m=20.0),   # BeiDou (MEO)
+}
+
+
+class MultiGNSSConstellation:
+    """Više GNSS konstelacija (GPS/Galileo/GLONASS/BeiDou) s inter-system biasom.
+
+    Svaki sustav je zasebna Walker-Delta konstelacija sa svojim parametrima i
+    konstantnim ISB-om. Sateliti su označeni `.system`, a `sys_bias` drži pravi
+    ISB po sustavu (istina koju solver treba rekonstruirati).
+    """
+
+    def __init__(self, systems=("GPS", "GAL", "GLO", "BDS"), rng=None):
+        self.rng = rng if rng is not None else np.random.default_rng()
+        self.satellites = []
+        self.sys_bias = {}
+        for sysname in systems:
+            cfg = GNSS_SYSTEMS[sysname]
+            self.sys_bias[sysname] = cfg["isb_m"]
+            a = R_EARTH + cfg["alt"]
+            sats_per_plane = cfg["t"] // cfg["p"]
+            for p in range(cfg["p"]):
+                lan = p * (360.0 / cfg["p"])
+                for s in range(sats_per_plane):
+                    m0 = s * (360.0 / sats_per_plane) + p * (cfg["f"] * 360.0 / cfg["t"])
+                    sat_id = f"{sysname}_{p}_{s}"
+                    self.satellites.append(
+                        Satellite(sat_id, a, 0.001, cfg["inc"], lan, 45.0, m0, system=sysname)
+                    )
 
     def update_all(self, t):
         positions = {}

@@ -23,6 +23,7 @@ Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulato
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
+| `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |
 
 Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
 
@@ -41,6 +42,11 @@ Ionosfera je pravi **Klobuchar model** (`physics_engine.klobuchar_delay`), ovisa
 o dobu dana (vrh TEC-a ~14:00 lokalno, noćni pod) i geometriji. Prijemnik injektira
 kašnjenje na L1/L2 pa ga iono-free kombinacija poništava; `iono.py` crta dnevnu
 krivulju i ovisnost o elevaciji.
+
+`multignss.py` kombinira **GPS + Galileo + GLONASS + BeiDou** (`MultiGNSSConstellation`).
+Svaki sustav unosi konstantni **inter-system bias** (različite vremenske skale) koji
+prijemnik procjenjuje kao dodatno stanje uz položaj i vlastiti sat. Više satelita =
+niži PDOP i fix i tamo gdje GPS sam vidi < 4 satelita (npr. maska 30° = urbani kanjon).
 
 ## Instalacija
 
@@ -71,6 +77,7 @@ python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
 python rtk.py           # carrier-phase RTK demo (cm-precizno)
 python spoofing.py --attack coordinated --plot   # spoofing/jamming lab -> spoofing.png
 python iono.py          # Klobuchar dnevna ionosfera -> iono.png
+python multignss.py     # GPS+GAL+GLO+BDS: dostupnost/PDOP/ISB -> multignss.png
 pytest                  # test suite
 ```
 
