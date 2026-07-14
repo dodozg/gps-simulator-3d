@@ -6,7 +6,7 @@ import type { StateFrame } from "../lib/types";
 
 type Send = (msg: Record<string, unknown>) => void;
 
-export function mountControls(container: HTMLElement, send: Send, globe: Globe) {
+export function mountControls(container: HTMLElement, send: Send, globe: Globe, onExperiments?: () => void) {
   const state = { playing: false, timeScale: 100, tow: 50400, kinematic: false, raim: true };
   const show = { orbits: true, rays: true, labels: false };
 
@@ -93,6 +93,14 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe) 
     container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); }));
     container.appendChild(toggle(t("show_rays"), show.rays, (v) => { show.rays = v; globe.setShow("rays", v); }));
     container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); }));
+
+    // eksperimenti (Faza 2)
+    if (onExperiments) {
+      container.appendChild(h("div", "panel-sub", t("academy")));
+      const exp = h("button", "btn exp-open-btn", t("open_experiments"));
+      exp.addEventListener("click", onExperiments);
+      container.appendChild(exp);
+    }
 
     container.appendChild(h("div", "hint", t("place_hint")));
   }

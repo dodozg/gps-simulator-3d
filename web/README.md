@@ -54,7 +54,14 @@ Za satelitsku sliku i pravi teren postavi besplatni Cesium ion token u
 
 ## Status
 
-Faza 1 (MVP): globus, dvoklik-rover, sateliti/orbite/zrake, telemetrija +
+**Faza 1 (MVP):** globus, dvoklik-rover, sateliti/orbite/zrake, telemetrija +
 RAIM banner, play/pause/brzina, doba dana, pojmovnik, HR/EN, Početnik/Stručnjak.
-Sljedeće (Faza 2/3): paneli eksperimenata s grafovima, live skyplot, scenario
-manager, vođene lekcije.
+
+**Faza 2 (analiza):** donji dok sa živim grafovima (greška / GDOP / NIS kroz
+vrijeme) + živi skyplot trenutnih satelita; panel **Eksperimenti** (modal) s
+RTK, spoofing/jamming, multi-GNSS i ionosferom — forma → REST → brojke, grafovi
+i edukativna kartica fizike za svaki. Grafovi su vlastiti (canvas, bez vanjskih
+ovisnosti).
+
+Sljedeće (Faza 3): scenario manager + `compare`, attack overlays na globusu,
+multi-GNSS uživo, "fly to"/command palette, vođene interaktivne lekcije.

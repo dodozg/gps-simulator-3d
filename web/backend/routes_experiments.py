@@ -35,7 +35,10 @@ def api_rtk(p: dict = Body(...)):
 
 @router.post("/spoofing")
 def api_spoofing(p: dict = Body(...)):
-    attack = build_attack(p.get("attack"))
+    spec = p.get("attack")
+    if isinstance(spec, str):          # frontend šalje samo naziv -> koristi zadane parametre
+        spec = {"type": spec}
+    attack = build_attack(spec)
     data = run_attack(
         float(p.get("lat", 45.815)), float(p.get("lon", 15.982)), float(p.get("alt", 120.0)),
         attack, seconds=int(p.get("seconds", 300)), seed=int(p.get("seed", 1234)),

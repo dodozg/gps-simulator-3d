@@ -9,6 +9,8 @@ import { getMode, setMode, onModeChange } from "./lib/prefs";
 import { h } from "./lib/dom";
 import { mountControls } from "./ui/controls";
 import { mountTelemetry } from "./ui/telemetry";
+import { mountDock } from "./ui/dock";
+import { mountExperiments } from "./experiments/experiments";
 import { initGlossary } from "./edu/glossary";
 import type { StateFrame } from "./lib/types";
 
@@ -63,11 +65,14 @@ const globe = new Globe(cesiumRoot, (lat, lon) => {
 });
 
 const telemetry = mountTelemetry(rightPanel);
+const dock = mountDock(ui);
+const experiments = mountExperiments();
 let controls: ReturnType<typeof mountControls> | null = null;
 
 function onFrame(f: StateFrame): void {
   telemetry.update(f);
   globe.update(f);
+  dock.update(f);
   controls?.syncFromFrame(f);
 }
 function onStatus(s: "connecting" | "connected" | "disconnected"): void {
@@ -77,7 +82,7 @@ function onStatus(s: "connecting" | "connected" | "disconnected"): void {
 }
 
 const socket = new SimSocket(onFrame, onStatus);
-controls = mountControls(leftPanel, (msg) => socket.send(msg), globe);
+controls = mountControls(leftPanel, (msg) => socket.send(msg), globe, () => experiments.open());
 
 api.constellation().then((meta) => globe.setMeta(meta)).catch(() => { /* orbite kasnije */ });
 void initGlossary();

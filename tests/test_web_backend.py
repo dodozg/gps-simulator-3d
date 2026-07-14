@@ -40,6 +40,15 @@ def test_experiment_endpoints():
     assert 13 <= r["peak"][0] <= 15                         # vrh oko 14 h
 
 
+def test_spoofing_endpoint_accepts_attack_string():
+    # frontend šalje samo naziv napada -> backend ga umota u {"type": ...}
+    r = client.post("/api/spoofing", json={"lat": 45.815, "lon": 15.982,
+                                           "seconds": 90, "attack": "coordinated"}).json()
+    assert r["attack_name"] == "coordinated"
+    assert len(r["errors"]) == 90 and isinstance(r["fix_lost"], list)
+    assert r["window"] == [60.0, 240.0]                     # zadani parametri napada
+
+
 def test_scenario_list_and_compare():
     files = [s["file"] for s in client.get("/api/scenario/list").json()["scenarios"]]
     assert "zagreb_clean.json" in files
