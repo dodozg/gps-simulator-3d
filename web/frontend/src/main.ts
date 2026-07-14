@@ -60,8 +60,9 @@ onModeChange(renderHeader);
 
 // --- globus + veza ---
 const globe = new Globe(cesiumRoot, (lat, lon) => {
+  // NE pomiči kameru: korisnik je dvoklikom već pokazao točno kamo gleda.
+  // (Prijašnji flyTo na 9000 km je odzumiravao i djelovao kao "drift".)
   socket.send({ type: "set_receiver", lat, lon, alt: 100 });
-  globe.flyTo(lat, lon);
 });
 
 const telemetry = mountTelemetry(rightPanel);
