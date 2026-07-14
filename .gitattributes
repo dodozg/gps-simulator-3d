@@ -1,0 +1,2 @@
+# Shell skripte MORAJU ostati LF — CRLF ih lomi na macOS/Linux (bash: \r).
+*.sh text eol=lf

@@ -57,8 +57,15 @@ Bundlani primjeri su u `scenarios/` (vedro, teren, koordinirani/naivni spoof).
 
 ## Instalacija
 
-Na Windowsu je najlakše dvokliknuti **`setup.bat`** — kreira svjež `.venv` i
-instalira sve ovisnosti (GUI + testovi). Ručno:
+Radi na Windowsu, macOS-u i Linuxu (engine je čisti Python; razlikuju se samo
+launcheri i putanje).
+
+- **Windows:** dvoklik **`setup.bat`** — kreira svjež `.venv` i instalira sve
+  ovisnosti (GUI + testovi + web).
+- **macOS / Linux:** **`./setup.sh`** — isto (kreira `.venv`, instalira viz +
+  dev + web ovisnosti). Prije toga možda `chmod +x *.sh`.
+
+Ručno (bilo koji OS):
 
 ```bash
 python -m venv .venv
@@ -71,14 +78,22 @@ pip install -r requirements-dev.txt
 pip install -r requirements-viz.txt
 ```
 
-Launcheri (`run_simulator.bat`, `run_benchmark.bat`, `run_tests.bat`) koriste
-`.venv\Scripts\python.exe`, a ako on ne radi padaju na sistemski Python +
+Launcheri (`run_simulator.bat` … na Windowsu; `./gps.sh <alat>` na macOS/Linux)
+prvo probaju venv python, a ako on ne radi padaju na sistemski Python +
 `PYTHONPATH` na `.venv` pakete.
+
+> **Napomena o `.venv` na Google Driveu:** jedan `.venv` ne može posluživati i
+> Windows (`Scripts\`, `.exe`) i Mac (`bin/`) — layout je različit. `.venv` je
+> gitigniran; na svakom stroju ga kreiraj nanovo (`setup.bat` / `./setup.sh`).
 
 ## Pokretanje
 
+Na macOS/Linux svi alati idu kroz jedinstveni launcher **`./gps.sh <alat>`**
+(npr. `./gps.sh benchmark --seconds 300`, `./gps.sh scenario list`). Na Windowsu
+postoje ekvivalentni `run_*.bat` (dvoklik). Izravno kroz Python (bilo koji OS):
+
 ```bash
-python main.py          # 3D simulator (na Windowsu: dvoklik run_simulator.bat)
+python main.py          # 3D simulator (Win: run_simulator.bat | Mac: ./gps.sh simulator)
 python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
 python rtk.py           # carrier-phase RTK demo (cm-precizno)
@@ -99,8 +114,10 @@ hipsometrijskog reljefa i stvarne satelitske teksture (NASA Blue Marble,
 
 Moderno web sučelje (3D globus na CesiumJS, živa simulacija, telemetrija i
 edukativni pojmovnik na klik, dvojezično HR/EN) koje postojeći numpy engine
-koristi izravno preko FastAPI backenda. Na Windowsu: `build_web.bat` (jednom,
-traži Node 18+) pa `run_webapp.bat`. Detalji u [`web/README.md`](web/README.md).
+koristi izravno preko FastAPI backenda. Jednom (traži Node 18+) pa pokreni:
+**Windows** `build_web.bat` → `run_webapp.bat`; **macOS/Linux** `./build_web.sh`
+→ `./run_webapp.sh` (ili kraće `./gps.sh web`). Detalji u
+[`web/README.md`](web/README.md).
 
 ## Testovi
 

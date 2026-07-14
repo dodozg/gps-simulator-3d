@@ -13,17 +13,28 @@ sloj** (pojmovnik na klik, dvojezično HR/EN, Početnik/Stručnjak). Backend
 - `frontend/` — Vite + TypeScript + CesiumJS. Globus, paneli, pojmovnik.
 - `content/` — `glossary.{hr,en}.json`, `lessons.{hr,en}.json` (proširiv sadržaj).
 
-## Pokretanje (Windows)
+## Pokretanje
 
-Zbog Google Drive/NTFS ograničenja `node_modules` i build **ne mogu** biti na
-G: disku, pa se frontend builda u lokalni dir (`%LOCALAPPDATA%\gpsweb`).
+Frontend se builda u **lokalni dir** izvan repozitorija (na Windowsu i zbog
+Google Drive/NTFS ograničenja — `node_modules` na G: puca): Windows
+`%LOCALAPPDATA%\gpsweb`, macOS/Linux `~/.local/share/gpsweb` (promjenjivo preko
+`GPSWEB_BUILD`). Traži Node 18+.
 
+**Windows**
 1. **`build_web.bat`** — kopira frontend izvor lokalno, `npm install` + `npm run
-   build` (traži Node 18+). Pokreni jednom (i nakon promjena frontenda).
+   build`. Pokreni jednom (i nakon promjena frontenda).
 2. **`run_webapp.bat`** — pokreće FastAPI (uvicorn) i otvara
    `http://127.0.0.1:8000`. Backend poslužuje buildani frontend.
 
-Backend ovisnosti: `pip install -r requirements-web.txt` (u `.venv`).
+**macOS / Linux**
+1. **`./build_web.sh`** — isto (kopira izvor u `$GPSWEB_BUILD`, `npm install` +
+   `npm run build`).
+2. **`./run_webapp.sh`** — postavi `GPSWEB_DIST`, digne uvicorn, otvori
+   preglednik (`open`/`xdg-open`). Kraće: **`./gps.sh web`** (buildati ako treba,
+   pa pokrenuti).
+
+Backend ovisnosti: `pip install -r requirements-web.txt` (u `.venv`;
+`setup.bat`/`./setup.sh` to već rade).
 
 ## Razvoj (opcionalno)
 
