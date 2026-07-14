@@ -22,7 +22,8 @@ if [ ! -f "$GPSWEB_DIST/index.html" ]; then
   echo "    (Backend će svejedno raditi na /api, ali bez sučelja.)"
 fi
 
-URL="http://127.0.0.1:8000"
+PORT="${GPSWEB_PORT:-8010}"
+URL="http://127.0.0.1:$PORT"
 echo "[i] Otvaram $URL"
 if command -v open >/dev/null 2>&1; then
   open "$URL" || true            # macOS
@@ -30,4 +31,4 @@ elif command -v xdg-open >/dev/null 2>&1; then
   xdg-open "$URL" || true        # Linux
 fi
 
-exec "$PY" -m uvicorn web.backend.app:app --host 127.0.0.1 --port 8000
+exec "$PY" -m uvicorn web.backend.app:app --host 127.0.0.1 --port "$PORT"

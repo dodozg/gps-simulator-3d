@@ -7,6 +7,7 @@ REM ============================================================
 setlocal
 cd /d "%~dp0"
 set "GPSWEB_DIST=%LOCALAPPDATA%\gpsweb\dist"
+if "%GPSWEB_PORT%"=="" set "GPSWEB_PORT=8010"
 set "PY=%~dp0.venv\Scripts\python.exe"
 "%PY%" -c "import fastapi" >nul 2>&1 || (
     set "PY=python"
@@ -18,8 +19,8 @@ if not exist "%GPSWEB_DIST%\index.html" (
     echo     ^(Backend ce svejedno raditi na /api, ali bez sucelja.^)
 )
 
-echo [i] Otvaram http://127.0.0.1:8000
-start "" http://127.0.0.1:8000
-"%PY%" -m uvicorn web.backend.app:app --host 127.0.0.1 --port 8000
+echo [i] Otvaram http://127.0.0.1:%GPSWEB_PORT%
+start "" http://127.0.0.1:%GPSWEB_PORT%
+"%PY%" -m uvicorn web.backend.app:app --host 127.0.0.1 --port %GPSWEB_PORT%
 
 endlocal

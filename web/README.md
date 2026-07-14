@@ -24,7 +24,7 @@ Google Drive/NTFS ograničenja — `node_modules` na G: puca): Windows
 1. **`build_web.bat`** — kopira frontend izvor lokalno, `npm install` + `npm run
    build`. Pokreni jednom (i nakon promjena frontenda).
 2. **`run_webapp.bat`** — pokreće FastAPI (uvicorn) i otvara
-   `http://127.0.0.1:8000`. Backend poslužuje buildani frontend.
+   `http://127.0.0.1:8010`. Backend poslužuje buildani frontend.
 
 **macOS / Linux**
 1. **`./build_web.sh`** — isto (kopira izvor u `$GPSWEB_BUILD`, `npm install` +
@@ -35,6 +35,11 @@ Google Drive/NTFS ograničenja — `node_modules` na G: puca): Windows
 
 Backend ovisnosti: `pip install -r requirements-web.txt` (u `.venv`;
 `setup.bat`/`./setup.sh` to već rade).
+
+**Port:** backend sluša na **8010** (port 8000 zauzima druga lokalna app). Za
+promjenu postavi `GPSWEB_PORT` prije pokretanja (npr. `set GPSWEB_PORT=8080` na
+Windowsu ili `GPSWEB_PORT=8080 ./run_webapp.sh` na macOS/Linux); dev-server
+proxy (`vite.config.ts`) čita isti env.
 
 ## Razvoj (opcionalno)
 

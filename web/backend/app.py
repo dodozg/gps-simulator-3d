@@ -55,8 +55,10 @@ def create_app():
         @app.get("/")
         def index():
             return JSONResponse({
-                "message": "Frontend nije buildan. Pokreni 'npm install && npm run build' "
-                           "u web/frontend, ili 'npm run dev' za razvojni server.",
+                "message": "Frontend nije buildan. Windows: pokreni build_web.bat. "
+                           "macOS/Linux: ./build_web.sh (ili ./gps.sh web). Build ide u "
+                           "lokalni dir izvan G:/ jer Google Drive nije NTFS. GPSWEB_DIST="
+                           + str(FRONTEND_DIST),
                 "api": "/api/health, /ws/sim, /api/rtk, /api/spoofing, /api/multignss, "
                        "/api/iono, /api/scenario/list",
             })
