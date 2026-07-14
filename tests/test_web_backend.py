@@ -57,6 +57,23 @@ def test_scenario_list_and_compare():
     assert r["a"]["result"]["median_err"] < r["b"]["result"]["median_err"] / 5
 
 
+def test_live_attack_window_anchors_to_now():
+    # Živa sesija ima veliki sim_time; zadani prozor napada (60-240 s apsolutno)
+    # ne bi se nikad aktivirao -> set_attack sidri prozor relativno na sada.
+    s = SimSession(seed=1)
+    s.set_receiver(45.815, 15.982, 120.0)
+    for _ in range(50):
+        s.advance(5.0)                                     # sim_time = 250 s
+    s.set_attack("jamming")                                # prima i goli string
+    assert s.attack["start"] >= 250.0 and not s.attack_active()
+    s.advance(5.0)                                         # uđi u prozor
+    assert s.attack_active()
+    f = state_frame(s)
+    assert f["attack_active"] is True and f["attack"]["type"] == "jamming"
+    s.set_attack(None)
+    assert state_frame(s)["attack_active"] is False
+
+
 def test_diverged_estimate_ecef_serializes_null():
     # Kolabirana/nekonačna EKF procjena ne smije proći kao sirovi broj: frontend
     # (Cesium) ne može projicirati takvu točku i sruši render loop. -> None.

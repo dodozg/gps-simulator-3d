@@ -56,6 +56,16 @@ export function mountTelemetry(container: HTMLElement) {
       return;
     }
 
+    if (last.attack) {
+      const armed = !last.attack_active;
+      const b = h("div", "attack-banner" + (armed ? " armed" : ""));
+      const name = t("atk_" + last.attack.type);
+      b.appendChild(h("span", "attack-dot"));
+      b.appendChild(h("span", undefined,
+        (last.attack_active ? t("attack_active_banner") : t("attack_armed")) + " — " + name));
+      container.appendChild(b);
+    }
+
     if (last.raim_alarm) {
       const banner = h("div", "raim-banner");
       banner.appendChild(term("RAIM", t("raim_alarm")));

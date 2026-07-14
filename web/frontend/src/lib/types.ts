@@ -29,6 +29,23 @@ export interface ReceiverFrame {
   clock_bias_us: number;
 }
 
+export interface AttackSpec {
+  type: "coordinated" | "naive" | "meaconing" | "jamming";
+  start: number;
+  end: number;
+  offset_e?: number;
+  offset_n?: number;
+  offset_u?: number;
+  [k: string]: unknown;
+}
+
+export interface AttackOverlay {
+  type: string;
+  active: boolean;
+  target_ecef?: [number, number, number];
+  radius_m?: number;
+}
+
 export interface StateFrame {
   sim_time: number;
   playing: boolean;
@@ -36,7 +53,9 @@ export interface StateFrame {
   kinematic: boolean;
   raim_enabled: boolean;
   iono_tow0: number;
-  attack: Record<string, unknown> | null;
+  attack: AttackSpec | null;
+  attack_active: boolean;
+  attack_overlay: AttackOverlay | null;
   raim_alarm: string | null;
   sats_total: number;
   sats_tracked: number;

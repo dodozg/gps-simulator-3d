@@ -65,8 +65,43 @@ class SimSession:
         self.receiver.iono_tow0 = float(tow) % 86400.0
 
     def set_attack(self, spec):
-        self.attack = spec
-        self._attack_obj = build_attack(spec) if spec else None
+        if not spec:
+            self.attack = None
+            self._attack_obj = None
+            return
+        s = {"type": spec} if isinstance(spec, str) else dict(spec)
+        # Živa sesija: zadani prozor napada (60-240 s) je apsolutno sim-vrijeme,
+        # a sesija tipično već ima veliki sim_time -> napad se ne bi nikad
+        # aktivirao. Zato prozor sidrimo relativno na SADA ako nije zadan.
+        s.setdefault("start", self.sim_time + 3.0)
+        s.setdefault("end", float(s["start"]) + 300.0)
+        self._attack_obj = build_attack(s)
+        self.attack = s
+
+    def attack_active(self):
+        a = self._attack_obj
+        if a is None:
+            return False
+        return getattr(a, "start", 0.0) <= self.sim_time <= getattr(a, "end", 0.0)
+
+    def attack_overlay(self):
+        """Prostorni prikaz napada za globus (None ako nema/nije primjenjivo).
+
+        - coordinated: točka kamo napadač povlači rješenje (spoof pull vektor).
+        - jamming: simbolički radijus uskraćivanja oko prijemnika.
+        """
+        a = self._attack_obj
+        if a is None or self.gt_pos is None:
+            return None
+        kind = self.attack.get("type") if self.attack else None
+        act = self.attack_active()
+        if kind == "coordinated":
+            tgt = a.target_ecef(self.gt_pos)
+            return {"type": "coordinated", "active": act,
+                    "target_ecef": [float(v) for v in tgt]}
+        if kind == "jamming":
+            return {"type": "jamming", "active": act, "radius_m": 25000.0}
+        return {"type": kind, "active": act}
 
     def reset(self):
         self._build()

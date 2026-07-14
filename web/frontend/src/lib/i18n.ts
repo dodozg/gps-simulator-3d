@@ -108,6 +108,23 @@ const HR: Dict = {
   iono_diurnal: "Dnevna krivulja (zenit)",
   iono_slant: "koso",
   iono_by_elev: "Kašnjenje po elevaciji (podne)",
+  attack_active_banner: "NAPAD AKTIVAN",
+  attack_armed: "napad naoružan (čeka prozor)",
+  // scenariji
+  scenarios: "Scenariji",
+  scenario_run: "Pokreni",
+  scenario_compare: "Usporedi (RAIM on/off)",
+  scn_median_err: "Greška (median)",
+  scn_max_err: "Maks. greška",
+  scn_gdop: "GDOP (median)",
+  scn_raim_alarms: "RAIM alarmi",
+  scn_fix_lost: "Gubitak fixa",
+  scn_takeover: "Udaljenost od cilja napada",
+  scn_solved: "Riješeno epoha",
+  scn_col_metric: "Metrika",
+  scn_no_raim: "RAIM isključen",
+  scn_with_raim: "RAIM uključen",
+  lessons: "Lekcije",
 };
 
 const EN: Dict = {
@@ -210,6 +227,22 @@ const EN: Dict = {
   iono_diurnal: "Diurnal curve (zenith)",
   iono_slant: "slant",
   iono_by_elev: "Delay vs elevation (noon)",
+  attack_active_banner: "ATTACK ACTIVE",
+  attack_armed: "attack armed (waiting for window)",
+  scenarios: "Scenarios",
+  scenario_run: "Run",
+  scenario_compare: "Compare (RAIM on/off)",
+  scn_median_err: "Error (median)",
+  scn_max_err: "Max error",
+  scn_gdop: "GDOP (median)",
+  scn_raim_alarms: "RAIM alarms",
+  scn_fix_lost: "Fix lost",
+  scn_takeover: "Distance to attack target",
+  scn_solved: "Epochs solved",
+  scn_col_metric: "Metric",
+  scn_no_raim: "RAIM off",
+  scn_with_raim: "RAIM on",
+  lessons: "Lessons",
 };
 
 const DICTS: Record<Lang, Dict> = { hr: HR, en: EN };

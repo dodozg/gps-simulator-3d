@@ -11,6 +11,8 @@ const COL = {
   rejected: Cesium.Color.fromCssColorString("#f76b6b"),
   ray: Cesium.Color.fromCssColorString("#3dd899").withAlpha(0.5),
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
+  spoof: Cesium.Color.fromCssColorString("#f76b6b"),
+  jam: Cesium.Color.fromCssColorString("#f76b6b").withAlpha(0.16),
 };
 
 // Cesium svaki frame za točke/oznake/polilinije PREDRAČUNA 2D-projiciranu
@@ -47,6 +49,9 @@ export class Globe {
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
   private estimate: Cesium.Entity | null = null;
+  private spoofArrow: Cesium.Entity | null = null;
+  private spoofTarget: Cesium.Entity | null = null;
+  private jamRing: Cesium.Entity | null = null;
   private show = { orbits: true, rays: true, labels: false };
 
   constructor(container: HTMLElement, onPlace: (lat: number, lon: number) => void) {
@@ -206,6 +211,66 @@ export class Globe {
     this._updateReceiver(frame);
     this._updateRays(frame);
     this._updateOrbits(frame.sim_time);
+    this._updateAttack(frame);
+  }
+
+  // Prostorni prikaz napada: spoof "pull" vektor (kamo napadač povlači rješenje)
+  // i simbolički radijus jamminga. Sve se sakrije kad napad nije aktivan.
+  private _updateAttack(frame: StateFrame): void {
+    const ov = frame.attack_overlay;
+    const rx = frame.receiver;
+    const rover = rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
+
+    // --- koordinirani spoof: strelica truth -> lažni cilj ---
+    const tgt = ov && ov.active && ov.type === "coordinated" && ov.target_ecef
+      ? c3(ov.target_ecef) : null;
+    if (rover && tgt) {
+      const pts = [rover, tgt];
+      if (!this.spoofArrow) {
+        this.spoofArrow = this.viewer.entities.add({
+          polyline: { positions: pts, width: 3, arcType: Cesium.ArcType.NONE,
+            material: new Cesium.PolylineArrowMaterialProperty(COL.spoof) },
+        });
+        this.spoofTarget = this.viewer.entities.add({
+          position: tgt,
+          point: { pixelSize: 10, color: COL.spoof, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+          label: { text: "SPOOF", font: "bold 12px sans-serif", fillColor: COL.spoof,
+            pixelOffset: new Cesium.Cartesian2(0, -16), showBackground: true,
+            backgroundColor: Cesium.Color.fromCssColorString("#0d1117dd"),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY },
+        });
+      } else {
+        this.spoofArrow.show = true;
+        (this.spoofArrow.polyline!.positions as unknown) = new Cesium.ConstantProperty(pts);
+        this.spoofTarget!.show = true;
+        (this.spoofTarget!.position as Cesium.ConstantPositionProperty).setValue(tgt);
+      }
+    } else {
+      if (this.spoofArrow) this.spoofArrow.show = false;
+      if (this.spoofTarget) this.spoofTarget.show = false;
+    }
+
+    // --- jamming: crveni disk uskraćivanja oko prijemnika ---
+    const jam = ov && ov.active && ov.type === "jamming" && rover ? ov : null;
+    if (jam && rover) {
+      const r = jam.radius_m ?? 25000;
+      if (!this.jamRing) {
+        this.jamRing = this.viewer.entities.add({
+          position: rover,
+          ellipse: { semiMajorAxis: r, semiMinorAxis: r, height: 0,
+            material: COL.jam, outline: true, outlineColor: COL.spoof.withAlpha(0.6) },
+          label: { text: "JAMMING", font: "bold 12px sans-serif", fillColor: COL.spoof,
+            pixelOffset: new Cesium.Cartesian2(0, -18), showBackground: true,
+            backgroundColor: Cesium.Color.fromCssColorString("#0d1117dd"),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY },
+        });
+      } else {
+        this.jamRing.show = true;
+        (this.jamRing.position as Cesium.ConstantPositionProperty).setValue(rover);
+      }
+    } else if (this.jamRing) {
+      this.jamRing.show = false;
+    }
   }
 
   private _updateReceiver(frame: StateFrame): void {

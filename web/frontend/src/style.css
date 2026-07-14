@@ -61,6 +61,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .ctl-row { margin: 10px 0; }
 .ctl-label { display: block; font-size: 12px; color: var(--dim); margin-bottom: 5px; }
 .slider { width: 100%; accent-color: var(--cyan); }
+.ctl-select { width: 100%; background: #16202e; border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 7px 9px; font-size: 13px; cursor: pointer; }
+.ctl-select:focus { outline: none; border-color: var(--cyan); }
 .ctl-row .toggle {
   float: right; width: 40px; height: 22px; border-radius: 999px; border: 1px solid var(--border);
   background: #16202e; position: relative; cursor: pointer; transition: background 0.15s;
@@ -76,6 +78,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .tel-value { font-family: var(--mono); font-size: 13px; color: var(--text); }
 .tel-row.accent .tel-value { color: var(--amber); font-weight: 600; }
 .raim-banner { background: rgba(247,107,107,0.14); border: 1px solid rgba(247,107,107,0.5); color: var(--red); border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; font-weight: 600; }
+.attack-banner { display: flex; align-items: center; gap: 8px; background: rgba(247,107,107,0.14); border: 1px solid rgba(247,107,107,0.5); color: var(--red); border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; font-weight: 700; letter-spacing: 0.3px; }
+.attack-banner.armed { background: rgba(250,191,41,0.12); border-color: rgba(250,191,41,0.5); color: var(--amber); font-weight: 600; }
+.attack-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 0 currentColor; animation: attackPulse 1.4s infinite; }
+.attack-banner.armed .attack-dot { animation: none; }
+@keyframes attackPulse { 0% { box-shadow: 0 0 0 0 rgba(247,107,107,0.6); } 70% { box-shadow: 0 0 0 7px rgba(247,107,107,0); } 100% { box-shadow: 0 0 0 0 rgba(247,107,107,0); } }
+@media (prefers-reduced-motion: reduce) { .attack-dot { animation: none; } }
 
 /* sat table */
 .sat-table-wrap { margin-top: 4px; }
@@ -135,6 +143,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .exp-field { display: flex; flex-direction: column; gap: 4px; }
 .exp-flabel { font-size: 11px; color: var(--dim); }
 .exp-input, .exp-select { background: #16202e; border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 10px; font-size: 13px; width: 130px; font-family: var(--mono); }
+.exp-field-wide { flex: 1 1 260px; }
+.exp-field-wide .exp-select { width: 100%; }
+.scn-table { width: 100%; }
+.scn-table th:not(:first-child), .scn-table td:not(:first-child) { text-align: right; }
 .exp-input:focus, .exp-select:focus { outline: none; border-color: var(--cyan); }
 .exp-run-cell { justify-content: flex-end; }
 .exp-run { width: auto; padding: 9px 22px; flex: none; }

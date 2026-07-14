@@ -7,8 +7,13 @@ import type { StateFrame } from "../lib/types";
 type Send = (msg: Record<string, unknown>) => void;
 
 export function mountControls(container: HTMLElement, send: Send, globe: Globe, onExperiments?: () => void) {
-  const state = { playing: false, timeScale: 100, tow: 50400, kinematic: false, raim: true };
+  const state = { playing: false, timeScale: 100, tow: 50400, kinematic: false, raim: true, attack: "none" };
   const show = { orbits: true, rays: true, labels: false };
+  const ATTACKS: Array<[string, () => string]> = [
+    ["none", () => t("atk_none")], ["coordinated", () => t("atk_coordinated")],
+    ["naive", () => t("atk_naive")], ["meaconing", () => t("atk_meaconing")],
+    ["jamming", () => t("atk_jamming")],
+  ];
 
   function row(label: string): HTMLElement {
     const r = h("div", "ctl-row");
@@ -28,6 +33,20 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
       cb(v);
     });
     r.appendChild(btn);
+    return r;
+  }
+
+  function selectRow(label: string, value: string, opts: Array<[string, string]>,
+                     cb: (v: string) => void): HTMLElement {
+    const r = row(label);
+    const sel = h("select", "ctl-select") as HTMLSelectElement;
+    for (const [val, lab] of opts) {
+      const o = h("option", undefined, lab) as HTMLOptionElement;
+      o.value = val; sel.appendChild(o);
+    }
+    sel.value = value;
+    sel.addEventListener("change", () => cb(sel.value));
+    r.appendChild(sel);
     return r;
   }
 
@@ -88,6 +107,13 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
       state.raim = v; send({ type: "raim", on: v });
     }));
 
+    // živi napad (spoofing/jamming) — prozor se na backendu sidri na "sada"
+    container.appendChild(selectRow(t("f_attack"), state.attack,
+      ATTACKS.map(([v, lab]) => [v, lab()] as [string, string]), (v) => {
+        state.attack = v;
+        send({ type: "attack", spec: v === "none" ? null : v });
+      }));
+
     // toggles prikaza (samo klijent)
     container.appendChild(h("div", "panel-sub", t("systems")));
     container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); }));
@@ -121,6 +147,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
         state.tow = f.iono_tow0;
         state.kinematic = f.kinematic;
         state.raim = f.raim_enabled;
+        state.attack = f.attack ? f.attack.type : "none";
         needSync = false;
         render();                                   // jednokratno; ne bori se s unosom
         return;

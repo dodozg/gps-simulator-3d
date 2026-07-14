@@ -25,6 +25,7 @@ export const api = {
   multignss: (body: unknown) => post<Record<string, unknown>>("/multignss", body),
   iono: (body: unknown) => post<Record<string, unknown>>("/iono", body),
   scenarioList: () => get<{ scenarios: ScenarioMeta[] }>("/scenario/list"),
+  scenarioRun: (body: unknown) => post<Record<string, unknown>>("/scenario/run", body),
   scenarioCompare: (body: unknown) => post<Record<string, unknown>>("/scenario/compare", body),
 };
 

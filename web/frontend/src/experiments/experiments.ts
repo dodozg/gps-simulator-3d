@@ -12,6 +12,10 @@ interface IonoRes { hours: number[]; dz: number[]; peak: [number, number]; night
 interface MgSol { pos_err: number; pdop: number; n: number; systems: string[]; isb_est: Record<string, number>; }
 interface MgRes { gps: [number, MgSol | null]; all: [number, MgSol | null]; sweep: { mask: number[]; gps_n: number[]; all_n: number[]; gps_pdop: number[]; all_pdop: number[] }; sys_bias: Record<string, number>; mask: number; }
 interface SpoofRes { times: number[]; tracked: number[]; errors: Array<[number, number]>; gdops: number[]; target_err: number[]; alarms: Array<[number, string]>; fix_lost: number[]; attack_name: string; attack_desc: string; window: [number, number]; }
+interface ScnMeta { file: string; name: string; description: string; lat: number; lon: number; seconds: number; attack: string | null; }
+interface ScnMetrics { solved: number; total: number; median_err: number; conv_p95: number; max_err: number; gdop_median: number; raim_alarms: number; fix_lost: number; takeover_m: number | null; win_median_err: number | null; }
+interface ScnRun { scenario: string; raim: boolean; result: ScnMetrics; }
+interface ScnCompare { mode: string; a: { name: string; result: ScnMetrics }; b: { name: string; result: ScnMetrics }; }
 
 type Field = { key: string; label: () => string; def: number; min?: number; max?: number; step?: number };
 
@@ -32,6 +36,10 @@ const EDU: Record<string, Record<Lang, string>> = {
   iono: {
     hr: "Ionosfera usporava signal ovisno o gustoći slobodnih elektrona (TEC), koja je najveća ~14 h lokalno i najmanja noću. Klobuchar model to opisuje. Kašnjenje ovisi o frekvenciji (∝ 1/f²) pa dvofrekvencijska iono-free kombinacija (L1/L2) gotovo egzaktno poništava grešku; jednofrekvencijski prijemnik nosi puni iznos.",
     en: "The ionosphere slows the signal by an amount set by the free-electron density (TEC), highest around 14:00 local and lowest at night. The Klobuchar model captures this. Delay is frequency-dependent (∝ 1/f²), so the dual-frequency iono-free combination (L1/L2) cancels the error almost exactly; a single-frequency receiver carries the full amount.",
+  },
+  scenarios: {
+    hr: "Scenarij fiksira SVE što određuje simulaciju (lokacija, trajanje, sjeme RNG-a, doba dana, napad) pa reprodukcija istog JSON-a daje bajt-identične metrike — idealno za poštenu usporedbu algoritama. 'Usporedi' vrti isti scenarij s RAIM-om uključenim i isključenim: kod naivnog spoofa razlika je dramatična (RAIM izolira lažne satelite), a kod koordiniranog spoofa RAIM ne pomaže jer je laž konzistentna.",
+    en: "A scenario fixes EVERYTHING that determines the simulation (location, duration, RNG seed, time of day, attack), so replaying the same JSON yields byte-identical metrics — ideal for a fair algorithm comparison. 'Compare' runs the same scenario with RAIM on and off: for a naive spoof the difference is dramatic (RAIM isolates the fake satellites), while for a coordinated spoof RAIM does not help because the lie is self-consistent.",
   },
 };
 
@@ -62,6 +70,7 @@ export function mountExperiments() {
     { id: "spoofing", title: () => t("exp_spoofing"), body: spoofPanel },
     { id: "multignss", title: () => t("exp_multignss"), body: mgPanel },
     { id: "iono", title: () => t("exp_iono"), body: ionoPanel },
+    { id: "scenarios", title: () => t("scenarios"), body: scenarioPanel },
   ];
 
   function renderTabs(): void {
@@ -336,4 +345,97 @@ function ionoPanel(root: HTMLElement): void {
     } catch (e) { fail(out, String(e)); } finally { btn.disabled = false; }
   }));
   root.appendChild(out);
+}
+
+// ---------- Scenariji ----------
+const SCN_ROWS: Array<[string, (m: ScnMetrics) => string, "good" | "bad" | ""]> = [
+  ["scn_median_err", (m) => fmtM(m.median_err), ""],
+  ["scn_max_err", (m) => fmtM(m.max_err), ""],
+  ["scn_gdop", (m) => (Number.isFinite(m.gdop_median) ? m.gdop_median.toFixed(2) : "—"), ""],
+  ["scn_raim_alarms", (m) => String(m.raim_alarms), ""],
+  ["scn_fix_lost", (m) => String(m.fix_lost), ""],
+  ["scn_solved", (m) => `${m.solved}/${m.total}`, ""],
+];
+function fmtM(x: number): string {
+  if (!Number.isFinite(x)) return "—";
+  return x < 1000 ? x.toFixed(1) + " m" : (x / 1000).toFixed(2) + " km";
+}
+
+function scenarioPanel(root: HTMLElement): void {
+  root.appendChild(eduCard("scenarios"));
+  const bar = h("div", "exp-form");
+  const selCell = h("div", "exp-field exp-field-wide");
+  selCell.appendChild(h("label", "exp-flabel", t("scenarios")));
+  const sel = h("select", "exp-select") as HTMLSelectElement;
+  selCell.appendChild(sel);
+  bar.appendChild(selCell);
+  const runBtn = h("button", "btn primary exp-run", t("scenario_run")) as HTMLButtonElement;
+  const cmpBtn = h("button", "btn exp-run", t("scenario_compare")) as HTMLButtonElement;
+  const runCell = h("div", "exp-field exp-run-cell");
+  runCell.append(runBtn, cmpBtn);
+  bar.appendChild(runCell);
+  const desc = h("div", "exp-note");
+  const out = h("div", "exp-out");
+  root.append(bar, desc, out);
+
+  let metas: ScnMeta[] = [];
+  function showDesc(): void {
+    const m = metas.find((x) => x.file === sel.value);
+    desc.textContent = m ? `${m.name} — ${m.description}` : "";
+  }
+  sel.addEventListener("change", showDesc);
+
+  api.scenarioList().then((r) => {
+    metas = r.scenarios as ScnMeta[];
+    for (const m of metas) {
+      const o = h("option", undefined, m.name + (m.attack ? ` · ${m.attack}` : "")) as HTMLOptionElement;
+      o.value = m.file; sel.appendChild(o);
+    }
+    showDesc();
+  }).catch((e) => fail(out, String(e)));
+
+  function metricsTable(cols: Array<{ label: string; m: ScnMetrics }>): HTMLElement {
+    const tbl = h("table", "exp-table scn-table");
+    const hr = h("tr");
+    hr.appendChild(h("th", undefined, t("scn_col_metric")));
+    for (const c of cols) hr.appendChild(h("th", undefined, c.label));
+    tbl.appendChild(hr);
+    for (const [key, fn] of SCN_ROWS) {
+      const tr = h("tr");
+      tr.appendChild(h("td", undefined, t(key)));
+      for (const c of cols) tr.appendChild(h("td", "mono", fn(c.m)));
+      tbl.appendChild(tr);
+    }
+    // istaknuti redak "udaljenost od cilja" ako je koordinirani spoof
+    if (cols.some((c) => c.m.takeover_m != null)) {
+      const tr = h("tr");
+      tr.appendChild(h("td", undefined, t("scn_takeover")));
+      for (const c of cols) tr.appendChild(h("td", "mono", c.m.takeover_m != null ? fmtM(c.m.takeover_m) : "—"));
+      tbl.appendChild(tr);
+    }
+    return tbl;
+  }
+
+  runBtn.addEventListener("click", async () => {
+    if (!sel.value) return;
+    runBtn.disabled = true; cmpBtn.disabled = true; busy(out);
+    try {
+      const d = await api.scenarioRun({ file: sel.value }) as unknown as ScnRun;
+      clear(out);
+      out.appendChild(metricsTable([{ label: t("scn_with_raim"), m: d.result }]));
+    } catch (e) { fail(out, String(e)); } finally { runBtn.disabled = false; cmpBtn.disabled = false; }
+  });
+
+  cmpBtn.addEventListener("click", async () => {
+    if (!sel.value) return;
+    runBtn.disabled = true; cmpBtn.disabled = true; busy(out);
+    try {
+      const d = await api.scenarioCompare({ file: sel.value }) as unknown as ScnCompare;
+      clear(out);
+      out.appendChild(metricsTable([
+        { label: t("scn_with_raim"), m: d.a.result },
+        { label: t("scn_no_raim"), m: d.b.result },
+      ]));
+    } catch (e) { fail(out, String(e)); } finally { runBtn.disabled = false; cmpBtn.disabled = false; }
+  });
 }
