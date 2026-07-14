@@ -57,6 +57,20 @@ def test_scenario_list_and_compare():
     assert r["a"]["result"]["median_err"] < r["b"]["result"]["median_err"] / 5
 
 
+def test_diverged_estimate_ecef_serializes_null():
+    # Kolabirana/nekonačna EKF procjena ne smije proći kao sirovi broj: frontend
+    # (Cesium) ne može projicirati takvu točku i sruši render loop. -> None.
+    import numpy as np
+    s = SimSession(seed=1234)
+    s.set_receiver(45.815, 15.982, 120.0)
+    for _ in range(10):
+        s.advance(1.0)
+    s.calc_pos = np.array([np.nan, np.nan, np.nan])   # simuliraj divergenciju
+    f = state_frame(s)
+    assert f["receiver"]["estimate"]["ecef"] == [None, None, None]
+    assert f["receiver"]["estimate"]["dms"]["lat"] is None
+
+
 def test_state_frame_shape():
     s = SimSession(seed=1234)
     s.set_receiver(45.815, 15.982, 120.0)

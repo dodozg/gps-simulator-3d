@@ -13,14 +13,22 @@ const COL = {
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
 };
 
-// Vrati Cartesian3 samo ako su sve komponente konačne; inače null.
-// Backend za nekonačne vrijednosti šalje null (serialize._num) -> u JS-u
-// new Cartesian3(null,...) daje NaN, a NaN poziciju Cesium sruši pri
-// projekciji ("Cannot read properties of undefined (reading 'longitude')").
+// Fizički vjerodostojan raspon |ECEF| za sve što crtamo: površina ~6.37e6 m,
+// GNSS sateliti MEO ~2.66e7, BDS GEO/IGSO ~4.22e7. Točka bliža ishodištu od
+// donje granice je duboko u Zemlji (npr. kolabirana EKF procjena) i Cesium je
+// NE MOŽE projicirati -> Cartographic.fromCartesian vrati undefined pa render
+// loop pukne ("Cannot read properties of undefined (reading 'longitude')").
+const R_MIN = 1e6;   // 1000 km od središta — ispod svake stvarne točke
+const R_MAX = 1e9;   // daleko iza GEO — štit od divergentne procjene
+
+// Vrati Cartesian3 samo ako su komponente konačne i magnituda projicirabilna;
+// inače null (pozivatelj tada sakrije entitet umjesto da sruši render).
 function c3(e: [number, number, number] | null | undefined): Cesium.Cartesian3 | null {
   if (!e) return null;
   const [x, y, z] = e;
   if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return null;
+  const r = Math.hypot(x, y, z);
+  if (r < R_MIN || r > R_MAX) return null;
   return new Cesium.Cartesian3(x, y, z);
 }
 

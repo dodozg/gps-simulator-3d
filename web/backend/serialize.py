@@ -36,13 +36,25 @@ def to_jsonable(obj):
     return obj
 
 
+def _ecef(vec):
+    """ECEF vektor -> lista float/None (nekonačne komponente -> None, kao _num).
+
+    Ako EKF divergira, `calc_pos` može kolabirati (npr. blizu ishodišta) ili
+    postati nekonačan; ne smije proći kao sirovi broj jer frontend (Cesium) ne
+    može projicirati takvu točku i sruši render loop.
+    """
+    return [_num(v) for v in vec]
+
+
 def _lla(ecef):
     lat, lon, alt = ecef_to_lla(ecef[0], ecef[1], ecef[2])
-    return {"lat": float(lat), "lon": float(lon), "alt": float(alt)}
+    return {"lat": _num(lat), "lon": _num(lon), "alt": _num(alt)}
 
 
 def _dms(lla):
-    return {"lat": format_dms(lla["lat"], True), "lon": format_dms(lla["lon"], False)}
+    lat, lon = lla["lat"], lla["lon"]
+    return {"lat": format_dms(lat, True) if lat is not None else None,
+            "lon": format_dms(lon, False) if lon is not None else None}
 
 
 def state_frame(session):
@@ -55,19 +67,19 @@ def state_frame(session):
     if placed:
         gt_lla = _lla(session.gt_pos)
         receiver["truth"] = {"lla": gt_lla, "dms": _dms(gt_lla),
-                             "ecef": [float(v) for v in session.gt_pos]}
+                             "ecef": _ecef(session.gt_pos)}
     if initialized and session.calc_pos is not None:
         est = np.asarray(session.calc_pos)
         est_lla = _lla(est)
         receiver["estimate"] = {"lla": est_lla, "dms": _dms(est_lla),
-                                "ecef": [float(v) for v in est]}
-        receiver["error_m"] = float(np.linalg.norm(est - session.gt_pos)) if placed else None
-        receiver["velocity_ms"] = float(np.linalg.norm(rx.x_ekf[3:6]))
-    receiver["gdop"] = float(session.gdop) if session.gdop is not None else None
-    receiver["nis"] = float(rx.nis) if rx.nis_dof else None
+                                "ecef": _ecef(est)}
+        receiver["error_m"] = _num(np.linalg.norm(est - session.gt_pos)) if placed else None
+        receiver["velocity_ms"] = _num(np.linalg.norm(rx.x_ekf[3:6]))
+    receiver["gdop"] = _num(session.gdop) if session.gdop is not None else None
+    receiver["nis"] = _num(rx.nis) if rx.nis_dof else None
     receiver["nis_dof"] = int(rx.nis_dof)
-    receiver["nis_ratio"] = float(rx.nis / rx.nis_dof) if rx.nis_dof else None
-    receiver["clock_bias_us"] = float(rx.clock_bias * 1e6)
+    receiver["nis_ratio"] = _num(rx.nis / rx.nis_dof) if rx.nis_dof else None
+    receiver["clock_bias_us"] = _num(rx.clock_bias * 1e6)
 
     # --- sateliti ---
     diag = rx.last_solution or {}
@@ -75,7 +87,7 @@ def state_frame(session):
     for sat in session.constellation.satellites:
         pos = sat.current_pos
         entry = {"id": sat.sat_id, "system": sat.system,
-                 "ecef": [float(v) for v in pos], "lla": _lla(pos),
+                 "ecef": _ecef(pos), "lla": _lla(pos),
                  "tracked": sat.sat_id in session.tracked_ids}
         if placed:
             azel = enu_azel(session.gt_pos, pos)
