@@ -108,12 +108,27 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
   render();
   onLangChange(render);
 
-  // vanjski sync (npr. nakon reseta stanja s backenda)
+  // Backend sesija je singleton koji preživi osvježavanje stranice, a kontrole se
+  // resetiraju na zadane vrijednosti -> moguća desinkronizacija (npr. kinematički
+  // ostane uključen na backendu, a toggle prikazuje isključeno). Zato pri svakom
+  // (ponovnom) spajanju uskladimo UI s PRAVIM stanjem iz prvog frame-a.
+  let needSync = true;
   return {
     syncFromFrame(f: StateFrame): void {
+      if (needSync) {
+        state.playing = f.playing;
+        state.timeScale = f.time_scale;
+        state.tow = f.iono_tow0;
+        state.kinematic = f.kinematic;
+        state.raim = f.raim_enabled;
+        needSync = false;
+        render();                                   // jednokratno; ne bori se s unosom
+        return;
+      }
       state.playing = f.playing;
       const btn = container.querySelector(".btn.primary");
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
     },
+    resync(): void { needSync = true; },            // pozovi na ponovno spajanje
   };
 }

@@ -80,6 +80,8 @@ function onStatus(s: "connecting" | "connected" | "disconnected"): void {
   status.textContent = s === "connected" ? t("connected")
     : s === "connecting" ? t("connecting") : t("disconnected");
   status.className = "conn " + s;
+  // Backend sesija preživi reload/reconnect -> uskladi kontrole s pravim stanjem.
+  if (s === "connected") controls?.resync();
 }
 
 const socket = new SimSocket(onFrame, onStatus);
