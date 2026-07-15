@@ -130,6 +130,8 @@ const HR: Dict = {
   lesson_done: "Gotovo",
   lesson_close: "Zatvori",
   explain_this: "Objasni ovo",
+  flyto_ph: "Leti do grada ili koordinata…",
+  flyto_place: "Postavi prijemnik ovdje",
 };
 
 const EN: Dict = {
@@ -253,6 +255,8 @@ const EN: Dict = {
   lesson_done: "Done",
   lesson_close: "Close",
   explain_this: "Explain this",
+  flyto_ph: "Fly to a city or coordinates…",
+  flyto_place: "Place receiver here",
 };
 
 const DICTS: Record<Lang, Dict> = { hr: HR, en: EN };

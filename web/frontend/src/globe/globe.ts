@@ -333,9 +333,9 @@ export class Globe {
     for (const [id, ray] of this.rays) if (!seen.has(id)) ray.show = false;
   }
 
-  flyTo(lat: number, lon: number): void {
+  flyTo(lat: number, lon: number, height = 1_500_000): void {
     this.viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(lon, lat, 9_000_000),
+      destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
       duration: 1.4,
     });
   }

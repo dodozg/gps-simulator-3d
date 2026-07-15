@@ -8,6 +8,7 @@ import { t, getLang, setLang, onLangChange } from "./lib/i18n";
 import { getMode, setMode, onModeChange } from "./lib/prefs";
 import { h } from "./lib/dom";
 import { mountControls } from "./ui/controls";
+import { mountFlyTo } from "./ui/flyto";
 import { mountTelemetry } from "./ui/telemetry";
 import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
@@ -108,6 +109,9 @@ const lessons = mountLessons({
 
 controls = mountControls(leftPanel, (msg) => socket.send(msg), globe,
   () => experiments.open(), () => lessons.open());
+
+// "Fly to" pretraga (grad/koordinate) — plutajuća traka iznad globusa.
+mountFlyTo(ui, globe, (lat, lon) => socket.send({ type: "set_receiver", lat, lon, alt: 100 }));
 
 api.constellation().then((meta) => globe.setMeta(meta)).catch(() => { /* orbite kasnije */ });
 void initGlossary();
