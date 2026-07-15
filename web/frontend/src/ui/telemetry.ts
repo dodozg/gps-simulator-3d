@@ -7,12 +7,18 @@ import type { StateFrame, SatFrame } from "../lib/types";
 export function mountTelemetry(container: HTMLElement) {
   let last: StateFrame | null = null;
 
-  function field(labelNode: HTMLElement | string, value: string, cls = ""): HTMLElement {
+  function field(labelNode: HTMLElement | string, value: string, cls = "", explainKey?: string): HTMLElement {
     const r = h("div", "tel-row " + cls);
     const l = h("div", "tel-label");
     if (typeof labelNode === "string") l.textContent = labelNode;
     else l.appendChild(labelNode);
     const v = h("div", "tel-value", value);
+    if (explainKey) {
+      v.classList.add("explainable");
+      v.setAttribute("data-explain", explainKey);
+      v.setAttribute("title", t("explain_this"));
+      v.appendChild(h("span", "explain-i", "ⓘ"));
+    }
     r.append(l, v);
     return r;
   }
@@ -82,21 +88,21 @@ export function mountTelemetry(container: HTMLElement) {
       container.appendChild(field(term("EKF", t("estimate")),
         `${rx.estimate.dms.lat}  ${rx.estimate.dms.lon}`));
       if (rx.error_m != null) {
-        container.appendChild(field(t("error"), rx.error_m.toFixed(1) + " m", "accent"));
+        container.appendChild(field(t("error"), rx.error_m.toFixed(1) + " m", "accent", "error"));
       }
     } else {
       container.appendChild(h("div", "hint", t("waiting")));
     }
 
     // integritet i geometrija
-    container.appendChild(field(term("GDOP"), rx.gdop != null ? rx.gdop.toFixed(2) : "—"));
+    container.appendChild(field(term("GDOP"), rx.gdop != null ? rx.gdop.toFixed(2) : "—", "", "gdop"));
     container.appendChild(field(t("sats"),
-      `${last.sats_tracked}/${last.sats_total} ${t("tracked")}`));
+      `${last.sats_tracked}/${last.sats_total} ${t("tracked")}`, "", "sats"));
     if (expert) {
       container.appendChild(field(term("NIS", "NIS/dof"),
-        rx.nis_ratio != null ? rx.nis_ratio.toFixed(2) : "—"));
+        rx.nis_ratio != null ? rx.nis_ratio.toFixed(2) : "—", "", "nis"));
       container.appendChild(field(t("velocity"), (rx.velocity_ms ?? 0).toFixed(1) + " m/s"));
-      container.appendChild(field(t("clock"), rx.clock_bias_us.toFixed(1) + " µs"));
+      container.appendChild(field(t("clock"), rx.clock_bias_us.toFixed(1) + " µs", "", "clock"));
     }
 
     if (expert) container.appendChild(satTable(last.satellites));

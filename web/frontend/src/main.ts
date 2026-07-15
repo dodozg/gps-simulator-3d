@@ -13,6 +13,7 @@ import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
 import { mountLessons } from "./edu/lessons";
 import { initGlossary } from "./edu/glossary";
+import { mountExplain } from "./edu/explain";
 import type { StateFrame } from "./lib/types";
 
 const ui = document.getElementById("ui")!;
@@ -69,12 +70,14 @@ const globe = new Globe(cesiumRoot, (lat, lon) => {
 const telemetry = mountTelemetry(rightPanel);
 const dock = mountDock(ui);
 const experiments = mountExperiments();
+const explain = mountExplain();
 let controls: ReturnType<typeof mountControls> | null = null;
 
 function onFrame(f: StateFrame): void {
   telemetry.update(f);
   globe.update(f);
   dock.update(f);
+  explain.setFrame(f);
   controls?.syncFromFrame(f);
 }
 function onStatus(s: "connecting" | "connected" | "disconnected"): void {

@@ -129,6 +129,7 @@ const HR: Dict = {
   lesson_next: "Dalje ›",
   lesson_done: "Gotovo",
   lesson_close: "Zatvori",
+  explain_this: "Objasni ovo",
 };
 
 const EN: Dict = {
@@ -251,6 +252,7 @@ const EN: Dict = {
   lesson_next: "Next ›",
   lesson_done: "Done",
   lesson_close: "Close",
+  explain_this: "Explain this",
 };
 
 const DICTS: Record<Lang, Dict> = { hr: HR, en: EN };
