@@ -63,5 +63,13 @@ RTK, spoofing/jamming, multi-GNSS i ionosferom — forma → REST → brojke, gr
 i edukativna kartica fizike za svaki. Grafovi su vlastiti (canvas, bez vanjskih
 ovisnosti).
 
-Sljedeće (Faza 3): scenario manager + `compare`, attack overlays na globusu,
-multi-GNSS uživo, "fly to"/command palette, vođene interaktivne lekcije.
+**Faza 3 (scenariji + učilište):** živi napad iz kontrolnog panela (dropdown
+coordinated/naive/meaconing/jamming) s **attack overlays** na globusu (spoof
+"pull" strelica prema lažnom cilju, jamming disk uskraćivanja) + banner napada;
+**scenario manager** (5. tab u Eksperimentima: lista bundlanih scenarija,
+Pokreni + Usporedi RAIM on/off side-by-side); **vođene interaktivne lekcije**
+(6 lekcija koje same pogone panel — postave prijemnik, pokrenu napad, promijene
+doba dana — i istaknu dio sučelja; sadržaj u `content/lessons.{hr,en}.json`).
+
+Preostaje: "objasni ovo" popoveri uz žive brojke; "fly to"/pretraga grada,
+command palette, PNG/CSV export, keyboard paritet.

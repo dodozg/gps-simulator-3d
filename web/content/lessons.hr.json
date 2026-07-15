@@ -4,25 +4,149 @@
       "id": "why-four-sats",
       "title": "Zašto trebaš 4 satelita?",
       "summary": "3 nepoznanice položaja + 1 za pogrešku sata prijemnika.",
-      "steps": []
+      "steps": [
+        {
+          "text": "Postavljam prijemnik u Zagreb. Cilj GPS-a je izračunati tvoj položaj (X, Y, Z) mjereći koliko dugo signal putuje od svakog satelita.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "Vrijeme putovanja množimo brzinom svjetlosti da dobijemo udaljenost (pseudoudaljenost). Ali sat u tvom telefonu nije precizan kao atomski sat u satelitu — pa je i pogreška sata prijemnika nepoznanica. Ukupno 4 nepoznanice: X, Y, Z i sat.",
+          "action": { "do": "play" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "4 nepoznanice → trebaš najmanje 4 jednadžbe → najmanje 4 satelita. Pogledaj tablicu 'Sateliti u vidokrugu': oni sa statusom 'koristi se' ulaze u rješenje. Zato je otvoreno nebo bolje od kanjona zgrada.",
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Procjena (cyan) sada prati istinu (žuto) unutar nekoliko metara. To je klasična GPS točnost jednog frekvencijskog prijemnika. U sljedećim lekcijama vidjet ćeš što je kvari i kako se brani.",
+          "highlight": "telemetry"
+        }
+      ]
     },
     {
       "id": "gdop-geometry",
       "title": "GDOP i geometrija",
-      "summary": "Kako raspored satelita množi grešku; podigni masku i gledaj PDOP.",
-      "steps": []
+      "summary": "Raspored satelita množi grešku — široko je dobro, zbijeno loše.",
+      "steps": [
+        {
+          "text": "Postavljam prijemnik i pokrećem simulaciju. Nije važno samo KOLIKO satelita vidiš, nego i KAKO su raspoređeni po nebu.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "GDOP (Geometric Dilution of Precision) je množitelj: konačna greška ≈ GDOP × greška mjerenja. Pogledaj GDOP u telemetriji — vrijednost < 2 je odlična, > 6 loša.",
+          "action": { "do": "play" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Kad su sateliti razbacani po cijelom nebu, presjeci sfera udaljenosti su 'oštri' → nizak GDOP. Kad su zbijeni (npr. iza zgrada vidiš samo komad neba), presjeci su plitki → visok GDOP i veća greška.",
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Otvaram eksperiment Multi-GNSS: klizač maske elevacije pokazuje kako PDOP raste dok 'režeš' niske satelite. To je isti efekt kao urbani kanjon.",
+          "action": { "do": "experiment", "tab": "multignss" }
+        }
+      ]
     },
     {
       "id": "ionosphere-time",
       "title": "Ionosfera i doba dana",
-      "summary": "Klobuchar krivulja: vrh oko 14 h, tanki pod noću.",
-      "steps": []
+      "summary": "Sloj nabijenih čestica usporava signal — najviše popodne.",
+      "steps": [
+        {
+          "text": "Postavljam prijemnik. Prije nego signal stigne do tla, prolazi kroz ionosferu — sloj slobodnih elektrona na 60–1000 km visine koji ga uspori.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "Postavljam vrijeme na 02:00. Noću je gustoća elektrona (TEC) niska pa je kašnjenje malo — svega par metara u zenitu.",
+          "action": { "do": "time_of_day", "hour": 2 },
+          "highlight": "controls"
+        },
+        {
+          "text": "Sada 14:00. Sunce je ioniziralo atmosferu, TEC je najviši, a kašnjenje naraste na više od 10 m u zenitu (i još više pri niskim elevacijama). Klobuchar model to opisuje s 8 parametara iz navigacijske poruke.",
+          "action": { "do": "time_of_day", "hour": 14 },
+          "highlight": "controls"
+        },
+        {
+          "text": "Otvaram eksperiment Ionosfera: dnevna krivulja s vrhom oko 14 h i kašnjenje po elevaciji. Dvofrekvencijski prijemnik (L1/L2) gotovo egzaktno poništi ovu grešku — zato skupi prijemnici koriste dvije frekvencije.",
+          "action": { "do": "experiment", "tab": "iono" }
+        }
+      ]
     },
     {
       "id": "raim-integrity",
       "title": "RAIM — zaštita integriteta",
-      "summary": "Naivni spoof RAIM uhvati; koordinirani spoof NE.",
-      "steps": []
+      "summary": "Naivni spoof RAIM uhvati; koordinirani NE.",
+      "steps": [
+        {
+          "text": "Postavljam prijemnik i pokrećem sim. RAIM (Receiver Autonomous Integrity Monitoring) provjerava slažu li se sva mjerenja međusobno — ako jedan satelit 'laže', njegov ostatak (rezidual) strši.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Uključujem NAIVNI spoofing: napadač pomiče nekoliko satelita nezavisno. Njihovi reziduali strše, RAIM ih izolira i digne alarm (crveni banner). Pogledaj tablicu — 'RAIM odbacio'.",
+          "action": { "do": "attack", "value": "naive" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Sada KOORDINIRANI spoof: napadač lažira SVE satelite konzistentno, kao da si stvarno na drugom mjestu. Reziduali se slažu, RAIM NE vidi problem — a rješenje te povlači (crvena strelica na globusu). To je temeljno ograničenje RAIM-a.",
+          "action": { "do": "attack", "value": "coordinated" },
+          "highlight": "globe"
+        },
+        {
+          "text": "Gasim napad. Pouka: RAIM štiti od nekonzistentnih grešaka (kvar satelita, grubi spoof), ali protiv sofisticiranog koordiniranog spoofa (konzistentna laž) treba druge obrane (antene, inercijalni senzori, kriptografija).",
+          "action": { "do": "attack", "value": "none" },
+          "highlight": "telemetry"
+        }
+      ]
+    },
+    {
+      "id": "rtk-centimeter",
+      "title": "RTK do centimetra",
+      "summary": "Faza nosioca + fiksiranje cjelobrojne višeznačnosti = mm.",
+      "steps": [
+        {
+          "text": "Obični GPS mjeri kôd (čip ~300 m) i daje metre točnosti. RTK mjeri FAZU nosioca — val duljine samo ~19 cm — pa je puno precizniji. Otvaram eksperiment RTK.",
+          "action": { "do": "experiment", "tab": "rtk" }
+        },
+        {
+          "text": "Klikni 'Pokreni'. Dvostruke razlike (rover−baza, sat−sat) ukidaju satove i atmosferu. Ostaje samo cjelobrojna višeznačnost N — koliko CIJELIH valova stane u put. 'Float' rješenje je decimetarsko dok N nije cijeli broj.",
+          "highlight": "globe"
+        },
+        {
+          "text": "Kad algoritam 'fiksira' N na točan cijeli broj ('Ambiguity fixed: DA'), greška padne s decimetara na MILIMETRE. To je RTK koji koriste geodeti i autonomni traktori. Udaljenost do baze (baseline) mora biti kratka da atmosfera ostane zajednička."
+        }
+      ]
+    },
+    {
+      "id": "spoof-vs-jam",
+      "title": "Spoofing vs jamming",
+      "summary": "Obmana (lažni fix) protiv uskraćivanja (gubitak fixa).",
+      "steps": [
+        {
+          "text": "Postavljam prijemnik i pokrećem sim. Dva su načina napada na GPS — bitno je razlikovati ih.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "SPOOFING = obmana. Napadač emitira lažne signale pa prijemnik izračuna KRIVU poziciju, a da toga nije svjestan. Gledaj crvenu strelicu 'pull' — kamo te napadač povlači. Ovo je opasno jer i dalje 'imaš fix'.",
+          "action": { "do": "attack", "value": "coordinated" },
+          "highlight": "globe"
+        },
+        {
+          "text": "JAMMING = uskraćivanje. Napadač preglasi satelite šumom (crveni disk). Broj praćenih satelita pada, fix se GUBI. Manje suptilno od spoofa, ali te ostavlja bez navigacije.",
+          "action": { "do": "attack", "value": "jamming" },
+          "highlight": "globe"
+        },
+        {
+          "text": "Gasim napad. Sažetak: spoofing ti daje lažno samopouzdanje (kriva pozicija koja izgleda dobro), jamming ti oduzme uslugu (nema pozicije). Obrane su različite za svaki.",
+          "action": { "do": "attack", "value": "none" },
+          "highlight": "telemetry"
+        }
+      ]
     }
   ]
 }

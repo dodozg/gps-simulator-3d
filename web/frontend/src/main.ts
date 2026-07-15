@@ -11,6 +11,7 @@ import { mountControls } from "./ui/controls";
 import { mountTelemetry } from "./ui/telemetry";
 import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
+import { mountLessons } from "./edu/lessons";
 import { initGlossary } from "./edu/glossary";
 import type { StateFrame } from "./lib/types";
 
@@ -85,7 +86,25 @@ function onStatus(s: "connecting" | "connected" | "disconnected"): void {
 }
 
 const socket = new SimSocket(onFrame, onStatus);
-controls = mountControls(leftPanel, (msg) => socket.send(msg), globe, () => experiments.open());
+
+// Pogon vođenih lekcija: koraci pogone panel (kroz controls.set da UI ostane
+// usklađen), socket (postavljanje prijemnika), globus i eksperimente.
+const lessons = mountLessons({
+  place: (lat, lon) => socket.send({ type: "set_receiver", lat, lon, alt: 100 }),
+  attack: (v) => controls?.set({ attack: v }),
+  timeOfDay: (hour) => controls?.set({ tow: hour * 3600 }),
+  raim: (on) => controls?.set({ raim: on }),
+  kinematic: (on) => controls?.set({ kinematic: on }),
+  speed: (v) => controls?.set({ timeScale: v }),
+  play: () => controls?.set({ playing: true }),
+  pause: () => controls?.set({ playing: false }),
+  reset: () => { socket.send({ type: "reset" }); controls?.set({ playing: false }); },
+  experiment: (tab) => experiments.open(tab),
+  flyTo: (lat, lon) => globe.flyTo(lat, lon),
+});
+
+controls = mountControls(leftPanel, (msg) => socket.send(msg), globe,
+  () => experiments.open(), () => lessons.open());
 
 api.constellation().then((meta) => globe.setMeta(meta)).catch(() => { /* orbite kasnije */ });
 void initGlossary();

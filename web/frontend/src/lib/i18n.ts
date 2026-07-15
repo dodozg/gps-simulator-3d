@@ -125,6 +125,10 @@ const HR: Dict = {
   scn_no_raim: "RAIM isključen",
   scn_with_raim: "RAIM uključen",
   lessons: "Lekcije",
+  open_lessons: "Vođene lekcije…",
+  lesson_next: "Dalje ›",
+  lesson_done: "Gotovo",
+  lesson_close: "Zatvori",
 };
 
 const EN: Dict = {
@@ -243,6 +247,10 @@ const EN: Dict = {
   scn_no_raim: "RAIM off",
   scn_with_raim: "RAIM on",
   lessons: "Lessons",
+  open_lessons: "Guided lessons…",
+  lesson_next: "Next ›",
+  lesson_done: "Done",
+  lesson_close: "Close",
 };
 
 const DICTS: Record<Lang, Dict> = { hr: HR, en: EN };

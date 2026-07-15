@@ -49,6 +49,22 @@ def test_spoofing_endpoint_accepts_attack_string():
     assert r["window"] == [60.0, 240.0]                     # zadani parametri napada
 
 
+def test_lessons_have_driving_steps():
+    # Vođene lekcije moraju imati korake s valjanim akcijama koje pogone panel.
+    valid = {"place", "attack", "time_of_day", "raim", "kinematic",
+             "speed", "play", "pause", "reset", "experiment"}
+    for lang in ("hr", "en"):
+        data = client.get(f"/api/lessons?lang={lang}").json()["lessons"]
+        assert len(data) == 6
+        assert sum(len(l["steps"]) for l in data) >= 20
+        for les in data:
+            assert les["steps"], f"{les['id']} bez koraka"
+            for s in les["steps"]:
+                assert s["text"]
+                if "action" in s:
+                    assert s["action"]["do"] in valid
+
+
 def test_scenario_list_and_compare():
     files = [s["file"] for s in client.get("/api/scenario/list").json()["scenarios"]]
     assert "zagreb_clean.json" in files

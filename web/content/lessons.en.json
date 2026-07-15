@@ -4,25 +4,149 @@
       "id": "why-four-sats",
       "title": "Why do you need 4 satellites?",
       "summary": "3 position unknowns + 1 for the receiver clock error.",
-      "steps": []
+      "steps": [
+        {
+          "text": "Placing a receiver in Zagreb. GPS wants to compute your position (X, Y, Z) by measuring how long the signal travels from each satellite.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "Travel time × speed of light gives distance (a pseudorange). But the clock in your phone isn't as precise as the atomic clock in the satellite — so the receiver clock error is also unknown. That's 4 unknowns: X, Y, Z and the clock.",
+          "action": { "do": "play" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "4 unknowns → you need at least 4 equations → at least 4 satellites. Look at the 'Satellites in view' table: those marked 'in use' enter the solution. This is why open sky beats an urban canyon.",
+          "highlight": "telemetry"
+        },
+        {
+          "text": "The estimate (cyan) now tracks the truth (yellow) within a few metres — classic single-frequency GPS accuracy. The next lessons show what corrupts it and how it's defended.",
+          "highlight": "telemetry"
+        }
+      ]
     },
     {
       "id": "gdop-geometry",
       "title": "GDOP and geometry",
-      "summary": "How satellite spread multiplies error; raise the mask and watch PDOP.",
-      "steps": []
+      "summary": "Satellite layout multiplies error — spread is good, clustered is bad.",
+      "steps": [
+        {
+          "text": "Placing a receiver and starting the sim. It's not just HOW MANY satellites you see, but HOW they're spread across the sky.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "GDOP (Geometric Dilution of Precision) is a multiplier: final error ≈ GDOP × measurement error. Watch GDOP in telemetry — below 2 is excellent, above 6 is poor.",
+          "action": { "do": "play" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "When satellites are spread across the whole sky, the range-sphere intersections are 'sharp' → low GDOP. When they're clustered (e.g. buildings leave only a slice of sky), the intersections are shallow → high GDOP and larger error.",
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Opening the Multi-GNSS experiment: the elevation-mask slider shows PDOP rising as you 'cut off' low satellites. That's the same effect as an urban canyon.",
+          "action": { "do": "experiment", "tab": "multignss" }
+        }
+      ]
     },
     {
       "id": "ionosphere-time",
       "title": "The ionosphere and time of day",
-      "summary": "Klobuchar curve: peak around 14:00, thin floor at night.",
-      "steps": []
+      "summary": "A layer of charged particles slows the signal — most at midday.",
+      "steps": [
+        {
+          "text": "Placing a receiver. Before the signal reaches the ground it crosses the ionosphere — a layer of free electrons at 60–1000 km that slows it down.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "Setting time to 02:00. At night the electron density (TEC) is low, so the delay is small — just a couple of metres at zenith.",
+          "action": { "do": "time_of_day", "hour": 2 },
+          "highlight": "controls"
+        },
+        {
+          "text": "Now 14:00. The Sun has ionized the atmosphere, TEC peaks, and the delay grows beyond 10 m at zenith (and more at low elevations). The Klobuchar model describes this with 8 parameters from the navigation message.",
+          "action": { "do": "time_of_day", "hour": 14 },
+          "highlight": "controls"
+        },
+        {
+          "text": "Opening the Ionosphere experiment: the diurnal curve peaks around 14:00, plus delay vs elevation. A dual-frequency receiver (L1/L2) cancels this error almost exactly — which is why premium receivers use two frequencies.",
+          "action": { "do": "experiment", "tab": "iono" }
+        }
+      ]
     },
     {
       "id": "raim-integrity",
       "title": "RAIM — integrity protection",
-      "summary": "A naive spoof is caught by RAIM; a coordinated spoof is not.",
-      "steps": []
+      "summary": "A naive spoof is caught by RAIM; a coordinated one is NOT.",
+      "steps": [
+        {
+          "text": "Placing a receiver and starting the sim. RAIM (Receiver Autonomous Integrity Monitoring) checks whether all measurements agree — if one satellite 'lies', its residual sticks out.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Enabling a NAIVE spoof: the attacker shifts a few satellites independently. Their residuals stick out, RAIM isolates them and raises an alarm (red banner). Check the table — 'RAIM rejected'.",
+          "action": { "do": "attack", "value": "naive" },
+          "highlight": "telemetry"
+        },
+        {
+          "text": "Now a COORDINATED spoof: the attacker fakes ALL satellites consistently, as if you were really elsewhere. The residuals agree, RAIM sees no problem — yet the solution is dragged away (red arrow on the globe). This is a fundamental limit of RAIM.",
+          "action": { "do": "attack", "value": "coordinated" },
+          "highlight": "globe"
+        },
+        {
+          "text": "Turning the attack off. Lesson: RAIM protects against inconsistent errors (satellite faults, crude spoofing), but a sophisticated coordinated spoof (a self-consistent lie) needs other defences (antennas, inertial sensors, cryptography).",
+          "action": { "do": "attack", "value": "none" },
+          "highlight": "telemetry"
+        }
+      ]
+    },
+    {
+      "id": "rtk-centimeter",
+      "title": "RTK to the centimetre",
+      "summary": "Carrier phase + fixing the integer ambiguity = millimetres.",
+      "steps": [
+        {
+          "text": "Ordinary GPS measures the code (a ~300 m chip) and gives metre accuracy. RTK measures the carrier PHASE — a wave only ~19 cm long — so it's far more precise. Opening the RTK experiment.",
+          "action": { "do": "experiment", "tab": "rtk" }
+        },
+        {
+          "text": "Click 'Run'. Double differences (rover−base, sat−sat) cancel clocks and the atmosphere. What remains is the integer ambiguity N — how many WHOLE wavelengths fit in the path. The 'float' solution is decimetre-level until N is an integer.",
+          "highlight": "globe"
+        },
+        {
+          "text": "Once the algorithm 'fixes' N to the correct integer ('Ambiguity fixed: YES'), error drops from decimetres to MILLIMETRES. This is the RTK used by surveyors and self-driving tractors. The baseline to the base must be short so the atmosphere stays common."
+        }
+      ]
+    },
+    {
+      "id": "spoof-vs-jam",
+      "title": "Spoofing vs jamming",
+      "summary": "Deception (a false fix) versus denial (loss of fix).",
+      "steps": [
+        {
+          "text": "Placing a receiver and starting the sim. There are two ways to attack GPS — and it matters to tell them apart.",
+          "action": { "do": "place", "lat": 45.815, "lon": 15.982 },
+          "highlight": "globe"
+        },
+        {
+          "text": "SPOOFING = deception. The attacker broadcasts fake signals so the receiver computes a WRONG position without realising it. Watch the red 'pull' arrow — where the attacker is dragging you. Dangerous because you still 'have a fix'.",
+          "action": { "do": "attack", "value": "coordinated" },
+          "highlight": "globe"
+        },
+        {
+          "text": "JAMMING = denial. The attacker drowns the satellites in noise (red disk). The tracked-satellite count drops and the fix is LOST. Less subtle than spoofing, but it leaves you with no navigation.",
+          "action": { "do": "attack", "value": "jamming" },
+          "highlight": "globe"
+        },
+        {
+          "text": "Turning the attack off. Summary: spoofing gives false confidence (a wrong position that looks fine); jamming denies the service (no position at all). The defences differ for each.",
+          "action": { "do": "attack", "value": "none" },
+          "highlight": "telemetry"
+        }
+      ]
     }
   ]
 }

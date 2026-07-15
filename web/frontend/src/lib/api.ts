@@ -20,6 +20,7 @@ async function get<T>(path: string): Promise<T> {
 export const api = {
   constellation: () => get<ConstellationMeta>("/constellation"),
   glossary: (lang: string) => get<Record<string, GlossaryTerm>>(`/glossary?lang=${lang}`),
+  lessons: (lang: string) => get<{ lessons: Lesson[] }>(`/lessons?lang=${lang}`),
   rtk: (body: unknown) => post<Record<string, unknown>>("/rtk", body),
   spoofing: (body: unknown) => post<Record<string, unknown>>("/spoofing", body),
   multignss: (body: unknown) => post<Record<string, unknown>>("/multignss", body),
@@ -44,3 +45,13 @@ export interface ScenarioMeta {
   seconds: number;
   attack: string | null;
 }
+
+// Vođena lekcija: koraci koji objašnjavaju i pogone kontrolni panel.
+export interface LessonAction {
+  do: "place" | "attack" | "time_of_day" | "raim" | "kinematic" | "speed"
+    | "play" | "pause" | "reset" | "experiment";
+  lat?: number; lon?: number; value?: string | number; hour?: number;
+  on?: boolean; tab?: string;
+}
+export interface LessonStep { text: string; action?: LessonAction; highlight?: string; }
+export interface Lesson { id: string; title: string; summary: string; steps: LessonStep[]; }

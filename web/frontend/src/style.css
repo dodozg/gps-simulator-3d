@@ -168,6 +168,38 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .exp-table td { padding: 5px; border-bottom: 1px solid rgba(30,40,54,0.4); }
 .exp-open-btn { width: 100%; }
 
+/* vođene lekcije — neflokirajući sloj (lekcija pogoni vidljivu aplikaciju) */
+.lesson-overlay { position: fixed; inset: 0; z-index: 1600; pointer-events: none; }  /* iznad modala (1500) */
+.lesson-card {
+  position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+  width: min(460px, 92vw); pointer-events: auto;
+  background: var(--panel-solid); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); padding: 16px 18px;
+}
+.lesson-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.lesson-title-txt, .lesson-head { font-weight: 700; font-size: 15px; color: var(--text); }
+.lesson-count { font-family: var(--mono); font-size: 12px; color: var(--dim); font-weight: 500; }
+.lesson-progress { height: 4px; background: #16202e; border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
+.lesson-progress-fill { height: 100%; background: var(--cyan); transition: width 0.25s; }
+.lesson-text { font-size: 13.5px; line-height: 1.6; color: var(--text); margin-bottom: 14px; }
+.lesson-nav { display: flex; gap: 8px; justify-content: flex-end; }
+.lesson-btn { padding: 8px 14px; }
+.lesson-nav .lesson-btn:first-child:not(.primary) { margin-right: auto; }
+.lesson-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.lesson-item {
+  text-align: left; background: #0f1621; border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px 13px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.lesson-item:hover { border-color: var(--cyan); background: #131c28; }
+.lesson-item-title { font-weight: 600; font-size: 13.5px; color: var(--text); margin-bottom: 3px; }
+.lesson-item-sum { font-size: 12px; color: var(--dim); line-height: 1.4; }
+.lesson-ring {
+  position: fixed; z-index: 1590; pointer-events: none; border-radius: 14px;
+  border: 2px solid var(--cyan); box-shadow: 0 0 0 3px rgba(36,211,237,0.18), 0 0 22px rgba(36,211,237,0.35);
+  transition: top 0.3s, left 0.3s, width 0.3s, height 0.3s;
+}
+@media (prefers-reduced-motion: reduce) { .lesson-ring, .lesson-progress-fill { transition: none; } }
+
 /* responsive */
 @media (max-width: 820px) {
   .panel { width: auto; left: 8px; right: 8px; }

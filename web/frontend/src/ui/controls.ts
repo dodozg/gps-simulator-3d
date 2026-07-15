@@ -6,7 +6,8 @@ import type { StateFrame } from "../lib/types";
 
 type Send = (msg: Record<string, unknown>) => void;
 
-export function mountControls(container: HTMLElement, send: Send, globe: Globe, onExperiments?: () => void) {
+export function mountControls(container: HTMLElement, send: Send, globe: Globe,
+                              onExperiments?: () => void, onLessons?: () => void) {
   const state = { playing: false, timeScale: 100, tow: 50400, kinematic: false, raim: true, attack: "none" };
   const show = { orbits: true, rays: true, labels: false };
   const ATTACKS: Array<[string, () => string]> = [
@@ -121,11 +122,18 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
     container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); }));
 
     // eksperimenti (Faza 2)
-    if (onExperiments) {
+    if (onExperiments || onLessons) {
       container.appendChild(h("div", "panel-sub", t("academy")));
-      const exp = h("button", "btn exp-open-btn", t("open_experiments"));
-      exp.addEventListener("click", onExperiments);
-      container.appendChild(exp);
+      if (onLessons) {
+        const les = h("button", "btn primary exp-open-btn", t("open_lessons"));
+        les.addEventListener("click", onLessons);
+        container.appendChild(les);
+      }
+      if (onExperiments) {
+        const exp = h("button", "btn exp-open-btn", t("open_experiments"));
+        exp.addEventListener("click", onExperiments);
+        container.appendChild(exp);
+      }
     }
 
     container.appendChild(h("div", "hint", t("place_hint")));
@@ -157,5 +165,17 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe, 
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
     },
     resync(): void { needSync = true; },            // pozovi na ponovno spajanje
+    // Programsko podešavanje (vođene lekcije): ažurira stanje, pošalje backendu,
+    // pa ponovno iscrta panel da UI odražava promjenu.
+    set(patch: Partial<{ playing: boolean; timeScale: number; tow: number;
+                         kinematic: boolean; raim: boolean; attack: string }>): void {
+      if (patch.playing !== undefined) { state.playing = patch.playing; send({ type: patch.playing ? "play" : "pause" }); }
+      if (patch.timeScale !== undefined) { state.timeScale = patch.timeScale; send({ type: "time_scale", value: patch.timeScale }); }
+      if (patch.tow !== undefined) { state.tow = patch.tow; send({ type: "iono_tow0", value: patch.tow }); }
+      if (patch.kinematic !== undefined) { state.kinematic = patch.kinematic; send({ type: "kinematic", on: patch.kinematic }); }
+      if (patch.raim !== undefined) { state.raim = patch.raim; send({ type: "raim", on: patch.raim }); }
+      if (patch.attack !== undefined) { state.attack = patch.attack; send({ type: "attack", spec: patch.attack === "none" ? null : patch.attack }); }
+      render();
+    },
   };
 }
