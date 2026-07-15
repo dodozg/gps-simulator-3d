@@ -9,12 +9,12 @@ import { getMode, setMode, onModeChange } from "./lib/prefs";
 import { h } from "./lib/dom";
 import { mountControls } from "./ui/controls";
 import { mountFlyTo } from "./ui/flyto";
+import { mountGlobeControls } from "./ui/globe-controls";
 import { mountTelemetry } from "./ui/telemetry";
 import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
 import { mountLessons } from "./edu/lessons";
-import { initGlossary } from "./edu/glossary";
-import { mountExplain } from "./edu/explain";
+import { initInfo } from "./edu/info";
 import type { StateFrame } from "./lib/types";
 
 const ui = document.getElementById("ui")!;
@@ -71,14 +71,14 @@ const globe = new Globe(cesiumRoot, (lat, lon) => {
 const telemetry = mountTelemetry(rightPanel);
 const dock = mountDock(ui);
 const experiments = mountExperiments();
-const explain = mountExplain();
+const info = initInfo();
 let controls: ReturnType<typeof mountControls> | null = null;
 
 function onFrame(f: StateFrame): void {
   telemetry.update(f);
   globe.update(f);
   dock.update(f);
-  explain.setFrame(f);
+  info.setFrame(f);
   controls?.syncFromFrame(f);
 }
 function onStatus(s: "connecting" | "connected" | "disconnected"): void {
@@ -113,7 +113,9 @@ controls = mountControls(leftPanel, (msg) => socket.send(msg), globe,
 // "Fly to" pretraga (grad/koordinate) — plutajuća traka iznad globusa.
 mountFlyTo(ui, globe, (lat, lon) => socket.send({ type: "set_receiver", lat, lon, alt: 100 }));
 
+// Kontrole globusa (kompas / 3D / centriranje / zoom) — dolje-desno.
+mountGlobeControls(ui, globe);
+
 api.constellation().then((meta) => globe.setMeta(meta)).catch(() => { /* orbite kasnije */ });
-void initGlossary();
 socket.connect();
 onLangChange(() => onStatus("connected"));

@@ -1,5 +1,5 @@
 // Desni panel: live telemetrija + tablica satelita. Pojmovi su klikabilni (učilište).
-import { h, clear, term } from "../lib/dom";
+import { h, clear, term, infoTerm } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import { getMode, onModeChange } from "../lib/prefs";
 import type { StateFrame, SatFrame } from "../lib/types";
@@ -7,17 +7,22 @@ import type { StateFrame, SatFrame } from "../lib/types";
 export function mountTelemetry(container: HTMLElement) {
   let last: StateFrame | null = null;
 
-  function field(labelNode: HTMLElement | string, value: string, cls = "", explainKey?: string): HTMLElement {
+  // infoKey (data-info) veže vrijednost na objedinjeni popover (definicija + živo
+  // tumačenje). showIcon doda ⓘ tamo gdje oznaka nije već cyan pojam.
+  function field(labelNode: HTMLElement | string, value: string, cls = "",
+                 infoKey?: string, showIcon = false): HTMLElement {
     const r = h("div", "tel-row " + cls);
     const l = h("div", "tel-label");
     if (typeof labelNode === "string") l.textContent = labelNode;
     else l.appendChild(labelNode);
     const v = h("div", "tel-value", value);
-    if (explainKey) {
+    if (infoKey) {
       v.classList.add("explainable");
-      v.setAttribute("data-explain", explainKey);
-      v.setAttribute("title", t("explain_this"));
-      v.appendChild(h("span", "explain-i", "ⓘ"));
+      v.setAttribute("data-info", infoKey);
+      if (showIcon) {
+        v.setAttribute("title", t("explain_this"));
+        v.appendChild(h("span", "explain-i", "ⓘ"));
+      }
     }
     r.append(l, v);
     return r;
@@ -85,24 +90,26 @@ export function mountTelemetry(container: HTMLElement) {
         `${rx.truth.dms.lat}  ${rx.truth.dms.lon}`));
     }
     if (rx.ekf_initialized && rx.estimate) {
-      container.appendChild(field(term("EKF", t("estimate")),
+      container.appendChild(field(infoTerm("estimate", t("estimate")),
         `${rx.estimate.dms.lat}  ${rx.estimate.dms.lon}`));
       if (rx.error_m != null) {
-        container.appendChild(field(t("error"), rx.error_m.toFixed(1) + " m", "accent", "error"));
+        container.appendChild(field(t("error"), rx.error_m.toFixed(1) + " m", "accent", "error", true));
       }
     } else {
       container.appendChild(h("div", "hint", t("waiting")));
     }
 
-    // integritet i geometrija
-    container.appendChild(field(term("GDOP"), rx.gdop != null ? rx.gdop.toFixed(2) : "—", "", "gdop"));
+    // integritet i geometrija — oznaka je cyan pojam (okida objedinjeni popover),
+    // vrijednost je isto klikabilna; gdje nema pojma, vrijednost dobije ⓘ.
+    container.appendChild(field(infoTerm("gdop", "GDOP"),
+      rx.gdop != null ? rx.gdop.toFixed(2) : "—", "", "gdop"));
     container.appendChild(field(t("sats"),
-      `${last.sats_tracked}/${last.sats_total} ${t("tracked")}`, "", "sats"));
+      `${last.sats_tracked}/${last.sats_total} ${t("tracked")}`, "", "sats", true));
     if (expert) {
-      container.appendChild(field(term("NIS", "NIS/dof"),
+      container.appendChild(field(infoTerm("nis", "NIS/dof"),
         rx.nis_ratio != null ? rx.nis_ratio.toFixed(2) : "—", "", "nis"));
       container.appendChild(field(t("velocity"), (rx.velocity_ms ?? 0).toFixed(1) + " m/s"));
-      container.appendChild(field(t("clock"), rx.clock_bias_us.toFixed(1) + " µs", "", "clock"));
+      container.appendChild(field(t("clock"), rx.clock_bias_us.toFixed(1) + " µs", "", "clock", true));
     }
 
     if (expert) container.appendChild(satTable(last.satellites));

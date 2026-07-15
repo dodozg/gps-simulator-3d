@@ -23,6 +23,8 @@ const HR: Dict = {
   show_rays: "Signalne zrake",
   show_labels: "Oznake satelita",
   systems: "Sustavi",
+  display: "Prikaz",
+  simulation: "Simulacija",
   mode_beginner: "Početnik",
   mode_expert: "Stručnjak",
   // telemetrija
@@ -130,8 +132,14 @@ const HR: Dict = {
   lesson_done: "Gotovo",
   lesson_close: "Zatvori",
   explain_this: "Objasni ovo",
+  explain_now: "Trenutno",
   flyto_ph: "Leti do grada ili koordinata…",
   flyto_place: "Postavi prijemnik ovdje",
+  gc_north: "Sjever gore",
+  gc_3d: "2D / 3D nagib",
+  gc_locate: "Centriraj na prijemnik",
+  gc_zoom_in: "Približi",
+  gc_zoom_out: "Oddalji",
 };
 
 const EN: Dict = {
@@ -153,6 +161,8 @@ const EN: Dict = {
   show_rays: "Signal rays",
   show_labels: "Satellite labels",
   systems: "Systems",
+  display: "Display",
+  simulation: "Simulation",
   mode_beginner: "Beginner",
   mode_expert: "Expert",
   telemetry: "Telemetry",
@@ -255,8 +265,14 @@ const EN: Dict = {
   lesson_done: "Done",
   lesson_close: "Close",
   explain_this: "Explain this",
+  explain_now: "Right now",
   flyto_ph: "Fly to a city or coordinates…",
   flyto_place: "Place receiver here",
+  gc_north: "North up",
+  gc_3d: "2D / 3D tilt",
+  gc_locate: "Center on receiver",
+  gc_zoom_in: "Zoom in",
+  gc_zoom_out: "Zoom out",
 };
 
 const DICTS: Record<Lang, Dict> = { hr: HR, en: EN };

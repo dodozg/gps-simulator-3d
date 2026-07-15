@@ -16,3 +16,11 @@ export function term(key: string, label?: string): HTMLElement {
   s.dataset.term = key;
   return s;
 }
+
+// Kao term(), ali okida OBJEDINJENI info-popover (definicija + živo tumačenje).
+// Koristi se u telemetriji; data-info nosi id koncepta (vidi edu/info.ts).
+export function infoTerm(concept: string, label: string): HTMLElement {
+  const s = h("span", "term", label);
+  s.dataset.info = concept;
+  return s;
+}

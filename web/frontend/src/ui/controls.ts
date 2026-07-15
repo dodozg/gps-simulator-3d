@@ -100,7 +100,14 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     tod.appendChild(todIn);
     container.appendChild(tod);
 
-    // toggles koji šalju backendu
+    // prikaz globusa (samo klijent) — visoko jer se često koristi
+    container.appendChild(h("div", "panel-sub", t("display")));
+    container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); }));
+    container.appendChild(toggle(t("show_rays"), show.rays, (v) => { show.rays = v; globe.setShow("rays", v); }));
+    container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); }));
+
+    // simulacija (šalje backendu)
+    container.appendChild(h("div", "panel-sub", t("simulation")));
     container.appendChild(toggle(t("kinematic"), state.kinematic, (v) => {
       state.kinematic = v; send({ type: "kinematic", on: v });
     }));
@@ -114,12 +121,6 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
         state.attack = v;
         send({ type: "attack", spec: v === "none" ? null : v });
       }));
-
-    // toggles prikaza (samo klijent)
-    container.appendChild(h("div", "panel-sub", t("systems")));
-    container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); }));
-    container.appendChild(toggle(t("show_rays"), show.rays, (v) => { show.rays = v; globe.setShow("rays", v); }));
-    container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); }));
 
     // eksperimenti (Faza 2)
     if (onExperiments || onLessons) {

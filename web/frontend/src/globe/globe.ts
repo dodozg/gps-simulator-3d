@@ -49,6 +49,7 @@ export class Globe {
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
   private estimate: Cesium.Entity | null = null;
+  private lastRoverLLA: { lat: number; lon: number } | null = null;
   private spoofArrow: Cesium.Entity | null = null;
   private spoofTarget: Cesium.Entity | null = null;
   private jamRing: Cesium.Entity | null = null;
@@ -275,6 +276,7 @@ export class Globe {
 
   private _updateReceiver(frame: StateFrame): void {
     const rx = frame.receiver;
+    this.lastRoverLLA = rx.placed && rx.truth ? { lat: rx.truth.lla.lat, lon: rx.truth.lla.lon } : null;
     const roverPos = rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
     if (roverPos) {
       if (!this.rover) {
@@ -342,5 +344,45 @@ export class Globe {
 
   setShow(key: "orbits" | "rays" | "labels", on: boolean): void {
     this.show[key] = on;
+  }
+
+  // --- kontrole kamere (Google-Earth stil) ------------------------------
+  zoomIn(): void {
+    const c = this.viewer.camera;
+    c.zoomIn(c.positionCartographic.height * 0.4);
+  }
+  zoomOut(): void {
+    const c = this.viewer.camera;
+    c.zoomOut(c.positionCartographic.height * 0.4);
+  }
+  // Vrati kompas na sjever-gore (zadrži položaj i nagib).
+  resetNorth(): void {
+    const c = this.viewer.camera;
+    c.flyTo({ destination: Cesium.Cartesian3.clone(c.positionWC),
+      orientation: { heading: 0, pitch: c.pitch, roll: 0 }, duration: 0.4 });
+  }
+  // Prebaci 2D (odozgo) <-> 3D (nagnuto). Vrati je li sada 3D.
+  toggle3D(): boolean {
+    const c = this.viewer.camera;
+    const isTopDown = c.pitch < Cesium.Math.toRadians(-74);
+    const pitch = isTopDown ? Cesium.Math.toRadians(-45) : Cesium.Math.toRadians(-90);
+    c.flyTo({ destination: Cesium.Cartesian3.clone(c.positionWC),
+      orientation: { heading: c.heading, pitch, roll: 0 }, duration: 0.5 });
+    return isTopDown;                              // prelazimo u 3D ako smo bili odozgo
+  }
+  is3D(): boolean {
+    return this.viewer.camera.pitch > Cesium.Math.toRadians(-74);
+  }
+  flyToReceiver(): boolean {
+    if (!this.lastRoverLLA) return false;
+    this.flyTo(this.lastRoverLLA.lat, this.lastRoverLLA.lon, 600_000);
+    return true;
+  }
+  headingDeg(): number {
+    return Cesium.Math.toDegrees(this.viewer.camera.heading);
+  }
+  onCameraChange(cb: () => void): void {
+    this.viewer.camera.percentageChanged = 0.02;   // osjetljivost okidača
+    this.viewer.camera.changed.addEventListener(cb);
   }
 }
