@@ -21,7 +21,9 @@ def _apply(session, msg):
     """Primijeni jednu kontrolnu poruku na sesiju."""
     t = msg.get("type")
     if t == "set_receiver":
-        session.set_receiver(float(msg["lat"]), float(msg["lon"]), float(msg.get("alt", 100.0)))
+        alt = msg.get("alt")
+        session.set_receiver(float(msg["lat"]), float(msg["lon"]),
+                             float(alt) if alt is not None else None)
     elif t == "play":
         session.set_playing(True)
     elif t == "pause":
@@ -36,6 +38,12 @@ def _apply(session, msg):
         session.set_iono_tow0(float(msg["value"]))
     elif t == "attack":
         session.set_attack(msg.get("spec"))
+    elif t == "set_system":
+        session.set_system_enabled(str(msg["system"]), bool(msg["on"]))
+    elif t == "set_sat":
+        session.set_sat_enabled(str(msg["id"]), bool(msg["on"]))
+    elif t == "set_sat_param":
+        session.set_sat_param(str(msg["id"]), str(msg["param"]), float(msg["value"]))
     elif t == "reset":
         session.reset()
     elif t == "step":

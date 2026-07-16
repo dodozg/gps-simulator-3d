@@ -1,5 +1,5 @@
 import numpy as np
-from physics_engine import calculate_orbital_position, R_EARTH, get_relativistic_drift_rate, simulate_clock_noise, generate_ephemeris_error, get_dynamic_relativistic_offset, C
+from physics_engine import calculate_orbital_position, R_EARTH, get_relativistic_drift_rate, simulate_clock_noise, evolve_ephemeris_error, get_dynamic_relativistic_offset, C
 import signal_processing
 
 class Satellite:
@@ -18,20 +18,25 @@ class Satellite:
         self.h2 = 1e-26 # Random walk
         
         self.is_spoofed = False # RAIM testing flag
+        self.enabled = True     # živa sesija može ugasiti sat/konstelaciju (web toggle)
+        self.user_clock_offset_m = 0.0  # korisnički ubrizgan kvar sata [m] (editor satelita)
         
         self.clock_bias = 0.0 # Stvarni offset [s] (hardverski)
         self.total_bias = 0.0 # Uključuje dinamičku relativnost
         self.clock_drift = get_relativistic_drift_rate(self.a) # Početni drift uključuje relativnost
         self.last_update_time = 0.0
-        
+
         # Stvarna i "broadcasted" (objavljena) pozicija
         self.broadcast_pos = np.array([0.0, 0.0, 0.0])
+        # Sporo-promjenjiva ephemeris greška (OU stanje, 3D ECEF); None -> starta
+        # iz stacionarne razdiobe pri prvom update_position (vidi physics_engine).
+        self.ephemeris_error = None
 
         # Fizički simulirani signali za dvije frekvencije
         self.prn_code_l1 = signal_processing.generate_prn(self.sat_id + "_L1")
         self.prn_code_l2 = signal_processing.generate_prn(self.sat_id + "_L2")
 
-    def update_position(self, t, rng=None):
+    def update_position(self, t, rng=None, ideal=False):
         self.current_pos, E = calculate_orbital_position(
             self.a, self.e, self.i, self.lan, self.w, self.m0, t
         )
@@ -40,14 +45,18 @@ class Satellite:
         if dt > 0:
             # Update clock offset: offset = drift_rate * time + noise
             self.clock_bias, self.clock_drift = simulate_clock_noise(
-                dt, self.clock_bias, self.clock_drift, self.h0, self.h2, rng=rng
+                dt, self.clock_bias, self.clock_drift, self.h0, self.h2, rng=rng, ideal=ideal
             )
 
         dyn_rel = get_dynamic_relativistic_offset(self.a, self.e, E)
         self.total_bias = self.clock_bias + dyn_rel
 
-        # Prijemnik dobiva ephemeris s malom pogreškom
-        self.broadcast_pos = self.current_pos + generate_ephemeris_error(rng=rng)
+        # Prijemnik dobiva ephemeris sa SPORO-promjenjivom pogreškom (OU proces:
+        # korelirana u vremenu, ~konstantna pristranost po satelitu; ideal -> 0).
+        self.ephemeris_error = evolve_ephemeris_error(
+            self.ephemeris_error, dt if dt > 0 else 0.0, rng=rng, ideal=ideal
+        )
+        self.broadcast_pos = self.current_pos + self.ephemeris_error
         self.last_update_time = t
 
         return self.current_pos
@@ -71,6 +80,11 @@ class Satellite:
         if self.is_spoofed and system_time > 200.0:
             sat_time += 2e-5           # 6 km lažne udaljenosti (za prikaz u sat_time)
             sat_clock_error_m += 6000.0 # ...ista greška ubrizgana u stvarno mjerenje (bez broadcast korekcije!)
+
+        # Korisnički ubrizgan kvar sata (editor satelita): ulazi u MJERENJE, ali
+        # NIJE u broadcast korekciji -> prijemnik ga vidi kao grešku (RAIM hvata
+        # ako je velik). 0 = zdrav satelit.
+        sat_clock_error_m += self.user_clock_offset_m
 
         return {
             'id': self.sat_id,
@@ -118,10 +132,10 @@ class WalkerDeltaConstellation:
         if len(self.satellites) > 0:
             self.satellites[0].is_spoofed = True
 
-    def update_all(self, t):
+    def update_all(self, t, ideal=False):
         positions = {}
         for sat in self.satellites:
-            positions[sat.sat_id] = sat.update_position(t, rng=self.rng)
+            positions[sat.sat_id] = sat.update_position(t, rng=self.rng, ideal=ideal)
         return positions
 
 
@@ -162,8 +176,8 @@ class MultiGNSSConstellation:
                         Satellite(sat_id, a, 0.001, cfg["inc"], lan, 45.0, m0, system=sysname)
                     )
 
-    def update_all(self, t):
+    def update_all(self, t, ideal=False):
         positions = {}
         for sat in self.satellites:
-            positions[sat.sat_id] = sat.update_position(t, rng=self.rng)
+            positions[sat.sat_id] = sat.update_position(t, rng=self.rng, ideal=ideal)
         return positions

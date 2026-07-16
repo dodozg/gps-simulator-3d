@@ -1,16 +1,24 @@
-// Kontrole globusa u Google-Earth stilu (dolje-desno): kompas (sjever, klik =
-// sjever-gore), 2D/3D nagib, "centriraj na prijemnik", zoom +/−.
+// Kontrole globusa u Google-Earth stilu (desno-sredina): kompas (sjever, klik =
+// sjever-gore), "centriraj na prijemnik", zoom +/−.
 import { h } from "../lib/dom";
 import { t } from "../lib/i18n";
 import type { Globe } from "../globe/globe";
 
-// Kompas: crvena polovica = sjever, siva = jug; "N" gore. Cijeli se rotira s
-// -heading da strelica uvijek pokazuje pravi sjever na ekranu.
+// Kompas: crvena polovica igle = sjever, siva = jug. Rotira se SAMO igla
+// (.gc-needle) s −heading da pokazuje pravi sjever; bočne zakrivljene strelice
+// (.gc-rot) su statična naznaka da se kompas može povlačiti za rotaciju globusa.
 const COMPASS_SVG = `
-<svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
-  <polygon points="20,5 26,22 20,18 14,22" fill="#f76b6b"/>
-  <polygon points="20,35 26,18 20,22 14,18" fill="#8b98ab"/>
-  <text x="20" y="12" text-anchor="middle" font-size="8" font-weight="700" fill="#e6edf3" font-family="sans-serif">N</text>
+<svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
+  <g class="gc-rot" fill="none" stroke="#cbd5e1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 15 A 10 10 0 0 0 8 25"/>
+    <path d="M8 25 l 3.2 -0.5 M8 25 l -0.5 -3.2"/>
+    <path d="M32 15 A 10 10 0 0 1 32 25"/>
+    <path d="M32 25 l -3.2 -0.5 M32 25 l 0.5 -3.2"/>
+  </g>
+  <g class="gc-needle">
+    <polygon points="20,6 24.5,21 20,17.5 15.5,21" fill="#f76b6b"/>
+    <polygon points="20,34 24.5,19 20,22.5 15.5,19" fill="#8b98ab"/>
+  </g>
 </svg>`;
 
 function btn(cls: string, title: string, inner: string): HTMLButtonElement {
@@ -24,14 +32,37 @@ export function mountGlobeControls(parent: HTMLElement, globe: Globe): void {
   const box = h("div", "globe-controls");
 
   const compass = btn("gc-compass", t("gc_north"), COMPASS_SVG);
-  const needle = compass.querySelector("svg") as SVGElement;
-  compass.addEventListener("click", () => globe.resetNorth());
+  const needle = compass.querySelector(".gc-needle") as SVGElement;   // rotira se samo igla
 
-  const mode3d = btn("gc-3d", t("gc_3d"), globe.is3D() ? "2D" : "3D");
-  mode3d.addEventListener("click", () => {
-    const now3d = globe.toggle3D();
-    mode3d.textContent = now3d ? "2D" : "3D";   // gumb pokazuje kamo prebacuje
+  // Kut pokazivača (radijani) od 12 sata, u smjeru kazaljke.
+  let dragging = false, moved = false;
+  function angleUp(ev: PointerEvent): number {
+    const r = compass.getBoundingClientRect();
+    return Math.atan2(ev.clientX - (r.left + r.width / 2), -(ev.clientY - (r.top + r.height / 2)));
+  }
+  compass.addEventListener("pointerdown", (ev) => {
+    dragging = true; moved = false;
+    compass.classList.add("dragging");
+    compass.setPointerCapture(ev.pointerId);
+    ev.preventDefault();
   });
+  compass.addEventListener("pointermove", (ev) => {
+    if (!dragging) return;
+    moved = true;
+    const a = angleUp(ev);
+    globe.setHeading(-a);                                   // heading = −kut igle
+    needle.style.transform = `rotate(${(a * 180) / Math.PI}deg)`;   // trenutni feedback
+  });
+  const endDrag = (ev: PointerEvent): void => {
+    if (!dragging) return;
+    compass.releasePointerCapture(ev.pointerId);
+    compass.classList.remove("dragging");
+    const wasDrag = moved;
+    dragging = false;
+    if (!wasDrag) globe.resetNorth();                       // klik bez pomaka = sjever gore
+  };
+  compass.addEventListener("pointerup", endDrag);
+  compass.addEventListener("pointercancel", endDrag);
 
   const locate = btn("gc-locate", t("gc_locate"),
     `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -53,11 +84,12 @@ export function mountGlobeControls(parent: HTMLElement, globe: Globe): void {
   const zoomGroup = h("div", "gc-zoom-group");
   zoomGroup.append(zoomIn, zoomOut);
 
-  box.append(compass, mode3d, locate, zoomGroup);
+  box.append(compass, locate, zoomGroup);
   parent.appendChild(box);
 
-  // Rotiraj iglu kompasa prema trenutnom kursu kamere.
-  const sync = () => { needle.style.transform = `rotate(${-globe.headingDeg()}deg)`; };
+  // Igla prati kurs kamere (globus -> igla). Preskoči za vrijeme povlačenja jer
+  // je tada igla vođena kursorom (igla -> globus).
+  const sync = () => { if (!dragging) needle.style.transform = `rotate(${-globe.headingDeg()}deg)`; };
   globe.onCameraChange(sync);
   sync();
 }

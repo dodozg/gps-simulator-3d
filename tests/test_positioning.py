@@ -7,6 +7,7 @@ import numpy as np
 from satellite import WalkerDeltaConstellation
 from receiver import Receiver
 from utils import lla_to_ecef
+from physics_engine import evolve_ephemeris_error, EPHEMERIS_SIGMA
 
 
 def _run(gt_lla, seconds, seed=1234):
@@ -73,6 +74,33 @@ def test_raim_rejects_spoofed_satellite():
     assert any("SAT_0_0" in a for a in alarms)
     # Unatoč lažnih 6 km na jednom satelitu, rješenje ostaje upotrebljivo.
     assert errors[-1] < 200.0
+
+
+def test_ephemeris_error_is_slowly_varying():
+    """Ephemeris greška je SPORO-promjenjiva (Gauss-Markov/OU), NE bijeli šum.
+
+    Dvije tvrdnje: (1) ansambl magnitude ~ EPHEMERIS_SIGMA po osi (stacionarno,
+    start iz stacionarne razdiobe); (2) susjedne epohe VISOKO korelirane (lag-1
+    autokorelacija ≫ 0), dok bi bijeli šum dao ~0. Štiti realizam od regresije na
+    bijeli model (koji EKF nerealno lako usredni na nulu).
+    """
+    rng = np.random.default_rng(0)
+    # (1) magnituda: prvi uzorak preko mnogo neovisnih satelita ~ N(0, sigma).
+    first = np.array([evolve_ephemeris_error(None, 0.0, rng=rng) for _ in range(600)])
+    assert 0.8 * EPHEMERIS_SIGMA < first.std() < 1.2 * EPHEMERIS_SIGMA
+
+    # (2) temporalna korelacija: jedan dugi run, lag-1 autokorelacija visoka.
+    e = None
+    series = []
+    for _ in range(400):
+        e = evolve_ephemeris_error(e, 1.0, rng=rng)
+        series.append(e[0])
+    series = np.array(series)
+    lag1 = np.corrcoef(series[:-1], series[1:])[0, 1]
+    assert lag1 > 0.9, f"ephemeris greška nije sporo-promjenjiva (lag-1 corr={lag1:.3f})"
+
+    # ideal mod -> nema greške (konzistentno sa zero-noise testom).
+    assert np.allclose(evolve_ephemeris_error(None, 1.0, rng=rng, ideal=True), 0.0)
 
 
 def test_raim_screen_handles_clean_and_multiple_outliers():

@@ -16,13 +16,33 @@ import type { StateFrame } from "../lib/types";
 type Verdict = "good" | "ok" | "bad";
 interface Ex { verdict: Verdict; value: string; hr: string; en: string; }
 
-// Koncept (data-info) -> pojam u pojmovniku i/ili tumač žive vrijednosti.
-const CONCEPTS: Record<string, { term?: string; explain?: string }> = {
+// Ugrađena definicija za koncepte kojih nema u pojmovniku ni kao živa vrijednost.
+interface InlineDef { title: string; hr: string; en: string; }
+
+// Koncept (data-info) -> pojam u pojmovniku, tumač žive vrijednosti i/ili
+// ugrađena definicija (def).
+const CONCEPTS: Record<string, { term?: string; explain?: string; def?: InlineDef }> = {
+  truth: { def: {
+    title: "Istina / Truth",
+    hr: "Prava pozicija prijemnika u simulatoru (žuta točka) — ono što pravi prijemnik pokušava pronaći. Greška je udaljenost procjene (cyan) od ove točke. U stvarnosti je nepoznata; ovdje je znamo jer smo je sami postavili.",
+    en: "The receiver's true position in the simulator (yellow dot) — what a real receiver is trying to find. Error is the distance from the estimate (cyan) to this point. In the real world it's unknown; here we know it because we placed it.",
+  } },
   estimate: { term: "EKF" },
   error: { explain: "error" },
   gdop: { term: "GDOP", explain: "gdop" },
   sats: { explain: "sats" },
   nis: { term: "NIS", explain: "nis" },
+  isb: { term: "ISB" },
+  velocity: { def: {
+    title: "Brzina / Velocity",
+    hr: "Brzina kretanja prijemnika. 'Istina' je zadana (0 kad je statičan), 'procjena' je ono što je EKF izračunao iz promjene položaja. Razlika pokazuje koliko dobro filtar prati gibanje.",
+    en: "The receiver's speed. 'true' is the commanded value (0 when static), 'est.' is what the EKF computed from position change. The gap shows how well the filter tracks motion.",
+  } },
+  altitude: { def: {
+    title: "Visina / Altitude",
+    hr: "Visina prijemnika iznad WGS-84 elipsoida. 'Istina' je zadana pri postavljanju, 'procjena' je EKF rezultat. Vertikalna komponenta je obično 1.5-2x lošija od horizontalne jer su svi sateliti IZNAD prijemnika (nema ih ispod za dobru vertikalnu geometriju).",
+    en: "The receiver's height above the WGS-84 ellipsoid. 'true' is what you placed, 'est.' is the EKF result. The vertical component is usually 1.5-2x worse than horizontal because all satellites are ABOVE the receiver (none below for good vertical geometry).",
+  } },
   clock: { explain: "clock" },
 };
 
@@ -131,6 +151,14 @@ function defSection(key: string): HTMLElement | null {
   return sec;
 }
 
+// Sekcija ugrađene definicije (koncept bez pojmovnika/žive vrijednosti).
+function inlineDefSection(d: InlineDef): HTMLElement {
+  const sec = h("div", "info-def");
+  sec.appendChild(h("div", "info-term", d.title));
+  sec.appendChild(h("div", "info-long", getLang() === "hr" ? d.hr : d.en));
+  return sec;
+}
+
 // Sekcija tumačenja žive vrijednosti (verdict boji rub).
 function liveSection(explainKey: string): { node: HTMLElement; verdict: Verdict } | null {
   if (!lastFrame) return null;
@@ -175,6 +203,7 @@ function showInfo(target: HTMLElement, concept: string): void {
   p.className = "info-popover";
   let any = false;
   if (c.term) { const d = defSection(c.term); if (d) { p.appendChild(d); any = true; } }
+  if (c.def) { p.appendChild(inlineDefSection(c.def)); any = true; }
   if (c.explain) { const l = liveSection(c.explain); if (l) { p.appendChild(l.node); any = true; } }
   if (!any) return;
   place(target);

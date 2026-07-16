@@ -11,6 +11,7 @@ import { mountControls } from "./ui/controls";
 import { mountFlyTo } from "./ui/flyto";
 import { mountGlobeControls } from "./ui/globe-controls";
 import { mountTelemetry } from "./ui/telemetry";
+import { mountSatEditor } from "./ui/sat-editor";
 import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
 import { mountLessons } from "./edu/lessons";
@@ -65,28 +66,53 @@ onModeChange(renderHeader);
 const globe = new Globe(cesiumRoot, (lat, lon) => {
   // NE pomiči kameru: korisnik je dvoklikom već pokazao točno kamo gleda.
   // (Prijašnji flyTo na 9000 km je odzumiravao i djelovao kao "drift".)
-  socket.send({ type: "set_receiver", lat, lon, alt: 100 });
+  socket.send({ type: "set_receiver", lat, lon });   // alt izostavljen -> teren (DEM)
 });
 
-const telemetry = mountTelemetry(rightPanel);
+const satEditor = mountSatEditor(ui, (msg) => socket.send(msg));
+const telemetry = mountTelemetry(rightPanel, (msg) => socket.send(msg), (id) => satEditor.open(id));
 const dock = mountDock(ui);
 const experiments = mountExperiments();
 const info = initInfo();
 let controls: ReturnType<typeof mountControls> | null = null;
 
+// Lokacija prijemnika se pamti u localStorage pa prežive i RESTART servera (sesija
+// se restartom vrati na "nepostavljeno"). Vraćamo je SAMO jednom nakon spajanja i
+// samo ako je backend prazan (svjež) — da ne poništimo namjerni Reset korisnika.
+const RX_KEY = "gps3d.receiver";
+function loadRx(): { lat: number; lon: number } | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(RX_KEY) || "null");
+    return v && Number.isFinite(v.lat) && Number.isFinite(v.lon) ? v : null;
+  } catch { return null; }
+}
+let needRxRestore = false;
+
 function onFrame(f: StateFrame): void {
   telemetry.update(f);
+  satEditor.update(f);
   globe.update(f);
   dock.update(f);
   info.setFrame(f);
   controls?.syncFromFrame(f);
+
+  const rx = f.receiver;
+  if (rx.placed && rx.truth) {
+    try { localStorage.setItem(RX_KEY, JSON.stringify({ lat: rx.truth.lla.lat, lon: rx.truth.lla.lon })); }
+    catch { /* localStorage nedostupan — ignoriraj */ }
+    needRxRestore = false;
+  } else if (needRxRestore) {
+    needRxRestore = false;                          // pokušaj samo jednom po spajanju
+    const savedRx = loadRx();
+    if (savedRx) socket.send({ type: "set_receiver", lat: savedRx.lat, lon: savedRx.lon });
+  }
 }
 function onStatus(s: "connecting" | "connected" | "disconnected"): void {
   status.textContent = s === "connected" ? t("connected")
     : s === "connecting" ? t("connecting") : t("disconnected");
   status.className = "conn " + s;
-  // Backend sesija preživi reload/reconnect -> uskladi kontrole s pravim stanjem.
-  if (s === "connected") controls?.resync();
+  // Pri (ponovnom) spajanju: uskladi kontrole i vrati spremljenu lokaciju prijemnika.
+  if (s === "connected") { controls?.resync(); needRxRestore = true; }
 }
 
 const socket = new SimSocket(onFrame, onStatus);
@@ -94,7 +120,7 @@ const socket = new SimSocket(onFrame, onStatus);
 // Pogon vođenih lekcija: koraci pogone panel (kroz controls.set da UI ostane
 // usklađen), socket (postavljanje prijemnika), globus i eksperimente.
 const lessons = mountLessons({
-  place: (lat, lon) => socket.send({ type: "set_receiver", lat, lon, alt: 100 }),
+  place: (lat, lon) => socket.send({ type: "set_receiver", lat, lon }),
   attack: (v) => controls?.set({ attack: v }),
   timeOfDay: (hour) => controls?.set({ tow: hour * 3600 }),
   raim: (on) => controls?.set({ raim: on }),
@@ -111,7 +137,7 @@ controls = mountControls(leftPanel, (msg) => socket.send(msg), globe,
   () => experiments.open(), () => lessons.open());
 
 // "Fly to" pretraga (grad/koordinate) — plutajuća traka iznad globusa.
-mountFlyTo(ui, globe, (lat, lon) => socket.send({ type: "set_receiver", lat, lon, alt: 100 }));
+mountFlyTo(ui, globe, (lat, lon) => socket.send({ type: "set_receiver", lat, lon }));
 
 // Kontrole globusa (kompas / 3D / centriranje / zoom) — dolje-desno.
 mountGlobeControls(ui, globe);

@@ -1,8 +1,11 @@
-# Generirani artefakti
+# Generirani artefakti (regenerabilni; u repo NE idu iz korijena)
 skyplot.png
 spoofing.png
 iono.png
 multignss.png
+# ...ali kopije u docs/media/ SU commitane (showcase u README-u)
+!docs/media/
+!docs/media/*.png
 
 # Web frontend (build ide u lokalni dir izvan G:, vidi build_web.bat)
 web/frontend/node_modules/

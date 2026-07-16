@@ -1,11 +1,15 @@
 # GPS Simulator 3D
 
+*[🇬🇧 English version](README.en.md) · [Tehnička dokumentacija](GPS_Simulator_Documentation.md) · [Priča o Sagnac bugu](docs/sagnac-bug.md)*
+
 Simulator satelitske navigacije u Pythonu: Walker-Delta konstelacija, eliptične
 orbite (Kepler + J2), fizička obrada signala (PRN + FFT korelacija, multipath,
 AWGN), dual-frequency iono-free kombinacija te navigacijski procesor s Extended
 Kalman filterom i RAIM zaštitom. 3D vizualizacija radi na PyVista/VTK.
 
-Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulator_Documentation.md).
+Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulator_Documentation.md);
+za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vidi
+[`docs/sagnac-bug.md`](docs/sagnac-bug.md).
 
 ## Struktura
 

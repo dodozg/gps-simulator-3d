@@ -24,11 +24,9 @@ fi
 
 PORT="${GPSWEB_PORT:-8010}"
 URL="http://127.0.0.1:$PORT"
-echo "[i] Otvaram $URL"
-if command -v open >/dev/null 2>&1; then
-  open "$URL" || true            # macOS
-elif command -v xdg-open >/dev/null 2>&1; then
-  xdg-open "$URL" || true        # Linux
-fi
+# Preglednik se otvara TEK kad server odgovori (waiter u pozadini), da tab ne
+# prijavi grešku prije nego uvicorn digne port. Uvicorn ostaje u prednjem planu.
+echo "[i] Preglednik se otvara čim server odgovori ($URL)..."
+"$PY" "$(pwd)/web/wait_and_open.py" "$PORT" &
 
 exec "$PY" -m uvicorn web.backend.app:app --host 127.0.0.1 --port "$PORT"

@@ -9,10 +9,19 @@ export interface SatFrame {
   ecef: [number, number, number];
   lla: LLA;
   tracked: boolean;
+  enabled?: boolean;
   el?: number;
   az?: number;
   rejected?: boolean;
   residual_m?: number;
+  params?: { clock_offset_m: number; alt_km: number; inc_deg: number };
+}
+
+export interface SystemInfo {
+  on: boolean;
+  total: number;
+  enabled: number;
+  tracked: number;
 }
 
 export interface ReceiverFrame {
@@ -22,11 +31,13 @@ export interface ReceiverFrame {
   estimate?: PosBlock;
   error_m?: number | null;
   velocity_ms?: number;
+  velocity_true_ms?: number;
   gdop: number | null;
   nis: number | null;
   nis_dof: number;
   nis_ratio: number | null;
   clock_bias_us: number;
+  isb?: Array<{ system: string; est: number | null; true: number }>;
 }
 
 export interface AttackSpec {
@@ -61,6 +72,7 @@ export interface StateFrame {
   sats_tracked: number;
   receiver: ReceiverFrame;
   satellites: SatFrame[];
+  systems?: Record<string, SystemInfo>;
 }
 
 export interface ConstellationMeta {

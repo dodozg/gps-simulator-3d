@@ -43,8 +43,16 @@ function c3(e: [number, number, number] | null | undefined): Cesium.Cartesian3 |
 export class Globe {
   viewer: Cesium.Viewer;
   private meta: ConstellationMeta | null = null;
-  private sats = new Map<string, Cesium.Entity>();
-  private rays = new Map<string, Cesium.Entity>();
+  // Sateliti/zrake preko Primitive API-ja (PointPrimitive/Label/Polyline
+  // Collection) — izbjegava per-frame re-evaluaciju svojstava koju rade Entity-ji;
+  // bitno pri punom multi-GNSS (~96 sat.). Rover/estimate/orbite/napad ostaju
+  // Entity-ji jer su malobrojni.
+  private pointCol!: Cesium.PointPrimitiveCollection;
+  private labelCol!: Cesium.LabelCollection;
+  private polyCol!: Cesium.PolylineCollection;
+  private satPoints = new Map<string, Cesium.PointPrimitive>();
+  private satLabels = new Map<string, Cesium.Label>();
+  private rays = new Map<string, Cesium.Polyline>();
   private orbitInertial: Cesium.Cartesian3[][] = [];
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
@@ -54,6 +62,12 @@ export class Globe {
   private spoofTarget: Cesium.Entity | null = null;
   private jamRing: Cesium.Entity | null = null;
   private show = { orbits: true, rays: true, labels: false };
+  // Cache stila satelita (boja/veličina) da ne alociramo ConstantProperty svaki
+  // frame kad se ništa nije promijenilo.
+  private satStyle = new Map<string, { col: Cesium.Color; size: number }>();
+  // Throttle orbita: rebuild samo kad se Zemljin kut osjetno pomakne.
+  private lastOrbitTheta = NaN;
+  private orbitsDirty = true;
 
   constructor(container: HTMLElement, onPlace: (lat: number, lon: number) => void) {
     const token = import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined;
@@ -64,6 +78,9 @@ export class Globe {
       sceneModePicker: false, navigationHelpButton: false, animation: false,
       timeline: false, fullscreenButton: false, infoBox: false,
       selectionIndicator: false, creditContainer: document.createElement("div"),
+      // Renderiraj SAMO na zahtjev (novi podaci / pomak kamere), ne 60 fps u
+      // prazno. scene.requestRender() zovemo na kraju update() i pri toggleovima.
+      requestRenderMode: true, maximumRenderTimeChange: Infinity,
     };
     if (!token) {
       // Bez ion tokena: OpenStreetMap imagery + elipsoidni teren (bez tokena).
@@ -86,8 +103,18 @@ export class Globe {
     s.globe.enableLighting = true;
     if (s.skyAtmosphere) s.skyAtmosphere.show = true;
     s.fog.enabled = true;
+    // Ograniči zoom-out: bez ovoga se kamera može odzumirati u beskonačnost (Zemlja
+    // postane točka u praznom svemiru). Cap ~55 000 km drži CIJELU konstelaciju
+    // (orbite na ~20–30 tis. km visine) u kadru s marginom, ali ne dalje.
+    // minimumZoomDistance ostaje default (blizu, za precizno postavljanje rovera).
+    s.screenSpaceCameraController.maximumZoomDistance = 55_000_000;
     this.viewer.clock.shouldAnimate = false;
     this.viewer.camera.flyHome(0);
+
+    // Kolekcije primitiva za brojne dinamičke objekte (sateliti + zrake).
+    this.pointCol = s.primitives.add(new Cesium.PointPrimitiveCollection());
+    this.labelCol = s.primitives.add(new Cesium.LabelCollection());
+    this.polyCol = s.primitives.add(new Cesium.PolylineCollection());
 
     // Sigurnosna mreža: Cesium nakon greške u render loopu TRAJNO stane i prikaže
     // crveni panel. Naši se podaci mijenjaju 10 Hz i loše stanje (npr. divergentna
@@ -156,15 +183,25 @@ export class Globe {
         polyline: { positions: [], width: 1, material: COL.orbit, arcType: Cesium.ArcType.NONE },
       }),
     );
+    this.orbitsDirty = true;
   }
 
   private _updateOrbits(simTime: number): void {
     if (!this.meta) return;
+    if (!this.show.orbits) { this.orbitEntities.forEach((e) => { e.show = false; }); return; }
     const theta = this.meta.omega_e * simTime; // ECEF = Rz(-theta) * inercijalno
     if (!Number.isFinite(theta)) return;
+    // Orbite se rotiraju sa Zemljom (sporo). Preskoči rebuild dok se kut nije
+    // osjetno pomaknuo — inače alociramo N×129 Cartesian3 + ConstantProperty svaki
+    // frame nizašto.
+    if (!this.orbitsDirty && Math.abs(theta - this.lastOrbitTheta) < 0.002) {
+      this.orbitEntities.forEach((e) => { e.show = true; });
+      return;
+    }
+    this.lastOrbitTheta = theta;
+    this.orbitsDirty = false;
     const ct = Math.cos(theta), st = Math.sin(theta);
     this.orbitEntities.forEach((ent, idx) => {
-      if (!this.show.orbits) { ent.show = false; return; }
       ent.show = true;
       const pts = this.orbitInertial[idx].map((p) =>
         new Cesium.Cartesian3(p.x * ct + p.y * st, -p.x * st + p.y * ct, p.z),
@@ -173,46 +210,65 @@ export class Globe {
     });
   }
 
-  private _satEntity(sat: SatFrame, pos: Cesium.Cartesian3): Cesium.Entity {
-    let e = this.sats.get(sat.id);
-    if (!e) {
-      e = this.viewer.entities.add({
-        id: `sat:${sat.id}`,
-        position: pos,
-        point: { pixelSize: 7, color: COL.sat, outlineColor: Cesium.Color.BLACK, outlineWidth: 1 },
-        label: {
-          text: sat.id, font: "11px monospace", fillColor: Cesium.Color.WHITE,
-          pixelOffset: new Cesium.Cartesian2(0, -14), showBackground: true,
-          backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"), show: false,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
+  // Osiguraj point+label primitiv za satelit (kreira ih pri prvom pojavljivanju).
+  private _ensureSat(sat: SatFrame, pos: Cesium.Cartesian3): Cesium.PointPrimitive {
+    let p = this.satPoints.get(sat.id);
+    if (!p) {
+      p = this.pointCol.add({
+        position: pos, pixelSize: 7, color: COL.sat,
+        outlineColor: Cesium.Color.BLACK, outlineWidth: 1,
       });
-      this.sats.set(sat.id, e);
+      this.satPoints.set(sat.id, p);
+      const l = this.labelCol.add({
+        position: pos, text: sat.id, font: "11px monospace", fillColor: Cesium.Color.WHITE,
+        pixelOffset: new Cesium.Cartesian2(0, -14), showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"), show: this.show.labels,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      });
+      this.satLabels.set(sat.id, l);
     }
-    return e;
+    return p;
   }
 
   update(frame: StateFrame): void {
-    // sateliti
+    // sateliti (Primitive API — izravna, jeftina mutacija svojstava)
     const seen = new Set<string>();
     for (const sat of frame.satellites) {
-      const pos = c3(sat.ecef);
-      if (!pos) { const ex = this.sats.get(sat.id); if (ex) ex.show = false; continue; }
+      // Ugašeni sateliti (konstelacija/sat isključen) se ne crtaju.
+      const pos = sat.enabled === false ? null : c3(sat.ecef);
+      if (!pos) {
+        const ep = this.satPoints.get(sat.id); if (ep) ep.show = false;
+        const el = this.satLabels.get(sat.id); if (el) el.show = false;
+        continue;
+      }
       seen.add(sat.id);
-      const e = this._satEntity(sat, pos);
-      e.show = true;
-      (e.position as Cesium.ConstantPositionProperty).setValue(pos);
+      const p = this._ensureSat(sat, pos);
+      const l = this.satLabels.get(sat.id)!;
+      p.show = true;
+      p.position = pos;
+      l.position = pos;
+      l.show = this.show.labels;
+      // Boju/veličinu piši samo na promjenu.
       const col = sat.rejected ? COL.rejected : sat.tracked ? COL.tracked : COL.sat;
-      e.point!.color = new Cesium.ConstantProperty(col);
-      e.point!.pixelSize = new Cesium.ConstantProperty(sat.tracked ? 9 : 6);
-      e.label!.show = new Cesium.ConstantProperty(this.show.labels);
+      const size = sat.tracked ? 9 : 6;
+      const st = this.satStyle.get(sat.id);
+      if (!st || st.col !== col || st.size !== size) {
+        p.color = col;
+        p.pixelSize = size;
+        this.satStyle.set(sat.id, { col, size });
+      }
     }
-    for (const [id, e] of this.sats) if (!seen.has(id)) e.show = false;
+    for (const [id, p] of this.satPoints) {
+      if (!seen.has(id)) { p.show = false; const l = this.satLabels.get(id); if (l) l.show = false; }
+    }
 
     this._updateReceiver(frame);
     this._updateRays(frame);
     this._updateOrbits(frame.sim_time);
     this._updateAttack(frame);
+
+    // requestRenderMode: podaci su se promijenili -> zatraži jedan render.
+    this.viewer.scene.requestRender();
   }
 
   // Prostorni prikaz napada: spoof "pull" vektor (kamo napadač povlači rješenje)
@@ -282,8 +338,13 @@ export class Globe {
       if (!this.rover) {
         this.rover = this.viewer.entities.add({
           position: roverPos,
-          point: { pixelSize: 12, color: COL.rover, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
-          billboard: undefined,
+          // Prilijepi na tlo: prijemnik je na stvarnoj nadmorskoj visini (npr.
+          // 167 m), a globus crta ravni elipsoid (visina 0). Bez ovoga marker
+          // "lebdi" iznad površine pa na kutu/zoomu ispada pored klika i "klizi"
+          // (paralaksa) pri pomicanju karte.
+          point: { pixelSize: 12, color: COL.rover, outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY },
         });
       } else {
         this.rover.show = true;
@@ -298,7 +359,9 @@ export class Globe {
       if (!this.estimate) {
         this.estimate = this.viewer.entities.add({
           position: estPos,
-          point: { pixelSize: 9, color: COL.estimate, outlineColor: Cesium.Color.BLACK, outlineWidth: 1 },
+          point: { pixelSize: 9, color: COL.estimate, outlineColor: Cesium.Color.BLACK, outlineWidth: 1,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY },
         });
       } else {
         this.estimate.show = true;
@@ -312,7 +375,17 @@ export class Globe {
   private _updateRays(frame: StateFrame): void {
     const rx = frame.receiver;
     const seen = new Set<string>();
-    const rover = this.show.rays && rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
+    // Baza zrake mora sjediti na POVRŠINI (visina 0), ne na stvarnoj nadmorskoj
+    // visini prijemnika: globus crta ravni elipsoid pa bi zraka iz pune ECEF
+    // visine (npr. 167 m) "lebdjela" iznad tla i klizila/paralaksirala pri
+    // pomicanju karte — isti razlog zbog kojeg je rover marker CLAMP_TO_GROUND.
+    // Polyline u PolylineCollection ne podržava heightReference, pa bazu ručno
+    // projiciramo na elipsoid preko lat/lon (visina razlike je nevidljiva na
+    // skali od 20 000 km do satelita).
+    const lla = rx.placed && rx.truth ? rx.truth.lla : null;
+    const rover = this.show.rays && lla && Number.isFinite(lla.lat) && Number.isFinite(lla.lon)
+      ? Cesium.Cartesian3.fromDegrees(lla.lon, lla.lat, 0.0)
+      : null;
     if (rover) {
       for (const sat of frame.satellites) {
         if (!sat.tracked) continue;
@@ -322,13 +395,14 @@ export class Globe {
         let ray = this.rays.get(sat.id);
         const pts = [rover, satPos];
         if (!ray) {
-          ray = this.viewer.entities.add({
-            polyline: { positions: pts, width: 1.2, material: COL.ray, arcType: Cesium.ArcType.NONE },
+          ray = this.polyCol.add({
+            positions: pts, width: 1.2,
+            material: Cesium.Material.fromType("Color", { color: COL.ray }),
           });
           this.rays.set(sat.id, ray);
         } else {
           ray.show = true;
-          (ray.polyline!.positions as unknown) = new Cesium.ConstantProperty(pts);
+          ray.positions = pts;
         }
       }
     }
@@ -344,6 +418,12 @@ export class Globe {
 
   setShow(key: "orbits" | "rays" | "labels", on: boolean): void {
     this.show[key] = on;
+    if (key === "labels") {
+      for (const l of this.satLabels.values()) l.show = on;
+    } else if (key === "orbits" && on) {
+      this.orbitsDirty = true;
+    }
+    this.viewer.scene.requestRender();
   }
 
   // --- kontrole kamere (Google-Earth stil) ------------------------------
@@ -355,23 +435,55 @@ export class Globe {
     const c = this.viewer.camera;
     c.zoomOut(c.positionCartographic.height * 0.4);
   }
-  // Vrati kompas na sjever-gore (zadrži položaj i nagib).
+  // Postavi kurs (bearing) rotacijom oko točke u SREDIŠTU ekrana — kao kompas u
+  // Google Maps (globus se okreće oko onoga što gledaš, kamera se ne "vrti u
+  // mjestu"). headingRad: 0 = sjever gore, raste u smjeru kazaljke na satu.
+  setHeading(headingRad: number): void {
+    const scene = this.viewer.scene;
+    const camera = scene.camera;
+    const canvas = scene.canvas;
+    const pivot = camera.pickEllipsoid(
+      new Cesium.Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2),
+      scene.globe.ellipsoid);
+    if (!pivot) {
+      // Središte gleda u svemir (npr. cijela Zemlja) -> vrti kameru u mjestu.
+      camera.setView({ orientation: { heading: headingRad, pitch: camera.pitch, roll: 0 } });
+      scene.requestRender();
+      return;
+    }
+    // Očitaj trenutni nagib i udaljenost u lokalnom (ENU) okviru pivota, pa
+    // ponovno pogledaj pivot s istim nagibom/udaljenošću i novim kursom.
+    camera.lookAtTransform(Cesium.Transforms.eastNorthUpToFixedFrame(pivot));
+    const range = Cesium.Cartesian3.magnitude(camera.position);
+    const pitch = camera.pitch;
+    camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    camera.lookAt(pivot, new Cesium.HeadingPitchRange(headingRad, pitch, range));
+    camera.lookAtTransform(Cesium.Matrix4.IDENTITY);   // otpusti -> normalne kontrole
+    scene.requestRender();
+  }
+
+  // Klik na kompas: poravnaj prikaz — sjever gore, bez nagiba (pogled ravno
+  // odozgo, teren "horizontalan"), centriran na trenutnu točku u sredini ekrana.
   resetNorth(): void {
-    const c = this.viewer.camera;
-    c.flyTo({ destination: Cesium.Cartesian3.clone(c.positionWC),
-      orientation: { heading: 0, pitch: c.pitch, roll: 0 }, duration: 0.4 });
-  }
-  // Prebaci 2D (odozgo) <-> 3D (nagnuto). Vrati je li sada 3D.
-  toggle3D(): boolean {
-    const c = this.viewer.camera;
-    const isTopDown = c.pitch < Cesium.Math.toRadians(-74);
-    const pitch = isTopDown ? Cesium.Math.toRadians(-45) : Cesium.Math.toRadians(-90);
-    c.flyTo({ destination: Cesium.Cartesian3.clone(c.positionWC),
-      orientation: { heading: c.heading, pitch, roll: 0 }, duration: 0.5 });
-    return isTopDown;                              // prelazimo u 3D ako smo bili odozgo
-  }
-  is3D(): boolean {
-    return this.viewer.camera.pitch > Cesium.Math.toRadians(-74);
+    const scene = this.viewer.scene;
+    const camera = scene.camera;
+    const canvas = scene.canvas;
+    const pivot = camera.pickEllipsoid(
+      new Cesium.Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2),
+      scene.globe.ellipsoid);
+    let dest: Cesium.Cartesian3;
+    if (pivot) {
+      const carto = Cesium.Cartographic.fromCartesian(pivot);
+      dest = Cesium.Cartesian3.fromRadians(
+        carto.longitude, carto.latitude, camera.positionCartographic.height);  // zadrži zoom
+    } else {
+      dest = Cesium.Cartesian3.clone(camera.positionWC);
+    }
+    camera.flyTo({
+      destination: dest,
+      orientation: { heading: 0, pitch: -Cesium.Math.PI_OVER_TWO, roll: 0 },   // sjever gore, ravno dolje
+      duration: 0.6,
+    });
   }
   flyToReceiver(): boolean {
     if (!this.lastRoverLLA) return false;
@@ -381,8 +493,11 @@ export class Globe {
   headingDeg(): number {
     return Cesium.Math.toDegrees(this.viewer.camera.heading);
   }
+  // Igla kompasa mora pratiti kameru U REALNOM VREMENU dok korisnik vrti globus
+  // mišem. `camera.changed` okida tek nakon praga i zna kasniti; `preRender` se
+  // javi na SVAKI iscrtani frame (a s requestRenderMode-om iscrtavamo upravo
+  // kad se nešto miče), pa je igla uvijek u koraku s globusom.
   onCameraChange(cb: () => void): void {
-    this.viewer.camera.percentageChanged = 0.02;   // osjetljivost okidača
-    this.viewer.camera.changed.addEventListener(cb);
+    this.viewer.scene.preRender.addEventListener(cb);
   }
 }

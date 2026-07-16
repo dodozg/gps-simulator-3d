@@ -6,15 +6,19 @@ ubrizgava na razinu mjerenja prije rješavanja — isti obrazac kao
 `scenario.run_scenario`. Deterministički: konstelacija i prijemnik dijele isti
 seedani `np.random.default_rng`.
 """
+from types import SimpleNamespace
+
 import numpy as np
 
-from satellite import WalkerDeltaConstellation
+from satellite import MultiGNSSConstellation, GNSS_SYSTEMS
+from physics_engine import R_EARTH
 from receiver import Receiver
 from utils import lla_to_ecef, ecef_to_lla
 import terrain
 from scenario import build_attack
 
 MAX_SIM_DT = 5.0          # gornja granica koraka sim-vremena [s] (stabilnost)
+DEFAULT_SYSTEMS_ON = ("GPS",)   # ostale konstelacije korisnik pali iz UI-ja
 
 
 class SimSession:
@@ -24,9 +28,13 @@ class SimSession:
 
     def _build(self):
         self.rng = np.random.default_rng(self.seed)
-        self.constellation = WalkerDeltaConstellation(rng=self.rng)
+        # Sve GNSS konstelacije (GPS/Galileo/GLONASS/BeiDou); koje su aktivne u
+        # rješenju kontrolira `systems_on` + `enabled` po satelitu (web toggle).
+        self.constellation = MultiGNSSConstellation(rng=self.rng)
+        self.systems_on = set(DEFAULT_SYSTEMS_ON)
         for s in self.constellation.satellites:
             s.is_spoofed = False              # kvarove definira sesija, ne default
+            s.enabled = s.system in self.systems_on
         self.receiver = Receiver(np.zeros(3), rng=self.rng)
         self.sim_time = 0.0
         self.time_scale = 100.0
@@ -42,7 +50,11 @@ class SimSession:
         self.tracked_ids = set()
 
     # --- kontrole ---------------------------------------------------------
-    def set_receiver(self, lat, lon, alt):
+    def set_receiver(self, lat, lon, alt=None):
+        # alt=None -> postavi na STVARNU nadmorsku visinu terena na toj točki
+        # (DEM), umjesto fiksnih 100 m. Ocean = 0 m.
+        if alt is None:
+            alt = float(terrain.elevation(lat, lon))
         self.gt_pos = np.array(lla_to_ecef(lat, lon, alt))
         self.receiver.set_position(self.gt_pos)
         self.receiver.reset()
@@ -60,6 +72,39 @@ class SimSession:
 
     def set_raim(self, on):
         self.receiver.raim_enabled = bool(on)
+
+    def set_system_enabled(self, system, on):
+        """Upali/ugasi cijelu konstelaciju (svi njeni sateliti)."""
+        on = bool(on)
+        if system not in GNSS_SYSTEMS:
+            return
+        if on:
+            self.systems_on.add(system)
+        else:
+            self.systems_on.discard(system)
+        for s in self.constellation.satellites:
+            if s.system == system:
+                s.enabled = on
+
+    def set_sat_enabled(self, sat_id, on):
+        """Upali/ugasi jedan satelit (fina kontrola preko tablice)."""
+        for s in self.constellation.satellites:
+            if s.sat_id == sat_id:
+                s.enabled = bool(on)
+                return
+
+    def set_sat_param(self, sat_id, param, value):
+        """Editor satelita: kvar sata / orbita. param: clock_offset_m | alt_km | inc_deg."""
+        v = float(value)
+        for s in self.constellation.satellites:
+            if s.sat_id == sat_id:
+                if param == "clock_offset_m":
+                    s.user_clock_offset_m = v
+                elif param == "alt_km":
+                    s.a = R_EARTH + max(v, 100.0) * 1000.0   # sanity: iznad površine
+                elif param == "inc_deg":
+                    s.i = float(np.clip(v, 0.0, 90.0))
+                return
 
     def set_iono_tow0(self, tow):
         self.receiver.iono_tow0 = float(tow) % 86400.0
@@ -123,7 +168,11 @@ class SimSession:
             self.gt_pos = np.array(lla_to_ecef(lat, lon, h))
             self.receiver.set_position(self.gt_pos)
 
-        self.receiver.receive_signals(self.constellation, t)
+        # U rješenje ulaze samo UPALJENI sateliti; ugašeni se i dalje pomiču
+        # (update_all) i crtaju, ali ih prijemnik ne prima.
+        enabled = SimpleNamespace(
+            satellites=[s for s in self.constellation.satellites if s.enabled])
+        self.receiver.receive_signals(enabled, t)
         if self._attack_obj is not None and self.gt_pos is not None:
             self._attack_obj.apply(self.receiver.received_signals, t, self.gt_pos, self.rng)
 

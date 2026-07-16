@@ -2,14 +2,52 @@
 import { h, clear } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import type { Globe } from "../globe/globe";
-import type { StateFrame } from "../lib/types";
+import type { StateFrame, SystemInfo } from "../lib/types";
 
 type Send = (msg: Record<string, unknown>) => void;
 
+// Postavke se pamte u localStorage pa prežive i reload stranice I RESTART servera
+// (backend singleton sesija se restartom vrati na defaulte -> klijent je trajni
+// izvor istine i "gura" spremljeno na backend pri spajanju). Vidi pushPersisted.
+const LS_KEY = "gps3d.settings";
+function loadSaved(): Record<string, unknown> {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}") as Record<string, unknown>; }
+  catch { return {}; }
+}
+
 export function mountControls(container: HTMLElement, send: Send, globe: Globe,
                               onExperiments?: () => void, onLessons?: () => void) {
-  const state = { playing: false, timeScale: 100, tow: 50400, kinematic: false, raim: true, attack: "none" };
-  const show = { orbits: true, rays: true, labels: false };
+  const saved = loadSaved();
+  const savedShow = (saved.show ?? {}) as Partial<{ orbits: boolean; rays: boolean; labels: boolean }>;
+  const state = {
+    playing: false,   // playing se NE pamti (ne auto-startaj nakon restarta)
+    timeScale: (saved.timeScale as number) ?? 100,
+    tow: (saved.tow as number) ?? 50400,
+    kinematic: (saved.kinematic as boolean) ?? false,
+    raim: (saved.raim as boolean) ?? true,
+    attack: (saved.attack as string) ?? "none",
+  };
+  const show = {
+    orbits: savedShow.orbits ?? true,
+    rays: savedShow.rays ?? true,
+    labels: savedShow.labels ?? false,
+  };
+  // Po sustavu spremljeno on/off (prazno = koristi backend default, GPS-only).
+  const systemsOn: Record<string, boolean> = (saved.systemsOn as Record<string, boolean>) ?? {};
+
+  function persist(): void {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        timeScale: state.timeScale, tow: state.tow, kinematic: state.kinematic,
+        raim: state.raim, attack: state.attack, show, systemsOn,
+      }));
+    } catch { /* localStorage nedostupan (privatni mod) — ignoriraj */ }
+  }
+
+  let systems: Record<string, SystemInfo> | null = null;
+  let systemsSig = "";
+  const sigOf = (s: Record<string, SystemInfo>): string =>
+    Object.entries(s).map(([k, v]) => k + (v.on ? "1" : "0")).sort().join(",");
   const ATTACKS: Array<[string, () => string]> = [
     ["none", () => t("atk_none")], ["coordinated", () => t("atk_coordinated")],
     ["naive", () => t("atk_naive")], ["meaconing", () => t("atk_meaconing")],
@@ -24,6 +62,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
 
   function toggle(label: string, on: boolean, cb: (v: boolean) => void): HTMLElement {
     const r = row(label);
+    r.classList.add("toggle-row");   // flex: oznaka lijevo, prekidač desno u ISTOM retku
     const btn = h("button", "toggle" + (on ? " on" : ""));
     btn.setAttribute("role", "switch");
     btn.setAttribute("aria-checked", String(on));
@@ -81,6 +120,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       state.timeScale = Number(spdIn.value);
       spd.querySelector(".ctl-label")!.textContent = `${t("speed")} ×${state.timeScale}`;
       send({ type: "time_scale", value: state.timeScale });
+      persist();
     });
     spd.appendChild(spdIn);
     container.appendChild(spd);
@@ -96,23 +136,39 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       tod.querySelector(".ctl-label")!.textContent =
         `${t("time_of_day")}: ${String(todIn.value).padStart(2, "0")}:00`;
       send({ type: "iono_tow0", value: state.tow });
+      persist();
     });
     tod.appendChild(todIn);
     container.appendChild(tod);
 
     // prikaz globusa (samo klijent) — visoko jer se često koristi
     container.appendChild(h("div", "panel-sub", t("display")));
-    container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); }));
-    container.appendChild(toggle(t("show_rays"), show.rays, (v) => { show.rays = v; globe.setShow("rays", v); }));
-    container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); }));
+    container.appendChild(toggle(t("show_orbits"), show.orbits, (v) => { show.orbits = v; globe.setShow("orbits", v); persist(); }));
+    container.appendChild(toggle(t("show_rays"), show.rays, (v) => { show.rays = v; globe.setShow("rays", v); persist(); }));
+    container.appendChild(toggle(t("show_labels"), show.labels, (v) => { show.labels = v; globe.setShow("labels", v); persist(); }));
+
+    // konstelacije (GPS/Galileo/GLONASS/BeiDou) — pali/gasi cijeli sustav
+    if (systems) {
+      container.appendChild(h("div", "panel-sub", t("systems")));
+      for (const name of Object.keys(systems)) {
+        const info = systems[name];
+        const label = `${t("sys_" + name)}  (${info.total})`;
+        // Prikaži spremljeno stanje ako postoji (prežive restart), inače backend on.
+        const on = name in systemsOn ? systemsOn[name] : info.on;
+        container.appendChild(toggle(label, on, (v) => {
+          systemsOn[name] = v; persist();
+          send({ type: "set_system", system: name, on: v });
+        }));
+      }
+    }
 
     // simulacija (šalje backendu)
     container.appendChild(h("div", "panel-sub", t("simulation")));
     container.appendChild(toggle(t("kinematic"), state.kinematic, (v) => {
-      state.kinematic = v; send({ type: "kinematic", on: v });
+      state.kinematic = v; send({ type: "kinematic", on: v }); persist();
     }));
     container.appendChild(toggle(t("raim"), state.raim, (v) => {
-      state.raim = v; send({ type: "raim", on: v });
+      state.raim = v; send({ type: "raim", on: v }); persist();
     }));
 
     // živi napad (spoofing/jamming) — prozor se na backendu sidri na "sada"
@@ -120,6 +176,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       ATTACKS.map(([v, lab]) => [v, lab()] as [string, string]), (v) => {
         state.attack = v;
         send({ type: "attack", spec: v === "none" ? null : v });
+        persist();
       }));
 
     // eksperimenti (Faza 2)
@@ -140,23 +197,44 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     container.appendChild(h("div", "hint", t("place_hint")));
   }
 
+  // Primijeni spremljene prikaz-postavke na globus odmah (globe je već stvoren).
+  globe.setShow("orbits", show.orbits);
+  globe.setShow("rays", show.rays);
+  globe.setShow("labels", show.labels);
+
+  // Gurni spremljene postavke na backend pri (ponovnom) spajanju. Nakon RESTARTA
+  // servera sesija je na defaultima, pa je klijent taj koji vraća zadnju
+  // konfiguraciju; nakon običnog reloada je ovo uglavnom no-op (backend ih već ima).
+  function pushPersisted(): void {
+    send({ type: "time_scale", value: state.timeScale });
+    send({ type: "iono_tow0", value: state.tow });
+    send({ type: "kinematic", on: state.kinematic });
+    send({ type: "raim", on: state.raim });
+    if (state.attack !== "none") send({ type: "attack", spec: state.attack });
+    if (systems) {
+      for (const name of Object.keys(systems)) {
+        if (name in systemsOn) send({ type: "set_system", system: name, on: systemsOn[name] });
+      }
+    }
+    globe.setShow("orbits", show.orbits);
+    globe.setShow("rays", show.rays);
+    globe.setShow("labels", show.labels);
+  }
+
   render();
   onLangChange(render);
 
-  // Backend sesija je singleton koji preživi osvježavanje stranice, a kontrole se
-  // resetiraju na zadane vrijednosti -> moguća desinkronizacija (npr. kinematički
-  // ostane uključen na backendu, a toggle prikazuje isključeno). Zato pri svakom
-  // (ponovnom) spajanju uskladimo UI s PRAVIM stanjem iz prvog frame-a.
+  // Postavke se pamte u localStorage (klijent je trajni izvor istine). Pri prvom
+  // frame-u nakon (ponovnog) spajanja GURAMO spremljene postavke na backend — tako
+  // prežive i reload stranice I RESTART servera (koji sesiju vrati na defaulte).
+  // Iz frame-a čitamo samo ono što klijent ne zna: playing i sastav sustava.
   let needSync = true;
   return {
     syncFromFrame(f: StateFrame): void {
       if (needSync) {
         state.playing = f.playing;
-        state.timeScale = f.time_scale;
-        state.tow = f.iono_tow0;
-        state.kinematic = f.kinematic;
-        state.raim = f.raim_enabled;
-        state.attack = f.attack ? f.attack.type : "none";
+        if (f.systems) { systems = f.systems; systemsSig = sigOf(f.systems); }
+        pushPersisted();                            // vrati zadnju konfiguraciju na backend
         needSync = false;
         render();                                   // jednokratno; ne bori se s unosom
         return;
@@ -164,6 +242,11 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       state.playing = f.playing;
       const btn = container.querySelector(".btn.primary");
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
+      // Sustavi (konstelacije): re-render tek kad se on-stanje promijeni.
+      if (f.systems) {
+        const sig = sigOf(f.systems);
+        if (sig !== systemsSig) { systems = f.systems; systemsSig = sig; render(); }
+      }
     },
     resync(): void { needSync = true; },            // pozovi na ponovno spajanje
     // Programsko podešavanje (vođene lekcije): ažurira stanje, pošalje backendu,
@@ -176,6 +259,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       if (patch.kinematic !== undefined) { state.kinematic = patch.kinematic; send({ type: "kinematic", on: patch.kinematic }); }
       if (patch.raim !== undefined) { state.raim = patch.raim; send({ type: "raim", on: patch.raim }); }
       if (patch.attack !== undefined) { state.attack = patch.attack; send({ type: "attack", spec: patch.attack === "none" ? null : patch.attack }); }
+      persist();
       render();
     },
   };

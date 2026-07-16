@@ -19,8 +19,10 @@ if not exist "%GPSWEB_DIST%\index.html" (
     echo     ^(Backend ce svejedno raditi na /api, ali bez sucelja.^)
 )
 
-echo [i] Otvaram http://127.0.0.1:%GPSWEB_PORT%
-start "" http://127.0.0.1:%GPSWEB_PORT%
+REM Preglednik se otvara TEK kad server odgovori (waiter u pozadini), da tab ne
+REM prijavi gresku prije nego uvicorn digne port. Uvicorn ostaje u prednjem planu.
+echo [i] Preglednik se otvara cim server odgovori (http://127.0.0.1:%GPSWEB_PORT%)...
+start "" "%PY%" "%~dp0web\wait_and_open.py" %GPSWEB_PORT%
 "%PY%" -m uvicorn web.backend.app:app --host 127.0.0.1 --port %GPSWEB_PORT%
 
 endlocal

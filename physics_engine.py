@@ -188,36 +188,62 @@ def calculate_sagnac_correction(sat_pos, receiver_pos):
     correction = (omega_e / C) * (sat_pos[0] * receiver_pos[1] - sat_pos[1] * receiver_pos[0])
     return correction
 
-def simulate_clock_noise(dt, current_bias, current_drift, h0, h2, rng=None):
+def simulate_clock_noise(dt, current_bias, current_drift, h0, h2, rng=None, ideal=False):
     """
     Simulira ponašanje realnog oscilatora (kvarc ili rubidij) koristeći Allanovu varijancu.
     h0: White frequency noise (slučajni hod faze)
     h2: Random walk frequency noise (slučajni hod frekvencije)
     rng: np.random.Generator za reproducibilnost (None -> svjež default_rng).
+    ideal: ako je True, izostavi Allanov ŠUM i ostavi samo determinističku
+           komponentu (bias += drift·dt). Deterministički dio je egzaktno modeliran
+           i poništen (broadcast korekcija = total_bias·C), pa je pogodan za
+           zero-noise konzistencijski test. Vidi tests/test_consistency.py.
     """
+    if ideal:
+        # Bez slučajnog hoda: drift ostaje konstantan, bias raste linearno.
+        return current_bias + current_drift * dt, current_drift
     if rng is None:
         rng = np.random.default_rng()
     # White noise na frekvenciji (utječe na fazu/bias)
     w_freq = rng.normal(0, np.sqrt(h0 / 2.0))
     # Random walk na frekvenciji (utječe na drift)
     rw_freq = rng.normal(0, np.sqrt(2.0 * np.pi**2 * h2 * dt))
-    
+
     new_drift = current_drift + rw_freq
     new_bias = current_bias + current_drift * dt + w_freq * np.sqrt(dt)
-    
+
     return new_bias, new_drift
 
-def generate_ephemeris_error(rng=None):
+# Ephemeris (broadcast orbita) greška: SPORO-promjenjiva, NE bijeli šum. Broadcast
+# efemeride su polinomni fit valjan ~2 h, pa je greška korelirana u vremenu —
+# djeluje kao skoro-konstantna per-satelit pristranost koja polako drifta, a NE kao
+# šum koji filtar usredni na nulu. Bijeli model (prije) je bio nerealno "lak":
+# EKF ga je prosjekom gotovo poništio. Modelirano Gauss-Markov (OU) procesom sa
+# stacionarnom devijacijom EPHEMERIS_SIGMA po osi i korelacijskim vremenom
+# EPHEMERIS_TAU. (Ovo je REALIZAM, ne poboljšanje točnosti — greška blago raste;
+# vidi §7 dokumentacije i raniji OU dead-end koji je bio pogrešan CILJ, ne model.)
+EPHEMERIS_SIGMA = 1.5      # [m] po osi (red veličine broadcast URE-a)
+EPHEMERIS_TAU = 1800.0     # [s] korelacijsko vrijeme (~30 min; unutar jedne efemeride ~konstanta)
+
+
+def evolve_ephemeris_error(prev, dt, rng=None, ideal=False):
+    """Sljedeće stanje sporo-promjenjive ephemeris greške (3D ECEF vektor) [m].
+
+    Gauss-Markov / OU: e(t+dt) = a·e(t) + sqrt(1−a²)·σ·N,  a = exp(−dt/τ).
+    Održava stacionarnu devijaciju σ (EPHEMERIS_SIGMA) i korelacijsko vrijeme τ.
+    `prev=None` starta IZ stacionarne razdiobe (σ·N), ne iz nule, da nema
+    "zagrijavanja". `ideal=True` -> nema greške (broadcast_pos == prava pozicija,
+    za zero-noise konzistencijski test).
+    rng: np.random.Generator (None -> svjež default_rng).
     """
-    Simulira pogrešku efemerida u prenesenoj navigacijskoj poruci.
-    Obično je to pogreška od par metara u 3D prostoru.
-    rng: np.random.Generator za reproducibilnost (None -> svjež default_rng).
-    Vraća 3D vektor pogreške (x, y, z) u metrima.
-    """
+    if ideal:
+        return np.zeros(3)
     if rng is None:
         rng = np.random.default_rng()
-    # Pogreška je oko 1-2 metra po osi za moderne GPS satelite
-    return rng.normal(0, 1.5, size=3)
+    if prev is None:
+        return rng.normal(0.0, EPHEMERIS_SIGMA, size=3)
+    a = np.exp(-max(dt, 0.0) / EPHEMERIS_TAU)
+    return a * prev + np.sqrt(max(1.0 - a * a, 0.0)) * EPHEMERIS_SIGMA * rng.normal(0.0, 1.0, size=3)
 
 def calculate_tropospheric_delay(sat_pos, receiver_pos):
     """

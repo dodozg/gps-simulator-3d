@@ -110,8 +110,13 @@ def test_state_frame_shape():
     for _ in range(30):
         s.advance(1.0)
     f = state_frame(s)
-    assert f["sats_total"] == 24 and f["receiver"]["placed"]
-    assert len(f["satellites"]) == 24
+    # Živa sesija sad vrti sve GNSS konstelacije (96 sat.), ali je po defaultu
+    # aktivan samo GPS (24) -> u rješenje ulaze samo upaljeni.
+    assert f["sats_total"] == 96 and f["receiver"]["placed"]
+    assert len(f["satellites"]) == 96
+    assert f["systems"]["GPS"]["on"] is True and f["systems"]["GAL"]["on"] is False
+    assert f["systems"]["GPS"]["enabled"] == 24
+    assert sum(1 for x in f["satellites"] if x["enabled"]) == 24    # samo GPS upaljen
     assert f["receiver"]["ekf_initialized"]
 
 
