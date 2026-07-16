@@ -46,3 +46,22 @@ def api_glossary(lang: str = "hr"):
 @router.get("/lessons")
 def api_lessons(lang: str = "hr"):
     return _load_content("lessons", lang)
+
+
+@router.get("/guide")
+def api_guide(lang: str = "hr"):
+    """Dugoformni edukativni vodič ("GPS objašnjen") kao Markdown tekst.
+
+    Vraća {"md", "lang"}. Ako prijevod za traženi jezik ne postoji, pada natrag na
+    hrvatski (izvorni) uz `lang` koji odražava STVARNO posluženi jezik, pa UI može
+    prikazati napomenu. Sadržaj je autorski (povjerljiv) pa ga frontend renderira
+    minimalnim Markdown prikazom.
+    """
+    lang = lang if lang in ("hr", "en") else "hr"
+    path = os.path.join(CONTENT_DIR, f"guide.{lang}.md")
+    if not os.path.isfile(path):
+        lang, path = "hr", os.path.join(CONTENT_DIR, "guide.hr.md")
+    if not os.path.isfile(path):
+        raise HTTPException(404, "Vodič ne postoji")
+    with open(path, "r", encoding="utf-8") as f:
+        return {"md": f.read(), "lang": lang}

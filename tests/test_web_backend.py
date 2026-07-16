@@ -65,6 +65,22 @@ def test_lessons_have_driving_steps():
                     assert s["action"]["do"] in valid
 
 
+def test_guide_serves_markdown_in_both_languages():
+    # Vodič mora postojati kao Markdown sa ~20 sekcija (## naslovi) na oba jezika.
+    hr = client.get("/api/guide?lang=hr").json()
+    assert hr["lang"] == "hr"
+    assert "# GPS Simulator 3D" in hr["md"]
+    assert hr["md"].count("\n## ") >= 15
+    en = client.get("/api/guide?lang=en").json()
+    assert en["lang"] == "en"
+    assert "explained like you're 13" in en["md"]
+    assert en["md"].count("\n## ") >= 15
+    assert en["md"] != hr["md"]                   # stvarni prijevod, ne fallback
+    # Nepoznat jezik pada natrag na hrvatski (ne 404).
+    other = client.get("/api/guide?lang=de").json()
+    assert other["lang"] == "hr"
+
+
 def test_scenario_list_and_compare():
     files = [s["file"] for s in client.get("/api/scenario/list").json()["scenarios"]]
     assert "zagreb_clean.json" in files

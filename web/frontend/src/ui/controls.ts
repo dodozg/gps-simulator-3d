@@ -16,7 +16,8 @@ function loadSaved(): Record<string, unknown> {
 }
 
 export function mountControls(container: HTMLElement, send: Send, globe: Globe,
-                              onExperiments?: () => void, onLessons?: () => void) {
+                              onExperiments?: () => void, onLessons?: () => void,
+                              onGuide?: () => void) {
   const saved = loadSaved();
   const savedShow = (saved.show ?? {}) as Partial<{ orbits: boolean; rays: boolean; labels: boolean }>;
   const state = {
@@ -180,8 +181,13 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }));
 
     // eksperimenti (Faza 2)
-    if (onExperiments || onLessons) {
+    if (onExperiments || onLessons || onGuide) {
       container.appendChild(h("div", "panel-sub", t("academy")));
+      if (onGuide) {
+        const g = h("button", "btn primary exp-open-btn", t("open_guide"));
+        g.addEventListener("click", onGuide);
+        container.appendChild(g);
+      }
       if (onLessons) {
         const les = h("button", "btn primary exp-open-btn", t("open_lessons"));
         les.addEventListener("click", onLessons);

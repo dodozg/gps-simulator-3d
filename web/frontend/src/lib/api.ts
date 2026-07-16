@@ -21,6 +21,7 @@ export const api = {
   constellation: () => get<ConstellationMeta>("/constellation"),
   glossary: (lang: string) => get<Record<string, GlossaryTerm>>(`/glossary?lang=${lang}`),
   lessons: (lang: string) => get<{ lessons: Lesson[] }>(`/lessons?lang=${lang}`),
+  guide: (lang: string) => get<{ md: string; lang: string }>(`/guide?lang=${lang}`),
   rtk: (body: unknown) => post<Record<string, unknown>>("/rtk", body),
   spoofing: (body: unknown) => post<Record<string, unknown>>("/spoofing", body),
   multignss: (body: unknown) => post<Record<string, unknown>>("/multignss", body),

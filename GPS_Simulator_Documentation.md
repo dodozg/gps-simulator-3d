@@ -31,7 +31,7 @@ Tehnologije: Python 3.11–3.14 · numpy · FastAPI · uvicorn · PyVista/VTK ·
 CesiumJS · TypeScript (vanilla, bez frameworka) · Vite.
 
 Opseg (grubo): engine ~3.100 linija Pythona, web ~3.800 linija TypeScripta +
-~600 linija backend Pythona, 60 testova, CI na Pythonu 3.11–3.13.
+~600 linija backend Pythona, 61 testova, CI na Pythonu 3.11–3.13.
 
 ---
 
@@ -97,7 +97,8 @@ Web backend (`web/backend/`): `app.py` (FastAPI app + singleton sesija),
 
 Web frontend (`web/frontend/src/`): `globe/` (Cesium), `ui/` (kontrole,
 telemetrija, dok s grafovima, editor satelita, kompas, fly-to), `edu/`
-(pojmovnik, vođene lekcije, "objasni ovo"), `lib/` (WebSocket, i18n, tipovi).
+(pojmovnik, vođene lekcije, "objasni ovo", dugoformni vodič "GPS objašnjen"),
+`lib/` (WebSocket, i18n, tipovi).
 
 ---
 
@@ -371,7 +372,7 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
    dana, dinamička relativnost, Allanovi satovi, J2, pravi DEM s LOS-om. Greške
    se ubrizgavaju na razini mjerenja i rješavaju pravim algoritmima — zato
    spoofing lab demonstrira *stvarnu* ranjivost.
-3. **Inženjerska higijena**: 60 testova, CI, seedani RNG (bajt-reproducibilnost),
+3. **Inženjerska higijena**: 61 testova, CI, seedani RNG (bajt-reproducibilnost),
    headless jezgra, komentari koji objašnjavaju *zašto*.
 4. **Edukativni sloj je autentična vrijednost** — pravi algoritmi + objašnjenja
    nad živim brojkama je kombinacija koju ni komercijalni alati često nemaju.
@@ -420,7 +421,7 @@ single-point positioning engine, ~par metara. RTK (cm) bi tražio carrier-phase;
 
 ## 9. Testiranje
 
-`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **60 testova**:
+`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **61 testova**:
 konverzije/geodezija, DSP/korelacija, pozicioniranje (točnost + NIS),
 **zero-noise konzistencija**, RTK, spoofing, teren, web backend. Svi izvori šuma
 dijele seedani `np.random.Generator` → reproducibilno bez globalnog stanja. CI
