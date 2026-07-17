@@ -290,7 +290,8 @@ export class Globe {
         position: pos, text: sat.id, font: "11px monospace", fillColor: Cesium.Color.WHITE,
         pixelOffset: new Cesium.Cartesian2(0, -14), showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"), show: this.show.labels,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        // NE isključuj depth-test: Zemlja mora zakloniti oznake satelita koji su
+        // fizički iza globusa (inače "lebde" ispred globusa i zbunjuju).
         id: sat.id,
       });
       this.satLabels.set(sat.id, l);
@@ -346,10 +347,9 @@ export class Globe {
       p.show = true;
       p.position = pos;
       l.position = pos;
-      // Sakrij oznaku satelita ISPOD horizonta (el < 0): label ima isključen
-      // depth-test pa bi inače "probijao" kroz Zemlju za satelite iza horizonta.
-      // Bez postavljenog rovera (el nedostupan) prikaži sve kao i prije.
-      l.show = this.show.labels && (sat.el == null || sat.el >= 0);
+      // Zaklanjanje globusom rješava depth-test (label više NEMA disableDepthTestDistance):
+      // satelit iza Zemlje se sam sakrije. Prekidač "oznake" je jedini dodatni uvjet.
+      l.show = this.show.labels;
       this._styleSat(p, sat);   // boja/veličina/isticanje — piše samo na promjenu
     }
     for (const [id, p] of this.satPoints) {
@@ -512,7 +512,8 @@ export class Globe {
             fillColor: COL.tracked, showBackground: true,
             backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"),
             pixelOffset: new Cesium.Cartesian2(0, -10),
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            // Bez disableDepthTestDistance: kad je rover s druge strane globusa,
+            // Zemlja zakloni i oznake uz zrake (ne "probijaju" kroz planet).
             show: this.show.labels,   // dijele isti "oznake" prekidač kao satelitske oznake
             id: sat.id,               // klik na oznaku uz zraku isto otvara editor
           });
