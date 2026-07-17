@@ -84,6 +84,9 @@ export class Globe {
   // Throttle orbita: rebuild samo kad se Zemljin kut osjetno pomakne.
   private lastOrbitTheta = NaN;
   private orbitsDirty = true;
+  // Koliko se miš pomaknuo tijekom trenutnog pritiska (px) — da razlikujemo
+  // povlačenje (rotacija globusa) od čistog klika (odabir satelita).
+  private dragMovedPx = 0;
 
   constructor(container: HTMLElement, onPlace: (lat: number, lon: number) => void) {
     const token = import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined;
@@ -178,12 +181,39 @@ export class Globe {
       // GPU pick (točka/oznaka nose id=sat.id); ako promaši — točke su sitne, a
       // pod requestRenderMode pick zna biti nepouzdan — fallback na najbliži
       // satelit u zaslonskom prostoru.
+      if (this.dragMovedPx > 6) return;   // bilo je povlačenje (rotacija), ne klik
       const picked = this.viewer.scene.pick(m.position) as { id?: unknown } | undefined;
       let id: string | null =
         typeof picked?.id === "string" && this.satPoints.has(picked.id) ? picked.id : null;
       if (!id) id = this._nearestSatOnScreen(m.position);
       if (id) this.satClickCb?.(id);
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    // --- Rotacija globusa "kao Google Earth" ---------------------------------
+    // Zadana Cesiumova rotacija "uhvati točku pod kursorom i vuci je" prestane
+    // raditi čim kursor izađe izvan globusa. Umjesto toga orbitiramo kameru oko
+    // SREDIŠTA Zemlje ovisno o SMJERU povlačenja: rotateRight = vrtnja oko polarne
+    // osi, rotateUp = nagib (uz constrainedAxis=Z staje na polu, bez prevrtanja).
+    // Kut ∝ pomaku miša kroz vidno polje (FOV/visina), pa je na globusu osjećaj
+    // ~1:1 sa površinom, a izvan globusa se rotacija nastavlja u istom smjeru.
+    s.screenSpaceCameraController.enableRotate = false;
+    let dragging = false;
+    handler.setInputAction(() => { dragging = true; this.dragMovedPx = 0; },
+      Cesium.ScreenSpaceEventType.LEFT_DOWN);
+    handler.setInputAction(() => { dragging = false; },
+      Cesium.ScreenSpaceEventType.LEFT_UP);
+    handler.setInputAction((m: Cesium.ScreenSpaceEventHandler.MotionEvent) => {
+      if (!dragging) return;
+      const dx = m.endPosition.x - m.startPosition.x;
+      const dy = m.endPosition.y - m.startPosition.y;
+      this.dragMovedPx += Math.hypot(dx, dy);
+      const h = s.canvas.clientHeight || 1;
+      const fovy = (s.camera.frustum as Cesium.PerspectiveFrustum).fovy ?? Math.PI / 3;
+      const k = fovy / h;                 // radijana po pikselu (kroz vidno polje)
+      s.camera.rotateRight(-dx * k);      // povuci desno -> globus (površina) ide desno
+      s.camera.rotateUp(dy * k);          // povuci dolje -> globus ide dolje
+      s.requestRender();
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
   }
 
   // Najbliži VIDLJIVI satelit u zaslonskom prostoru (px) — pouzdan fallback za pick.
