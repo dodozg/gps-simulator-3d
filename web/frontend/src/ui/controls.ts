@@ -184,12 +184,12 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     if (onExperiments || onLessons || onGuide) {
       container.appendChild(h("div", "panel-sub", t("academy")));
       if (onGuide) {
-        const g = h("button", "btn primary exp-open-btn", t("open_guide"));
+        const g = h("button", "btn exp-open-btn", t("open_guide"));
         g.addEventListener("click", onGuide);
         container.appendChild(g);
       }
       if (onLessons) {
-        const les = h("button", "btn primary exp-open-btn", t("open_lessons"));
+        const les = h("button", "btn exp-open-btn", t("open_lessons"));
         les.addEventListener("click", onLessons);
         container.appendChild(les);
       }
