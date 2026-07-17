@@ -108,19 +108,27 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 /* editor pojedinog satelita — plutajuća kartica lijevo od desnog panela */
 .sat-editor {
   position: fixed; right: 344px; top: 92px; width: 260px; z-index: 1200;
+  max-height: calc(100vh - 108px); overflow-y: auto;
   background: var(--panel-solid); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: 0 16px 44px rgba(0,0,0,0.6); padding: 12px 14px; pointer-events: auto;
 }
 .sat-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .sat-editor-title { font-weight: 700; color: var(--cyan); font-family: var(--mono); font-size: 14px; }
-.sat-editor-status { font-size: 12px; color: var(--dim); margin-bottom: 12px; }
+.sat-editor-status { font-size: 12px; color: var(--dim); margin: 8px 0 12px; }
 .sat-editor-field { margin: 10px 0; }
 .sat-editor-inline { display: flex; align-items: center; gap: 10px; }
 .sat-editor-inline .slider { flex: 1; }
+.sat-editor-inline .btn { flex: 1; }
 .sat-editor-val { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 54px; text-align: right; }
 .sat-editor-note { font-size: 11px; color: var(--dim); margin-top: 4px; }
 .sat-editor .ctl-select { margin-top: 4px; }
 .sat-editor .btn { margin-top: 12px; }
+.sat-editor-info { margin: 10px 0; padding: 8px 10px; background: #0f1621; border: 1px solid var(--border); border-radius: 8px; }
+.sat-editor-info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 0; }
+.sat-editor-info-k { font-size: 12px; color: var(--dim); }
+.sat-editor-info-v { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.sat-editor-info-v.bad { color: var(--red); }
+.sat-editor-subhead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cyan); margin: 12px 0 2px; }
 @media (max-width: 820px) { .sat-editor { right: 8px; left: 8px; width: auto; top: auto; bottom: 8px; } }
 .mono { font-family: var(--mono); }
 

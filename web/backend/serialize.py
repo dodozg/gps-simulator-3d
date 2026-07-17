@@ -117,7 +117,8 @@ def state_frame(session):
                  "tracked": tracked,
                  "params": {"clock_offset_m": float(getattr(sat, "user_clock_offset_m", 0.0)),
                             "alt_km": float((sat.a - R_EARTH) / 1000.0),
-                            "inc_deg": float(sat.i)}}
+                            "inc_deg": float(sat.i),
+                            "lan_deg": float(sat.lan)}}
         if placed:
             azel = enu_azel(session.gt_pos, pos)
             if azel is not None:

@@ -103,6 +103,8 @@ class SimSession:
                     s.a = R_EARTH + max(v, 100.0) * 1000.0   # sanity: iznad površine
                 elif param == "inc_deg":
                     s.i = float(np.clip(v, 0.0, 90.0))
+                elif param == "lan_deg":
+                    s.lan = float(v) % 360.0   # rektascenzija uzlaznog čvora (rotacija ravnine)
                 return
 
     def set_iono_tow0(self, tow):

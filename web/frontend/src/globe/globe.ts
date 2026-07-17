@@ -65,6 +65,7 @@ export class Globe {
   private rayLabels = new Map<string, Cesium.Label>();
   private rayRover: Cesium.Cartesian3 | null = null;      // baza zrake (rover)
   private rayGeom = new Map<string, Cesium.Cartesian3>(); // jedinični smjer zrake po satelitu
+  private satClickCb: ((id: string) => void) | null = null; // klik na satelit -> editor
   private orbitInertial: Cesium.Cartesian3[][] = [];
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
@@ -162,6 +163,26 @@ export class Globe {
       if (!carto) return;
       onPlace(Cesium.Math.toDegrees(carto.latitude), Cesium.Math.toDegrees(carto.longitude));
     }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
+    // Klik na satelit (točku, oznaku ili oznaku uz zraku) otvara njegov editor —
+    // isto kao klik na redak u tablici satelita. Sve te primitive nose `id = sat.id`.
+    handler.setInputAction((m: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+      const picked = this.viewer.scene.pick(m.position) as { id?: unknown } | undefined;
+      const id = picked?.id;
+      if (typeof id === "string" && this.satPoints.has(id)) this.satClickCb?.(id);
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  }
+
+  // Callback kad se klikne satelit na globusu (postavlja main.ts -> otvori editor).
+  onSatelliteClick(cb: (id: string) => void): void {
+    this.satClickCb = cb;
+  }
+
+  // Doleti kamerom da satelit bude u kadru (gumb "Fokusiraj" u editoru satelita).
+  lookAtSat(ecef: [number, number, number]): void {
+    const target = c3(ecef);
+    if (!target) return;
+    this.viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(target, 2_000_000), { duration: 1.0 });
   }
 
   setMeta(meta: ConstellationMeta): void {
@@ -234,6 +255,7 @@ export class Globe {
       p = this.pointCol.add({
         position: pos, pixelSize: 7, color: COL.sat,
         outlineColor: Cesium.Color.BLACK, outlineWidth: 1,
+        id: sat.id,   // za pick (klik na satelit otvara editor)
       });
       this.satPoints.set(sat.id, p);
       const l = this.labelCol.add({
@@ -241,6 +263,7 @@ export class Globe {
         pixelOffset: new Cesium.Cartesian2(0, -14), showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"), show: this.show.labels,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        id: sat.id,
       });
       this.satLabels.set(sat.id, l);
     }
@@ -440,6 +463,7 @@ export class Globe {
             pixelOffset: new Cesium.Cartesian2(0, -10),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
             show: this.show.labels,   // dijele isti "oznake" prekidač kao satelitske oznake
+            id: sat.id,               // klik na oznaku uz zraku isto otvara editor
           });
           this.rayLabels.set(sat.id, rl);
         } else {
