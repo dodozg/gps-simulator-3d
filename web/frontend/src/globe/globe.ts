@@ -21,12 +21,13 @@ const COL = {
 // undefined -> "Cannot read properties of undefined (reading 'longitude')" i
 // render loop se TRAJNO zaustavi. Zato ovdje radimo TOČNO istu provjeru koju
 // Cesium radi interno i odbacimo poziciju koja se ne može projicirati.
-// Oznaka satelita na zraki se stavlja ovoliko [m] iznad baze (uz smjer zrake) pa
-// se oznake razdvoje po azimutu/elevaciji umjesto da se skupe u točki na roveru.
-const RAY_LABEL_DIST = 5000;
-// Oznake uz zrake vidljive samo kad je kamera bliže od ovoga [m] (zoomirano na
-// rover); dalje se sakriju da ne zatrpaju prikacijom kad se gleda cijela scena.
-const RAY_LABEL_MAX_CAM = 2_000_000;
+// Oznaka satelita uz zraku stoji na udaljenosti PROPORCIONALNOJ zoomu (udaljenosti
+// kamere od rovera), pa je njen PRIVIDNI (zaslonski) odmak od rovera ~konstantan
+// bez obzira na zoom — kako zumiraš prema roveru, oznaka mu se dinamički primiče.
+// Poziciju svaki render osvježava _repositionRayLabels (na preRender).
+const RAY_LABEL_SCREEN_FRAC = 0.04;   // odmak uz zraku = ovaj udio udaljenosti kamere
+const RAY_LABEL_MIN = 30;             // [m] donja granica (ekstremni zoom-in)
+const RAY_LABEL_MAX = 400_000;        // [m] gornja granica (ekstremni zoom-out)
 
 const _scratch = new Cesium.Cartesian3();
 function projectable(c: Cesium.Cartesian3): boolean {
@@ -60,8 +61,10 @@ export class Globe {
   private satPoints = new Map<string, Cesium.PointPrimitive>();
   private satLabels = new Map<string, Cesium.Label>();
   private rays = new Map<string, Cesium.Polyline>();
-  // Oznake satelita uz zrake, blizu rovera (vide se tek pri zoomu — vidi _updateRays).
+  // Oznake satelita uz zrake, blizu rovera; poziciju im dinamički skalira zoom.
   private rayLabels = new Map<string, Cesium.Label>();
+  private rayRover: Cesium.Cartesian3 | null = null;      // baza zrake (rover)
+  private rayGeom = new Map<string, Cesium.Cartesian3>(); // jedinični smjer zrake po satelitu
   private orbitInertial: Cesium.Cartesian3[][] = [];
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
@@ -124,6 +127,11 @@ export class Globe {
     this.pointCol = s.primitives.add(new Cesium.PointPrimitiveCollection());
     this.labelCol = s.primitives.add(new Cesium.LabelCollection());
     this.polyCol = s.primitives.add(new Cesium.PolylineCollection());
+
+    // Oznake uz zrake se primiču/odmiču s zoomom (odmak ∝ udaljenosti kamere) pa
+    // ostaju na ~istom zaslonskom položaju od rovera. Zato ih repozicioniramo na
+    // SVAKI render (uklj. pomak/zoom kamere), ne samo pri novom podatkovnom frameu.
+    s.preRender.addEventListener(() => this._repositionRayLabels());
 
     // Sigurnosna mreža: Cesium nakon greške u render loopu TRAJNO stane i prikaže
     // crveni panel. Naši se podaci mijenjaju 10 Hz i loše stanje (npr. divergentna
@@ -398,6 +406,7 @@ export class Globe {
     const rover = this.show.rays && lla && Number.isFinite(lla.lat) && Number.isFinite(lla.lon)
       ? Cesium.Cartesian3.fromDegrees(lla.lon, lla.lat, 0.0)
       : null;
+    this.rayRover = rover;
     if (rover) {
       for (const sat of frame.satellites) {
         if (!sat.tracked) continue;
@@ -417,34 +426,48 @@ export class Globe {
           ray.positions = pts;
         }
 
-        // Oznaka satelita uz zraku, malo iznad baze prema satelitu — pri zoomu na
-        // rover jasno pokazuje kojoj zraki pripada koji satelit. Skrivena kad je
-        // kamera daleko (distanceDisplayCondition) da ne zatrpa cijeli prikaz.
-        const dir = Cesium.Cartesian3.subtract(satPos, rover, new Cesium.Cartesian3());
-        Cesium.Cartesian3.normalize(dir, dir);
-        const labelPos = Cesium.Cartesian3.add(
-          rover, Cesium.Cartesian3.multiplyByScalar(dir, RAY_LABEL_DIST, new Cesium.Cartesian3()),
-          new Cesium.Cartesian3());
+        // Oznaka satelita uz zraku — spremi samo SMJER; stvarnu poziciju (odmak od
+        // rovera proporcionalan zoomu) postavlja _repositionRayLabels na preRender.
+        const dir = Cesium.Cartesian3.normalize(
+          Cesium.Cartesian3.subtract(satPos, rover, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+        this.rayGeom.set(sat.id, dir);
         let rl = this.rayLabels.get(sat.id);
         if (!rl) {
           rl = this.labelCol.add({
-            position: labelPos, text: sat.id, font: "11px monospace",
+            position: rover, text: sat.id, font: "11px monospace",
             fillColor: COL.tracked, showBackground: true,
             backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"),
             pixelOffset: new Cesium.Cartesian2(0, -10),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0.0, RAY_LABEL_MAX_CAM),
           });
           this.rayLabels.set(sat.id, rl);
         } else {
           rl.show = true;
-          rl.position = labelPos;
         }
       }
     }
     for (const [id, ray] of this.rays) if (!seen.has(id)) {
       ray.show = false;
       const rl = this.rayLabels.get(id); if (rl) rl.show = false;
+    }
+    this._repositionRayLabels();
+  }
+
+  // Odmak oznaka uz zrake od rovera skalira s udaljenošću kamere (zoomom) pa je
+  // njihov zaslonski položaj ~konstantan bez obzira na zoom. Zove se svaki render
+  // (preRender), pa se dinamički primiču dok zumiraš prema roveru.
+  private _repositionRayLabels(): void {
+    const rover = this.rayRover;
+    if (!rover) return;
+    const camDist = Cesium.Cartesian3.distance(this.viewer.camera.positionWC, rover);
+    const off = Math.min(Math.max(camDist * RAY_LABEL_SCREEN_FRAC, RAY_LABEL_MIN), RAY_LABEL_MAX);
+    const scaled = new Cesium.Cartesian3();
+    for (const [id, lbl] of this.rayLabels) {
+      if (!lbl.show) continue;
+      const dir = this.rayGeom.get(id);
+      if (!dir) continue;
+      lbl.position = Cesium.Cartesian3.add(
+        rover, Cesium.Cartesian3.multiplyByScalar(dir, off, scaled), new Cesium.Cartesian3());
     }
   }
 
