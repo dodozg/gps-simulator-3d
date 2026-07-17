@@ -31,7 +31,7 @@ Tehnologije: Python 3.11–3.14 · numpy · FastAPI · uvicorn · PyVista/VTK ·
 CesiumJS · TypeScript (vanilla, bez frameworka) · Vite.
 
 Opseg (grubo): engine ~3.100 linija Pythona, web ~3.800 linija TypeScripta +
-~600 linija backend Pythona, 61 testova, CI na Pythonu 3.11–3.13.
+~600 linija backend Pythona, 62 testova, CI na Pythonu 3.11–3.13.
 
 ---
 
@@ -44,15 +44,17 @@ flowchart TB
         SAT["satellite.py<br/>Satellite, WalkerDelta,<br/>MultiGNSS, GNSS_SYSTEMS"]
         SP["signal_processing.py<br/>PRN, RF kanal, 8× korelacija"]
         TER["terrain.py<br/>globalni DEM (SRTM)"]
-        RX["receiver.py<br/>LS init + EKF(11) + RAIM<br/>+ DOP selekcija + ISB"]
+        MEAS["measurement.py<br/>kanal + korekcije + DOP<br/>selekcija → pseudoudalj."]
+        RX["receiver.py<br/>LS init + EKF(11) + RAIM<br/>+ ISB (estimator)"]
         UT["utils.py<br/>WGS-84 geodezija, DMS"]
         PE --> SAT
         PE --> SP
-        PE --> RX
-        SAT --> RX
-        SP --> RX
-        TER --> RX
-        UT --> RX
+        PE --> MEAS
+        SAT --> MEAS
+        SP --> MEAS
+        TER --> MEAS
+        UT --> MEAS
+        MEAS <--> RX
     end
 
     subgraph TOOLS["CLI alati (headless)"]
@@ -84,8 +86,9 @@ flowchart TB
 |-------|-------:|-------|
 | `physics_engine.py` | 272 | Keplerove orbite + J2, Klobuchar ionosfera, Hopfield troposfera, Sagnac, relativistički driftovi, Allanov model sata, sporo-promjenjiva (OU) ephemeris greška |
 | `satellite.py` | 183 | `Satellite` (orbita + sat + PRN + ephemeris stanje), `WalkerDeltaConstellation` (GPS 24/6/1), `MultiGNSSConstellation` (GPS/GAL/GLO/BDS, 96 sat.), `GNSS_SYSTEMS` (parametri + ISB) |
-| `signal_processing.py` | 158 | PRN kodovi, RF kanal (**korelirani L1/L2 multipath** + AWGN), **8× naduzorkovana** FFT korelacija, dekodiranje pseudoudaljenosti |
-| `receiver.py` | 520 | LS "cold start" → **11-D EKF** → RAIM → DOP selekcija; iono-free, tropo korekcija, Sagnac, **ISB procjena**, `ideal` mod |
+| `signal_processing.py` | 262 | **Pravi C/A Gold kodovi** (LFSR-i), RF kanal u frek. domeni (**korelirani L1/L2 multipath** + AWGN), **8× naduzorkovana** FFT korelacija (keširano), dekodiranje pseudoudaljenosti |
+| `measurement.py` | 249 | **Mjerni model** ("svijet → pseudoudaljenosti"): vidljivost+LOS, DOP selekcija, RF kanal, iono-free, sve korekcije (tropo/Sagnac/sat/ISB), sat prijemnika, `ideal` mod |
+| `receiver.py` | 350 | **Estimator**: LS "cold start" → **11-D EKF** → RAIM → NIS; vlasi mjerni model, predaje mu procjenu (§19.2) |
 | `terrain.py` | 94 | Globalni DEM (`terrain_dem.npz`, NASA SRTM), bilinearna interpolacija |
 | `utils.py` | 92 | LLA ↔ ECEF (WGS-84, Bowring — sub-mm točnost), DMS format |
 | `main.py` | 478 | Desktop PyVista GUI (jedini dio koji traži GPU) |
@@ -168,19 +171,32 @@ Koraci:
 
 ## 5. Ključni algoritmi i modeli
 
-### 5.1 Obrada signala — 8× naduzorkovana korelacija
+### 5.1 Obrada signala — pravi C/A Gold kodovi + 8× naduzorkovana korelacija
 
-PRN kod ima 1024 čipa (≈ realni C/A od 1023); 1 čip ≈ **293 m**. Naivna
-korelacija na 1 uzorak/čip daje razlučivost tek ~0,1 čipa ≈ **27 m** — što je
-dugo bilo dominantni (skriveni) izvor greške pozicije. Zato se signal
-**naduzorkuje 8×** (`OVERSAMPLE = 8` → ~36,6 m/uzorak), a parabolička
-interpolacija spušta ranging na **~2,5 m** — realno za GPS kod.
+PRN je **pravi GPS C/A Gold kod** od **1023 čipa** (`gold_code`: dva 10-bitna
+LFSR-a, preferirani par G1/G2), a ne random ±1 niz. Gold kodovi imaju
+GARANTIRANO omeđenu **troznačnu cross-korelaciju** {−65, −1, 63} (za razliku od
+random ~√1023, neomeđeno) — svojstvo koje razdvaja satelite u istom signalu.
+1 čip ≈ **293 m**. Naivna korelacija na 1 uzorak/čip daje razlučivost tek
+~0,1 čipa ≈ **27 m**, pa se signal **naduzorkuje 8×** (`OVERSAMPLE = 8` →
+~36,6 m/uzorak); parabolička interpolacija spušta ranging na **~2,5 m**.
 
-Kanal (`simulate_rf_channel`) dodaje **multipath** (reflektirana, prigušena
-kopija; rezidual nakon mitigacije 1–12 m, **jači pri niskoj elevaciji**, ~0 u
-zenitu) i **AWGN** (despread SNR −2 dB). Kodni multipath uvijek *kasni*
-(pozitivan bias), pa ga filtar ne može usredniti na nulu — glavni je izvor
-rezidualnog šuma.
+Per-satelitski kanal (`simulate_channel`) radi cijelo u **frekvencijskoj
+domeni** (korelacija koda sa samim sobom je keširani |FFT|², šum se doda kao
+FFT bijelog šuma), pa uz 1023-dužinu (ne-potencija dvojke, ~2× sporiji FFT)
+ostaje izvediv. Dodaje **multipath** (reflektirana, prigušena kopija; rezidual
+1–12 m, **jači pri niskoj elevaciji**, ~0 u zenitu) i **AWGN** (despread SNR
+−2 dB). Kodni multipath uvijek *kasni* (pozitivan bias), pa ga filtar ne može
+usredniti na nulu.
+
+> **Zašto per-satelitski kanal, a ne jedan kombinirani antenski signal?** Pokušaj
+> zbrajanja svih satelita u jedan signal po bandu (da cross-korelacija postane
+> "stvarna") *pogoršao* je točnost ~5 → 10 m (NIS↑): jedan 1 ms snapshot
+> **precjenjuje** cross-korelaciju jer izostavlja vremensku integraciju kojom
+> pravi prijemnik (koherentna integracija + relativni Doppler) tu korelaciju
+> **usredni prema nuli**. Per-sat kanal upravo modelira taj dobro-razdvojeni
+> ishod. Pravi kombinirani model (Doppler + integracija → stvaran near-far/
+> jamming) je u planu — vidi §10. Gold kodovi su temelj za njega.
 
 ### 5.2 Navigacija — 11-D Extended Kalman Filter
 
@@ -372,7 +388,7 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
    dana, dinamička relativnost, Allanovi satovi, J2, pravi DEM s LOS-om. Greške
    se ubrizgavaju na razini mjerenja i rješavaju pravim algoritmima — zato
    spoofing lab demonstrira *stvarnu* ranjivost.
-3. **Inženjerska higijena**: 61 testova, CI, seedani RNG (bajt-reproducibilnost),
+3. **Inženjerska higijena**: 62 testova, CI, seedani RNG (bajt-reproducibilnost),
    headless jezgra, komentari koji objašnjavaju *zašto*.
 4. **Edukativni sloj je autentična vrijednost** — pravi algoritmi + objašnjenja
    nad živim brojkama je kombinacija koju ni komercijalni alati često nemaju.
@@ -381,11 +397,14 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
 
 ### Slabosti (pošteno)
 
-1. **Signalni sloj je najtanji dio fizike.** PRN je random ±1 (ne Gold kod);
-   nema Dopplera, carrier-phase praćenja ni C/N0 u živom lancu; SNR/multipath
-   parametri su *kalibrirani* na realne brojke, ne izvedeni iz fizike linka.
-   *(L1/L2 multipath je od 2026-07 KORELIRAN — dijeljena geometrija odraza, vidi
-   §7 — pa iono-free više ne predodaje ~3× šuma; bila je to ranija slabost.)*
+1. **Signalni sloj je najtanji dio fizike.** PRN su sada **pravi C/A Gold kodovi**
+   (§5.1, bila je to prva stavka ove slabosti), ali i dalje: nema Dopplera,
+   carrier-phase praćenja ni C/N0 u živom lancu; sateliti se dekodiraju iz
+   ZASEBNIH kanala (jedan kombinirani antenski signal precjenjuje cross-korelaciju
+   bez vremenske integracije — vidi §5.1 i §10); SNR/multipath parametri su
+   *kalibrirani* na realne brojke, ne izvedeni iz fizike linka.
+   *(L1/L2 multipath je KORELIRAN — dijeljena geometrija odraza, §7 — pa iono-free
+   više ne predodaje ~3× šuma.)*
 2. **Latentni rizik klase "istina curi u model".** Sagnac bug je bio točno taj
    tip greške — tih, maskiran šumom. Nekad najveći nedostatak, sada **pokriveno**:
    *zero-noise consistency test* (`tests/test_consistency.py`) gasi sve šumove i
@@ -394,9 +413,9 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
 3. **Dvostruka arhitektura sučelja.** `main.py` (PyVista) i `web/` rade isto;
    web je očito budućnost, desktop postaje mrtvi teret.
 4. **Sitnije**: sferni `R_EARTH` u orbitama vs WGS-84 u geodeziji (namjerno, ali
-   trajni izvor zabune); `receiver.py` radi previše (kanal + korekcije +
-   selekcija + EKF + RAIM u 500 linija); najveći TS moduli se približavaju
-   granici ručnog DOM-a.
+   trajni izvor zabune); ~~`receiver.py` radi previše~~ (**riješeno §19.2**:
+   `measurement.py` mjerni model + `receiver.py` estimator); najveći TS moduli se
+   približavaju granici ručnog DOM-a.
 5. **Google Drive kao lokacija repoa** — `.venv` sync churn, npm ne radi na G:,
    CRLF; sve zaobiđeno, ali svaki workaround je trajna kognitivna cijena.
 
@@ -421,7 +440,7 @@ single-point positioning engine, ~par metara. RTK (cm) bi tražio carrier-phase;
 
 ## 9. Testiranje
 
-`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **61 testova**:
+`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **62 testova**:
 konverzije/geodezija, DSP/korelacija, pozicioniranje (točnost + NIS),
 **zero-noise konzistencija**, RTK, spoofing, teren, web backend. Svi izvori šuma
 dijele seedani `np.random.Generator` → reproducibilno bez globalnog stanja. CI
@@ -447,10 +466,16 @@ Prioritetno (po omjeru vrijednost/trud):
 1. **Realizam grešaka**: ~~korelirani L1/L2 multipath~~ i
    ~~sporo-promjenjiva ephemeris greška~~ (**oboje napravljeno**, §7); preostaje
    tropo rezidual modela i frekvencijski-ovisan (ne 100%) L1/L2 multipath.
-2. **RTK u živom sučelju** (carrier-phase, cm-razina).
-3. **Ingest pravog hardvera** (§8) — sirove pseudoudaljenosti + broadcast
+2. **Puni signalni model — kombinirani antenski signal + Doppler/integracija.**
+   Svi sateliti u jedan signal po bandu (Gold kodovi ih razdvajaju), ALI s
+   koherentnom integracijom preko više kodnih perioda i relativnim Dopplerom, da
+   se cross-korelacija realno usredni (bez toga snapshot precjenjuje šum — vidi
+   §5.1). Tek to daje STVARAN near-far/jamming efekt uz očuvanu nominalnu točnost.
+   Time bi i jamming postao fizički (šum u signalu), ne post-hoc na mjerenjima.
+3. **RTK u živom sučelju** (carrier-phase, cm-razina).
+4. **Ingest pravog hardvera** (§8) — sirove pseudoudaljenosti + broadcast
    efemeride → prava lokacija na karti.
-4. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
+5. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
    ~~write-up o Sagnac bugu~~ ([`docs/sagnac-bug.md`](docs/sagnac-bug.md))
    **napravljeni**, uz showcase figure u `docs/media/`; preostaju GIF-ovi žive
    web/desktop 3D scene (traže snimku pokrenutog GUI-ja).

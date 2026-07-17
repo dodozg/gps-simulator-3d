@@ -16,8 +16,9 @@ and a web **control center + GNSS academy** (FastAPI + CesiumJS, bilingual).
 
 > **What's real vs. simulated?** Everything *above the signal layer* is
 > authentic — the solver is the same algorithm that would run on a real
-> receiver. The RF layer is a faithful but calibrated model (FFT correlation of
-> PRN codes, not a full Gold-code/carrier-phase chain). See the
+> receiver. The RF layer is a faithful but calibrated model: real C/A **Gold
+> codes** and FFT correlation, but each satellite is decoded from its own channel
+> (no carrier-phase tracking or combined-signal near-far model yet). See the
 > [honest self-assessment](GPS_Simulator_Documentation.md#8-osvrt-i-analiza-iskreno).
 
 ---
@@ -126,7 +127,7 @@ Full architecture, block diagrams and model derivations:
 |--------|------|
 | `physics_engine.py` | Orbits (Kepler + J2), iono/tropo, relativity, clocks, slowly-varying ephemeris |
 | `satellite.py` | Satellites + Walker-Delta and multi-GNSS (GPS/GAL/GLO/BDS) constellations |
-| `signal_processing.py` | PRN codes, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
+| `signal_processing.py` | Real C/A **Gold codes**, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
 | `receiver.py` | LS cold start → 11-D EKF → RAIM → DOP selection; iono-free, Sagnac, ISB |
 | `terrain.py` | Global DEM (NASA SRTM) + bilinear interpolation |
 | `utils.py` | Geodesy: LLA ↔ ECEF on the WGS-84 ellipsoid |

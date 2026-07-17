@@ -22,6 +22,27 @@ def test_prn_autocorrelation_peaks_at_zero():
     assert corr.max() > 5 * np.abs(cross).max()
 
 
+def test_gold_codes_have_bounded_three_valued_crosscorr():
+    """Pravi C/A Gold kodovi (ne random ±1): garantirano OMEĐENA troznačna
+    cross-korelacija {-65, -1, 63} (preferirani par, n=10) i autokorelacija s
+    vrhom 1023 i pobočnim maksimumom 65. To je svojstvo koje random ±1 nema
+    (cross ~√1023, neomeđeno) — temelj za razdvajanje satelita u kombiniranom
+    signalu (§19.1).
+    """
+    def circ(a, b):
+        return np.rint(np.real(np.fft.ifft(np.fft.fft(a) * np.conj(np.fft.fft(b))))).astype(int)
+
+    c0, c5, c100 = sp.gold_code(0), sp.gold_code(5), sp.gold_code(100)
+    assert len(c0) == 1023 and set(np.unique(c0)).issubset({-1.0, 1.0})
+    auto = circ(c0, c0)
+    assert auto[0] == 1023
+    assert np.abs(auto[1:]).max() == 65                      # pobočni maksimum omeđen
+    for other in (c5, c100):
+        assert set(np.unique(circ(c0, other))).issubset({-65, -1, 63})
+    # generate_prn vraća Gold kod, deterministički po sat_id
+    assert np.array_equal(sp.generate_prn("SAT_X_L1"), sp.generate_prn("SAT_X_L1"))
+
+
 def test_multipath_is_correlated_across_frequencies():
     """Dijeljena geometrija odraza (`sample_multipath` -> `mp=`) mora dati VISOKO
     korelirani L1/L2 multipath, pa iono-free kombinacija NE napuhava multipath ~3×

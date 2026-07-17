@@ -1,9 +1,12 @@
 import numpy as np
 from physics_engine import C
 
-# Konfiguracija simuliranog PRN signala
-# U pravom GPS-u C/A kod ima 1023 čipa. Koristimo 1024 radi bržeg FFT-a.
-PRN_LENGTH = 1024
+# Konfiguracija PRN signala. Pravi GPS C/A kod ima 1023 čipa (period točno 1 ms).
+# Ranije smo koristili 1024 (potencija dvojke) radi bržeg FFT-a uz RANDOM ±1 niz;
+# sada koristimo PRAVE C/A Gold kodove (vidi gold_code) pa je duljina 1023. FFT nad
+# 1023·OVERSAMPLE nije potencija dvojke (faktor 31) pa je ~2× sporiji, ali cache
+# FFT-ova lokalnih kodova to nadoknađuje (vidi _fft_upsampled).
+PRN_LENGTH = 1023
 CHIP_RATE = 1.023e6 # 1.023 MHz
 CODE_PERIOD = PRN_LENGTH / CHIP_RATE # ~1 ms
 METERS_PER_CHIP = C / CHIP_RATE # ~293 metra
@@ -48,17 +51,137 @@ def sample_multipath(rng):
     att_raw = rng.uniform(MP_ATT_MIN, MP_ATT_MAX)
     return (extra_dist, att_raw)
 
+def _m_sequence(taps):
+    """10-bitni Fibonacci LFSR -> m-niz maksimalne duljine 1023 (bitovi 0/1).
+
+    `taps` su pozicije povratne veze (1..10) prema karakterističnom polinomu.
+    Registar starta u svim jedinicama (standardni C/A početni uvjet).
+    """
+    reg = np.ones(10, dtype=np.int8)
+    seq = np.empty(PRN_LENGTH, dtype=np.int8)
+    for i in range(PRN_LENGTH):
+        seq[i] = reg[9]                       # izlaz = zadnji bit registra
+        fb = 0
+        for tp in taps:
+            fb ^= int(reg[tp - 1])
+        reg[1:] = reg[:-1]                    # pomak
+        reg[0] = fb
+    return seq
+
+
+# Preferirani par m-nizova iz GPS ICD-a (generira C/A Gold obitelj):
+#   G1: 1 + x^3 + x^10          G2: 1 + x^2 + x^3 + x^6 + x^8 + x^9 + x^10
+_G1 = _m_sequence([3, 10])
+_G2 = _m_sequence([2, 3, 6, 8, 9, 10])
+
+
+def gold_code(shift):
+    """C/A Gold kod: G1 XOR ciklički-pomaknuti G2, kao ±1 niz duljine 1023.
+
+    `shift` (0..1022) bira člana Gold obitelji (u pravom C/A to je odabir faze G2
+    po PRN broju). Za razliku od random ±1 niza, Gold kodovi imaju GARANTIRANO
+    omeđenu troznačnu cross-korelaciju {-65, -1, 63} (preferirani par, n=10) —
+    zato se u kombiniranom signalu slabiji satelit ne utopi u jačem (vidi §19.1).
+    """
+    bits = _G1 ^ np.roll(_G2, int(shift) % PRN_LENGTH)
+    return 1.0 - 2.0 * bits.astype(np.float64)   # 0 -> +1, 1 -> -1
+
+
+def _prn_shift(sat_id):
+    """Deterministički sat_id -> faza Gold koda (FNV-1a, reproducibilno bez ovisnosti
+    o PYTHONHASHSEED). Prostor od 1023 kodova >> broj potrebnih (~192), pa su
+    kolizije rijetke (a i realni GPS ponavlja PRN-ove među sustavima)."""
+    h = 2166136261
+    for c in sat_id:
+        h = ((h ^ ord(c)) * 16777619) & 0xFFFFFFFF
+    return h % PRN_LENGTH
+
+
 def generate_prn(sat_id):
-    """Generira pseudo-slučajni niz (PRN) specifičan za svaki satelit."""
-    # Hashiranje ID-ja za deterministički seed
-    seed = sum(ord(c) for c in sat_id) * 12345
-    rng = np.random.RandomState(seed % (2**32))
-    # Generiranje niza od -1 i 1 (1 vrijednost po čipu)
-    return rng.choice([-1.0, 1.0], size=PRN_LENGTH)
+    """PRN za satelit = pravi C/A Gold kod (faza deterministički odabrana po sat_id)."""
+    return gold_code(_prn_shift(sat_id))
 
 def _upsample(prn):
     """Čipovi -> uzorci: OVERSAMPLE identičnih uzoraka po čipu."""
     return np.repeat(prn, OVERSAMPLE)
+
+
+# --- Per-satelitski RF kanal (frekvencijska domena, brzo) --------------------
+# FFT (naduzorkovanog) koda je konstantan po satelitu/bandu pa se cachira — to je
+# ključni ubrzavač uz 1023-dužinu (ne-potencija dvojke, ~2× sporiji FFT). Kanal
+# gradimo i dekodiramo IZRAVNO u frekvencijskoj domeni: korelacija koda sa samim
+# sobom je |FFT|² (keširano), pa se izbjegava među-buffer i njegovi transformi
+# (4 → 2 transforma po satelitu/bandu). Vidi simulate_channel.
+_FREQS = np.fft.fftfreq(SAMPLES)
+_fft_cache = {}
+_pw_cache = {}
+
+
+def _fft_upsampled(prn):
+    """FFT naduzorkovanog koda, keširan (kodovi su konstantni po satelitu/bandu)."""
+    key = prn.tobytes()
+    f = _fft_cache.get(key)
+    if f is None:
+        f = np.fft.fft(_upsample(prn))
+        _fft_cache[key] = f
+    return f
+
+
+def _power_spectrum(prn):
+    """|FFT(naduzorkovani kod)|² (auto-korelacija koda u frek. domeni), keširano."""
+    key = prn.tobytes()
+    p = _pw_cache.get(key)
+    if p is None:
+        f = _fft_upsampled(prn)
+        p = (f * np.conj(f)).real
+        _pw_cache[key] = p
+    return p
+
+
+def _code_blocks(total_delay_meters):
+    """(cijeli kodni periodi, frakcijski pomak u uzorcima) za dani domet."""
+    code_len = PRN_LENGTH * METERS_PER_CHIP
+    return int(total_delay_meters // code_len), (total_delay_meters % code_len) / METERS_PER_SAMPLE
+
+
+def _peak_range(correlation, integer_blocks):
+    """Parabolička sub-uzorak interpolacija vrha korelacije -> izmjereni domet [m]."""
+    peak_idx = int(np.argmax(correlation))
+    if 0 < peak_idx < SAMPLES - 1:
+        y1, y2, y3 = correlation[peak_idx - 1], correlation[peak_idx], correlation[peak_idx + 1]
+        denom = y1 - 2 * y2 + y3
+        peak_exact = peak_idx + ((y1 - y3) / (2 * denom) if denom != 0 else 0.0)
+    else:
+        peak_exact = float(peak_idx)
+    return integer_blocks * (PRN_LENGTH * METERS_PER_CHIP) + peak_exact * METERS_PER_SAMPLE
+
+
+def simulate_channel(prn, total_delay_meters, snr_db=-2, rng=None, elev_rad=None, mp=None):
+    """Per-satelitski RF kanal + dekodiranje, cijelo u frekvencijskoj domeni.
+
+    Ekvivalentno: izgradi primljeni signal (direktni + zakašnjeli multipath + AWGN)
+    pa ga koreliraj s lokalnim kodom — ali bez među-buffera. Signal se korelira sam
+    sa sobom pa je to |FFT_koda|² (keširano) pomnoženo faznim rampama pomaka; šum se
+    doda u frek. domeni (FFT bijelog šuma). Ostaje samo JEDAN fft (šum) + JEDAN ifft.
+    Vrati izmjereni domet [m].
+    """
+    if rng is None:
+        rng = np.random.default_rng()
+    fft_prn = _fft_upsampled(prn)
+    pw = _power_spectrum(prn)
+    integer_blocks, shift = _code_blocks(total_delay_meters)
+    spec = pw * np.exp(-1j * 2 * np.pi * _FREQS * shift)          # direktni signal (već korel'iran)
+    if mp is not None:
+        extra, att_raw = mp
+        mp_scale = 0.5 if elev_rad is None else float(np.clip(0.1 + 0.9 * (1.0 - max(float(np.sin(elev_rad)), 0.05)), 0.1, 1.0))
+        _, mp_shift = _code_blocks(total_delay_meters + extra)
+        spec = spec + (att_raw * mp_scale) * pw * np.exp(-1j * 2 * np.pi * _FREQS * mp_shift)
+    # Termalni šum: korelacija bijelog šuma s kodom = ifft(FFT_šuma · conj(FFT_koda)).
+    # SNR (pred-despreading) je relativan na snagu signala (amp≈1), kao u starom modelu.
+    noise_power = 1.0 / (10 ** (snr_db / 10))
+    fft_noise = np.fft.fft(rng.normal(0, np.sqrt(noise_power), SAMPLES))
+    corr = np.real(np.fft.ifft(spec + fft_noise * np.conj(fft_prn)))
+    return _peak_range(corr, integer_blocks)
 
 def ideal_pseudorange(distance, iono_delay_meters):
     """Savršeno mjerenje dometa: bez multipath-a, AWGN-a i korelatorske kvantizacije.
@@ -96,10 +219,10 @@ def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10, rng=None, 
     remainder_meters = total_delay_meters % code_length_meters
     shift_samples = remainder_meters / METERS_PER_SAMPLE
 
-    # Precizan frakcijski pomak u frekvencijskoj domeni (shift theorem).
-    prn_s = _upsample(prn)
-    fft_prn = np.fft.fft(prn_s)
-    freqs = np.fft.fftfreq(SAMPLES)
+    # Precizan frakcijski pomak u frekvencijskoj domeni (shift theorem). FFT koda
+    # je keširan (konstantan po satelitu) — ključno uz 1023-dužinu (ne-potencija 2).
+    fft_prn = _fft_upsampled(prn)
+    freqs = _FREQS
     shifted_signal = np.real(np.fft.ifft(fft_prn * np.exp(-1j * 2 * np.pi * freqs * shift_samples)))
 
     # Multipath: zakašnjela, prigušena kopija (odbijanje od tla/zgrada). Jačina
@@ -131,28 +254,9 @@ def simulate_rf_channel(prn, distance, iono_delay_meters, snr_db=-10, rng=None, 
     return received_signal, integer_blocks
 
 def decode_signal(received_signal, local_prn, integer_blocks):
+    """Dekodira JEDAN izolirani kanal (stari per-sat put; koristi se u testovima).
+
+    Kombinirani lanac koristi `decode_from_combined` (dijeli precomputan FFT).
     """
-    Prijemnik dekodira signal tražeći korelacijski vrh (Peak).
-    """
-    local_s = _upsample(local_prn)
-    # Križna korelacija pomoću FFT-a
-    correlation = np.real(np.fft.ifft(np.fft.fft(received_signal) * np.conj(np.fft.fft(local_s))))
-
-    # Traženje vrha (maksimalne podudarnosti)
-    peak_idx = int(np.argmax(correlation))
-
-    # Sub-uzorak preciznost paraboličnom interpolacijom oko vrha.
-    if 0 < peak_idx < SAMPLES - 1:
-        y1 = correlation[peak_idx - 1]
-        y2 = correlation[peak_idx]
-        y3 = correlation[peak_idx + 1]
-        denom = (y1 - 2 * y2 + y3)
-        sub_chip_offset = (y1 - y3) / (2 * denom) if denom != 0 else 0.0
-        peak_exact = peak_idx + sub_chip_offset
-    else:
-        peak_exact = float(peak_idx)
-
-    # Rekonstrukcija izmjerene pseudoudaljenosti
-    code_length_meters = PRN_LENGTH * METERS_PER_CHIP
-    measured_distance = (integer_blocks * code_length_meters) + (peak_exact * METERS_PER_SAMPLE)
-    return measured_distance
+    correlation = np.real(np.fft.ifft(np.fft.fft(received_signal) * np.conj(_fft_upsampled(local_prn))))
+    return _peak_range(correlation, integer_blocks)

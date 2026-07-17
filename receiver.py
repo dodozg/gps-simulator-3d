@@ -1,14 +1,22 @@
+"""Navigacijski estimator: "pseudoudaljenosti → pozicija" (EKF + RAIM).
+
+Odvojeno od mjernog modela (`measurement.MeasurementModel`, §19.2). `Receiver` JE
+estimator (drži EKF stanje, RAIM, NIS dijagnostiku) i VLASI mjerni model kojemu
+svaku epohu predaje trenutnu procjenu (za DOP selekciju i tropo korekciju), a
+natrag dobiva mjerenja koja riješi. Javno sučelje `Receiver`-a je nepromijenjeno:
+mjerno-strane atributi (pos, clock_bias, iono_tow0, ideal, received_signals…) se
+proksiraju na mjerni model, estimatorski (x_ekf, raim_alarm, nis…) su izravni.
+"""
 import numpy as np
-from physics_engine import C, calculate_ionospheric_delay, calculate_tropospheric_delay, calculate_sagnac_correction, simulate_clock_noise, calculate_terrain_elevation, R_EARTH
-from utils import ecef_to_lla
-from satellite import GNSS_SYSTEMS
-import signal_processing
+from physics_engine import calculate_sagnac_correction
+from measurement import MeasurementModel
 
 # --- Inter-system bias (ISB), multi-GNSS -------------------------------------
 # Svaki GNSS sustav ima svoju vremensku skalu -> konstantni pomak pseudoudalje-
 # nosti u odnosu na GPS. GPS je REFERENCA (ISB=0, upijen u c·bias); Galileo/
 # GLONASS/BeiDou dobivaju vlastito ISB stanje u EKF-u koje se procjenjuje. Pravi
-# ISB (GNSS_SYSTEMS[...]['isb_m']) se ubrizga u mjerenje, filter ga rekonstruira.
+# ISB (GNSS_SYSTEMS[...]['isb_m']) se ubrizga u mjerenje (mjerni model), filter ga
+# rekonstruira. (serialize.py uvozi ISB_INDEX odavde.)
 ISB_SYSTEMS = ("GAL", "GLO", "BDS")
 ISB_INDEX = {s: 8 + k for k, s in enumerate(ISB_SYSTEMS)}   # stanja 8,9,10
 N_STATES = 8 + len(ISB_SYSTEMS)     # [x,y,z, vx,vy,vz, c·bias,c·drift, isb×3]
@@ -48,27 +56,12 @@ RAIM_MIN_SATS = 5       # ne odbacuj ako bi ostalo < 4 satelita za rješenje
 
 class Receiver:
     def __init__(self, pos=np.array([0.0, 0.0, 0.0]), rng=None, ideal=False):
-        self.pos = pos
-        # Generator slučajnih brojeva za sve izvore šuma (dijeli se s konstelacijom
-        # radi reproducibilnosti). None -> svjež default_rng (nedeterministički).
-        self.rng = rng if rng is not None else np.random.default_rng()
-        # Zero-noise (ideal) mod: gasi multipath/AWGN/korelatorsku kvantizaciju
-        # (savršeno mjerenje dometa), pogrešku efemerida i Allanov šum satova. Ostaju
-        # SAMO deterministički modeli (geometrija, tropo, Sagnac, iono, ISB, relativnost).
-        # Rezidual pozicije tada mora biti ~0 — svaka veća vrijednost je nekonzistentnost
-        # injekcije↔korekcije (klasa buga kao stari Sagnac). Konstelacija se mora voziti
-        # istim modom: constellation.update_all(t, ideal=True). Vidi tests/test_consistency.py.
-        self.ideal = ideal
-        self.clock_bias = 0.0 # [s]
-        self.clock_drift = 1e-6 # [s/s] Početni drift za TCXO kvarc oscilator (1 ppm)
-        self.h0 = 1e-19 # Allan variance parametri za kvarc
-        self.h2 = 1e-20
-        self.last_update_time = 0.0
+        # Mjerni model: sve "svijet → pseudoudaljenosti" (kanal, korekcije, selekcija,
+        # sat prijemnika). Estimator mu predaje procjenu, on vraća mjerenja.
+        self.meas = MeasurementModel(pos, rng, ideal)
+
         self.raim_alarm = ""
         self.raim_enabled = True   # dopušta usporedbu algoritama sa/bez RAIM-a (#10)
-        # Doba dana [s od ponoći UTC] za Klobuchar ionosferu (50400 = 14:00, dnevni
-        # vrh TEC-a). Sim vrijeme se dodaje pa ionosfera evoluira kroz scenarij.
-        self.iono_tow0 = 50400.0
 
         # EKF State: [x, y, z, vx, vy, vz, c*bias, c*drift, isb_GAL, isb_GLO, isb_BDS]
         self.ekf_initialized = False
@@ -82,8 +75,62 @@ class Receiver:
         self.nis_dof = 0
         self.last_solution = {}   # {sat_id: {residual_m, rejected}} — za web UI (#12)
 
+    # --- Proxyji na mjerni model (nepromijenjeno javno sučelje) ---------------
+    @property
+    def pos(self):
+        return self.meas.pos
+
+    @pos.setter
+    def pos(self, value):
+        self.meas.pos = value
+
+    @property
+    def received_signals(self):
+        return self.meas.received_signals
+
+    @property
+    def ideal(self):
+        return self.meas.ideal
+
+    @property
+    def clock_bias(self):
+        return self.meas.clock_bias
+
+    @property
+    def clock_drift(self):
+        return self.meas.clock_drift
+
+    @property
+    def last_update_time(self):
+        return self.meas.last_update_time
+
+    @property
+    def iono_tow0(self):
+        return self.meas.iono_tow0
+
+    @iono_tow0.setter
+    def iono_tow0(self, value):
+        self.meas.iono_tow0 = value
+
     def set_position(self, pos):
-        self.pos = pos
+        self.meas.set_position(pos)
+
+    def check_los(self, sat_pos, rec_pos):
+        return self.meas.check_los(sat_pos, rec_pos)
+
+    def select_best_satellites(self, visible_pairs, max_sats=6, ref_pos=None):
+        return self.meas.select_best_satellites(visible_pairs, max_sats=max_sats, ref_pos=ref_pos)
+
+    def receive_signals(self, constellation, current_time):
+        """Izgradi mjerenja predajući mjernom modelu TRENUTNU procjenu.
+
+        est_pos (za DOP selekciju) i ref_pos (za tropo korekciju) dolaze iz EKF-a;
+        prije prvog fixa nema procjene pa selekcija uzima sve, a tropo se korigira
+        iz a-priori (prave) pozicije.
+        """
+        est_pos = self.x_ekf[:3].copy() if self.ekf_initialized else None
+        ref_pos = self.x_ekf[:3] if self.ekf_initialized else self.meas.pos
+        return self.meas.build(constellation, current_time, est_pos=est_pos, ref_pos=ref_pos)
 
     def reset(self):
         self.ekf_initialized = False
@@ -92,223 +139,6 @@ class Receiver:
         self.raim_alarm = ""
         self.ekf_last_time = 0.0
         self.last_solution = {}
-
-    def check_los(self, sat_pos, rec_pos):
-        """
-        Matematički raycasting: provjerava blokira li teren (planine) putanju signala.
-        """
-        vec = sat_pos - rec_pos
-        dist = np.linalg.norm(vec)
-        if dist == 0: return False
-        direction = vec / dist
-        
-        # Uzorkujemo putanju do 60 km udaljenosti
-        for d in np.arange(2000, 60000, 2000):
-            test_p = rec_pos + direction * d
-            lat, lon, alt = ecef_to_lla(test_p[0], test_p[1], test_p[2])
-            terrain_h = calculate_terrain_elevation(lat, lon)
-            if alt < terrain_h:
-                return False # Blokirano terenom!
-                
-        return True
-
-    def receive_signals(self, constellation, current_time):
-        """
-        Receives signals from all visible satellites.
-        Now simulates physical RF reception, atmospheric delay, and correlation decoding.
-        """
-        self.received_signals = []
-        
-        dt = current_time - self.last_update_time
-        if dt > 0:
-            self.clock_bias, self.clock_drift = simulate_clock_noise(
-                dt, self.clock_bias, self.clock_drift, self.h0, self.h2, rng=self.rng, ideal=self.ideal
-            )
-        self.last_update_time = current_time
-        
-        # Ako prijemnik još nije postavljen (nalazi se u središtu Zemlje), ne može primati signale
-        if np.linalg.norm(self.pos) < 1.0:
-            return self.received_signals
-            
-        visible_signals = []
-        
-        for sat in constellation.satellites:
-            sig = sat.get_signal(current_time)
-            
-            # 1. Čista geometrijska udaljenost (za potrebe simulacije kanala)
-            vec = sig['pos'] - self.pos
-            true_dist = np.linalg.norm(vec)
-            
-            # LOS (Line of Sight) check
-            if true_dist == 0:
-                continue
-            
-            sat_dir = vec / true_dist
-            rec_dir = self.pos / np.linalg.norm(self.pos)
-            elevation = np.arcsin(np.dot(rec_dir, sat_dir))
-            
-            # Elevation mask: Ignore satellites below ~5 degrees
-            if elevation < np.radians(5):
-                continue
-                
-            # LOS Raycasting provjerava planine
-            if not self.check_los(sig['pos'], self.pos):
-                continue
-                
-            # 2. Sačuvaj za selekciju
-            sig['true_dist'] = true_dist
-            visible_signals.append((sat, sig))
-            
-        # Pametna selekcija najboljih satelita (DOP Optimization) iz PROCIJENJENE
-        # pozicije (EKF), ne iz prave. Prije prvog fixa nemamo procjenu -> None.
-        est_pos = self.x_ekf[:3].copy() if self.ekf_initialized else None
-        # Više satelita u rješenju -> niži GDOP, veća točnost i bolja RAIM
-        # redundancija (prije je cap bio 6). Empirijski optimum je ~10: preko toga
-        # dodatni sateliti su niske elevacije (bučniji) pa GDOP pada ali greška
-        # raste. Uz multi-GNSS 10 najboljih je znatno bolje od 6 (~36 m vs ~60 m).
-        selected_pairs = self.select_best_satellites(visible_signals, max_sats=10, ref_pos=est_pos)
-        
-        for sat, sig in selected_pairs:
-            true_dist = sig['true_dist']
-
-            # Elevacija satelita (za elevacijski ovisan multipath u kanalu).
-            svec = sig['pos'] - self.pos
-            sn = np.linalg.norm(svec)
-            rn = np.linalg.norm(self.pos)
-            elev_rad = float(np.arcsin(np.clip(np.dot(self.pos / rn, svec / sn), -1.0, 1.0))) if sn > 0 and rn > 0 else None
-
-            # 3. Atmosfersko kašnjenje
-            tropo_delay_meters = calculate_tropospheric_delay(sig['pos'], self.pos)
-
-            # L1 Obrada — Klobuchar ionosfera ovisna o dobu dana (#7)
-            iono_tow = self.iono_tow0 + current_time
-            iono_delay_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'], gps_tow_s=iono_tow)
-            # L2 Obrada (isto doba dana; iono-free kombinacija ga poništava)
-            iono_delay_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'], gps_tow_s=iono_tow)
-
-            if self.ideal:
-                # Savršeno mjerenje dometa: zaobiđi RF lanac (multipath/AWGN/kvantizacija).
-                measured_pr_l1 = signal_processing.ideal_pseudorange(true_dist, iono_delay_l1 + tropo_delay_meters)
-                measured_pr_l2 = signal_processing.ideal_pseudorange(true_dist, iono_delay_l2 + tropo_delay_meters)
-            else:
-                # Ista fizička geometrija odraza za obje frekvencije -> KORELIRAN
-                # L1/L2 multipath (draw jednom, dijeli se). Prije su bili nezavisni
-                # pa je iono-free kombinacija napuhavala multipath ~3×.
-                mp = signal_processing.sample_multipath(self.rng)
-                rx_signal_l1, int_blocks_l1 = signal_processing.simulate_rf_channel(
-                    prn=sig['l1']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l1+tropo_delay_meters, snr_db=-2, rng=self.rng, elev_rad=elev_rad, mp=mp
-                )
-                local_prn_l1 = signal_processing.generate_prn(sat.sat_id + "_L1")
-                measured_pr_l1 = signal_processing.decode_signal(rx_signal_l1, local_prn_l1, int_blocks_l1)
-
-                rx_signal_l2, int_blocks_l2 = signal_processing.simulate_rf_channel(
-                    prn=sig['l2']['prn'], distance=true_dist, iono_delay_meters=iono_delay_l2+tropo_delay_meters, snr_db=-2, rng=self.rng, elev_rad=elev_rad, mp=mp
-                )
-                local_prn_l2 = signal_processing.generate_prn(sat.sat_id + "_L2")
-                measured_pr_l2 = signal_processing.decode_signal(rx_signal_l2, local_prn_l2, int_blocks_l2)
-            
-            # Iono-Free kombinacija
-            f1_2 = sig['l1']['freq']**2
-            f2_2 = sig['l2']['freq']**2
-            iono_free_pr = (f1_2 * measured_pr_l1 - f2_2 * measured_pr_l2) / (f1_2 - f2_2)
-            
-            # Troposferska korekcija: tropo je NEdisperzivan pa ga iono-free NE
-            # poništava (za razliku od ionosfere). Pravi prijemnik primjenjuje
-            # model (Hopfield/Saastamoinen) iz približne pozicije; radimo isto iz
-            # zadnje procjene (ili a-priori) pa ostaje samo mali rezidual.
-            ref_pos = self.x_ekf[:3] if self.ekf_initialized else self.pos
-            iono_free_pr -= calculate_tropospheric_delay(sig['broadcast_pos'], ref_pos)
-
-            # Dodajemo pogrešku sata prijemnika (bias) na kombinaciju
-            iono_free_pr += (self.clock_bias * C)
-
-            # Ubrizgavamo STVARNU grešku satelitskog sata (relativnost + Allan + eventualni spoof),
-            # a zatim oduzimamo BROADCAST korekciju iz navigacijske poruke.
-            # Za ispravan satelit se ova dva člana ponište (kao u stvarnom GPS-u);
-            # za spoofani satelit ostaje rezidual od 6 km koji RAIM mora uhvatiti.
-            iono_free_pr += sig['sat_clock_m']
-            iono_free_pr -= sig['broadcast_clock_m']
-
-            # Sagnac: Zemlja se okrene dok signal putuje (~0.07 s) pa je pravi
-            # domet u ECEF-u veći/manji za taj član. Prijemnik ga korigira u
-            # modelu ranga (h_x += sagnac), pa MORA postojati i u mjerenju —
-            # inače nastaje sustavna pristranost prema istoku (~25 m). Ranije je
-            # bila skrivena u multipath šumu.
-            iono_free_pr += calculate_sagnac_correction(sig['pos'], self.pos)
-
-            # Inter-system bias: pravi pomak vremenske skale sustava (GPS=0), NIJE
-            # u broadcast korekciji -> EKF ga mora procijeniti (isb stanje).
-            iono_free_pr += GNSS_SYSTEMS.get(sat.system, {}).get('isb_m', 0.0)
-
-            self.received_signals.append({
-                'sat_id': sig['id'],
-                'system': sat.system,
-                'sat_pos': sig['pos'],
-                'broadcast_pos': sig['broadcast_pos'], # Prijemnik ZNA samo ovu poziciju
-                'pseudorange': iono_free_pr,
-                'true_dist': true_dist # Spremljeno samo za analizu
-            })
-            
-        return self.received_signals
-
-    def calculate_gdop(self, satellite_pairs, ref_pos):
-        """GDOP podskupa satelita gledano iz ref_pos (procijenjene pozicije)."""
-        H = []
-        for sat, sig in satellite_pairs:
-            vec = sig['broadcast_pos'] - ref_pos
-            r = np.linalg.norm(vec)
-            if r == 0: r = 1.0
-            H.append([vec[0]/r, vec[1]/r, vec[2]/r, 1.0])
-        H = np.array(H)
-        try:
-            cov = np.linalg.inv(H.T @ H)
-            return np.sqrt(np.trace(cov))
-        except np.linalg.LinAlgError:
-            return float('inf')
-
-    def _elevation(self, pair, ref_pos):
-        """Elevacijski kut satelita gledano iz ref_pos."""
-        _, sig = pair
-        vec = sig['broadcast_pos'] - ref_pos
-        n = np.linalg.norm(vec)
-        rp = np.linalg.norm(ref_pos)
-        if n == 0 or rp == 0:
-            return 0.0
-        up = ref_pos / rp
-        return np.arcsin(np.clip(np.dot(up, vec / n), -1.0, 1.0))
-
-    def select_best_satellites(self, visible_pairs, max_sats=6, ref_pos=None):
-        """Bira podskup satelita s najboljom geometrijom (najniži GDOP).
-
-        Determinističko pohlepno biranje umjesto ranijeg nasumičnog Monte-Carla,
-        i to iz PROCIJENJENE pozicije (ref_pos) — ne iz prave pozicije koju pravi
-        prijemnik ne zna. Prije prvog fixa (ref_pos=None) nema procjene geometrije
-        pa uzimamo sve vidljive (do granice) za robusnu LS inicijalizaciju.
-        """
-        if len(visible_pairs) <= max_sats:
-            return visible_pairs
-
-        if ref_pos is None:
-            # Hladan start: bez procjene ne možemo optimizirati geometriju.
-            return visible_pairs[:max(max_sats, 8)]
-
-        # Pohlepno: seedaj s najviše elevacije (dok ih je < 4 GDOP nije definiran),
-        # zatim dodaji satelit koji najviše smanji GDOP.
-        remaining = list(visible_pairs)
-        chosen = []
-        while len(chosen) < max_sats and remaining:
-            best, best_score = None, float('inf')
-            for cand in remaining:
-                trial = chosen + [cand]
-                if len(trial) < 4:
-                    score = -self._elevation(cand, ref_pos)  # veća elevacija = bolji seed
-                else:
-                    score = self.calculate_gdop(trial, ref_pos)
-                if score < best_score:
-                    best_score, best = score, cand
-            chosen.append(best)
-            remaining.remove(best)
-        return chosen
 
     def _raim_screen(self, innovations):
         """Iterativna robusna RAIM detekcija: vrati skup indeksa za odbacivanje.
@@ -336,14 +166,12 @@ class Receiver:
         return rejected
 
     def solve_position(self, max_iter=10, tolerance=1.0):
-        """
-        Solves for the receiver position using an Extended Kalman Filter (EKF) with RAIM.
-        """
-        if len(self.received_signals) < 4:
+        """Riješi poziciju iz mjerenja proširenim Kalmanovim filtrom (EKF) uz RAIM."""
+        received_signals = self.received_signals
+        if len(received_signals) < 4:
             return None, None
-            
-        self.raim_alarm = ""
 
+        self.raim_alarm = ""
         current_time = self.last_update_time
 
         # --- EKF INICIJALIZACIJA (Least Squares) ---
@@ -351,54 +179,55 @@ class Receiver:
             x_ls = np.array([0.0, 0.0, 0.0, 0.0])
             for i in range(max_iter):
                 residuals, jacobian = [], []
-                for sig in self.received_signals:
+                for sig in received_signals:
                     sat_pos = sig['broadcast_pos']
                     pr = sig['pseudorange']
                     diff = x_ls[:3] - sat_pos
                     r_est = np.linalg.norm(diff)
-                    if r_est < 1.0: r_est = 1.0
+                    if r_est < 1.0:
+                        r_est = 1.0
                     sagnac = calculate_sagnac_correction(sat_pos, x_ls[:3])
                     res = pr - (r_est + x_ls[3] + sagnac)
                     residuals.append(res)
-                    jacobian.append([diff[0]/r_est, diff[1]/r_est, diff[2]/r_est, 1.0])
-                
+                    jacobian.append([diff[0] / r_est, diff[1] / r_est, diff[2] / r_est, 1.0])
+
                 G = np.array(jacobian)
                 try:
                     delta_x, _, _, _ = np.linalg.lstsq(G, np.array(residuals), rcond=None)
                 except np.linalg.LinAlgError:
                     return None, None
-                    
+
                 x_ls += delta_x
                 if np.linalg.norm(delta_x[:3]) < tolerance:
-                    self.x_ekf[0:3] = x_ls[:3] # Pozicija
-                    self.x_ekf[6] = x_ls[3]    # c*bias
+                    self.x_ekf[0:3] = x_ls[:3]  # Pozicija
+                    self.x_ekf[6] = x_ls[3]     # c*bias
                     self.ekf_initialized = True
                     self.ekf_last_time = current_time
                     break
-            
+
             if not self.ekf_initialized:
                 return None, None
 
         # --- EKF PREDVIĐANJE (PREDICT) ---
         dt = current_time - self.ekf_last_time
         if dt <= 0:
-            dt = 1e-6 # Sprječavanje dijeljenja nulom
-            
+            dt = 1e-6  # Sprječavanje dijeljenja nulom
+
         F = np.eye(N_STATES)
-        F[0, 3] = dt # x += vx * dt
-        F[1, 4] = dt # y += vy * dt
-        F[2, 5] = dt # z += vz * dt
-        F[6, 7] = dt # c*bias += c*drift * dt
+        F[0, 3] = dt  # x += vx * dt
+        F[1, 4] = dt  # y += vy * dt
+        F[2, 5] = dt  # z += vz * dt
+        F[6, 7] = dt  # c*bias += c*drift * dt
         # ISB stanja (8..10) su konstantna (F dijagonala već 1).
 
         # Procesni šum Q (nesigurnost modela) — parametri dokumentirani na vrhu modula.
         Q = np.diag([Q_POS, Q_POS, Q_POS, Q_VEL, Q_VEL, Q_VEL, Q_BIAS, Q_DRIFT]
                     + [Q_ISB] * len(ISB_SYSTEMS)) * dt
-        
+
         # Predviđanje stanja i kovarijance
         x_pred = F @ self.x_ekf
         P_pred = F @ self.P_ekf @ F.T + Q
-        
+
         # --- EKF AŽURIRANJE (UPDATE) ---
         # Validni signali za H i Z (filtrirani RAIM-om)
         H_valid = []
@@ -410,14 +239,15 @@ class Receiver:
         up = x_pred[:3] / max(np.linalg.norm(x_pred[:3]), 1.0)
         # Prvo izračunamo sve inovacije kako bismo našli medijanu (zajedničku pogrešku sata)
         all_innovations = []
-        for sig in self.received_signals:
+        for sig in received_signals:
             sat_pos = sig['broadcast_pos']
             pr = sig['pseudorange']
-            
+
             diff = x_pred[:3] - sat_pos
             r_est = np.linalg.norm(diff)
-            if r_est < 1.0: r_est = 1.0
-            
+            if r_est < 1.0:
+                r_est = 1.0
+
             sagnac = calculate_sagnac_correction(sat_pos, x_pred[:3])
             # Predviđeni ISB ovog sustava (GPS -> 0, upijen u c·bias).
             isb_idx = ISB_INDEX.get(sig.get('system'))
@@ -425,7 +255,7 @@ class Receiver:
             h_x_val = r_est + x_pred[6] + sagnac + isb
             innovation = pr - h_x_val
             all_innovations.append((innovation, h_x_val, diff, r_est))
-            
+
         # RAIM: iterativno robusno odbacivanje outliera (vidi _raim_screen).
         innov_list = [x[0] for x in all_innovations]
         rejected = (self._raim_screen(innov_list)
@@ -434,7 +264,7 @@ class Receiver:
             kept = [innov_list[i] for i in range(len(innov_list)) if i not in rejected]
             med_kept = np.median(kept) if kept else 0.0
             worst = max(abs(innov_list[i] - med_kept) for i in rejected)
-            ids = ", ".join(self.received_signals[i]['sat_id'] for i in sorted(rejected))
+            ids = ", ".join(received_signals[i]['sat_id'] for i in sorted(rejected))
             self.raim_alarm = f"RAIM ALARM: Rejected {ids} (Err: {worst:.0f}m)"
 
         # Dijagnostika po satelitu za vanjske potrošače (web UI): rezidual inovacije
@@ -442,10 +272,10 @@ class Receiver:
         self.last_solution = {
             sig['sat_id']: {'residual_m': float(all_innovations[i][0]),
                             'rejected': i in rejected}
-            for i, sig in enumerate(self.received_signals)
+            for i, sig in enumerate(received_signals)
         }
 
-        for i, sig in enumerate(self.received_signals):
+        for i, sig in enumerate(received_signals):
             if i in rejected:
                 continue
             innovation, h_x_val, diff, r_est = all_innovations[i]
@@ -454,7 +284,7 @@ class Receiver:
             H_row[0] = diff[0] / r_est
             H_row[1] = diff[1] / r_est
             H_row[2] = diff[2] / r_est
-            H_row[6] = 1.0 # c*bias
+            H_row[6] = 1.0  # c*bias
             isb_idx = ISB_INDEX.get(sig.get('system'))
             if isb_idx is not None:
                 H_row[isb_idx] = 1.0   # ovaj sustav ima vlastiti ISB
@@ -470,7 +300,7 @@ class Receiver:
             R_diag.append((SIGMA_ZENITH / sin_elev) ** 2)
 
         if len(H_valid) < 4:
-            return None, None # RAIM odbacio previše satelita
+            return None, None  # RAIM odbacio previše satelita
 
         H = np.array(H_valid)
         Z = np.array(Z_valid)
@@ -484,12 +314,12 @@ class Receiver:
 
         # Inovacija (razlika između mjerenog i predviđenog)
         Y = Z - h_x
-        
+
         # Kalman gain K
         try:
             S_inv = np.linalg.inv(S)
         except np.linalg.LinAlgError:
-            return x_pred[:3], None # Fallback ako je matrica singularna
+            return x_pred[:3], None  # Fallback ako je matrica singularna
         K = P_pred @ H.T @ S_inv
 
         # NIS (Normalized Innovation Squared) — dijagnostika konzistentnosti.
@@ -500,21 +330,21 @@ class Receiver:
 
         # Ažurirano stanje
         self.x_ekf = x_pred + K @ Y
-        
+
         # Ažurirana kovarijanca
         I = np.eye(N_STATES)
         self.P_ekf = (I - K @ H) @ P_pred
-        
+
         self.ekf_last_time = current_time
         self.calc_pos = self.x_ekf[:3]
-        
+
         # Izračunavanje GDOP-a (aproksimativno, koristeći H)
         try:
             # H_pos = H[:, [0,1,2,6]] (isto kao kod least squares)
-            H_pos = H[:, [0,1,2,6]]
+            H_pos = H[:, [0, 1, 2, 6]]
             Q_dop = np.linalg.inv(H_pos.T @ H_pos)
             gdop = np.sqrt(np.trace(Q_dop))
-        except:
+        except Exception:
             gdop = None
-            
+
         return self.calc_pos, gdop
