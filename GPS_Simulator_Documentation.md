@@ -18,17 +18,17 @@ Dvije razine, isti numpy engine:
 - **Engine (headless)** — čisti Python/numpy: konstelacije, orbite, fizika
   kanala, obrada signala i navigacijski procesor. Radi bez GPU-a, testira se na
   CI-ju, pogoni sve CLI alate (`benchmark`, `rtk`, `spoofing`, `multignss`…).
-- **Sučelja** — dva "klijenta" nad istim engineom:
-  - **`main.py`** — desktop 3D (PyVista/VTK).
-  - **`web/`** — kontrolni centar + GPS učilište (FastAPI + CesiumJS), dvojezično
-    HR/EN, živa simulacija preko WebSocketa.
+- **Sučelje** — **`web/`** kontrolni centar + GPS učilište (FastAPI + CesiumJS),
+  dvojezično HR/EN, živa simulacija preko WebSocketa, interaktivni 3D globus.
+  *(Raniji desktop `main.py` (PyVista/VTK) je uklonjen — vidi §19.3; web ga u
+  potpunosti nadmašuje, a bio je neodržavan i netestiran.)*
 
 **Ključna poanta:** sve iznad simulacije *signala* je autentično. Navigacijski
 solver je pravi GNSS algoritam — isti kakav bi radio i na stvarnim mjerenjima
 (vidi §8).
 
-Tehnologije: Python 3.11–3.14 · numpy · FastAPI · uvicorn · PyVista/VTK ·
-CesiumJS · TypeScript (vanilla, bez frameworka) · Vite.
+Tehnologije: Python 3.11–3.14 · numpy · FastAPI · uvicorn · CesiumJS ·
+TypeScript (vanilla, bez frameworka) · Vite · matplotlib (headless grafovi).
 
 Opseg (grubo): engine ~3.100 linija Pythona, web ~3.800 linija TypeScripta +
 ~600 linija backend Pythona, 62 testova, CI na Pythonu 3.11–3.13.
@@ -73,10 +73,7 @@ flowchart TB
         BE <-->|"WebSocket 10 Hz + REST"| FE
     end
 
-    DESKTOP["main.py<br/>PyVista/VTK 3D"]
-
     RX --> TOOLS
-    RX --> DESKTOP
     RX --> BE
 ```
 
@@ -91,7 +88,6 @@ flowchart TB
 | `receiver.py` | 350 | **Estimator**: LS "cold start" → **11-D EKF** → RAIM → NIS; vlasi mjerni model, predaje mu procjenu (§19.2) |
 | `terrain.py` | 94 | Globalni DEM (`terrain_dem.npz`, NASA SRTM), bilinearna interpolacija |
 | `utils.py` | 92 | LLA ↔ ECEF (WGS-84, Bowring — sub-mm točnost), DMS format |
-| `main.py` | 478 | Desktop PyVista GUI (jedini dio koji traži GPU) |
 | `rtk.py` / `spoofing.py` / `multignss.py` / `scenario.py` / `benchmark.py` / `iono.py` / `skyplot.py` | 172–342 | Samostalni headless alati (PNG / statistika / JSON scenariji) |
 
 Web backend (`web/backend/`): `app.py` (FastAPI app + singleton sesija),
@@ -410,8 +406,9 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
    *zero-noise consistency test* (`tests/test_consistency.py`) gasi sve šumove i
    asertira grešku < 1 cm (postiže ~10 µm); reintrodukcija Sagnac-tipa buga diže
    rezidual s µm na metre. Ostaje sustavni oprez, ali klasa je sada čuvana.
-3. **Dvostruka arhitektura sučelja.** `main.py` (PyVista) i `web/` rade isto;
-   web je očito budućnost, desktop postaje mrtvi teret.
+3. ~~**Dvostruka arhitektura sučelja.**~~ **Riješeno (§19.3):** desktop `main.py`
+   (PyVista/VTK) uklonjen; ostaje samo web sučelje. Uklonjene i teške GPU
+   ovisnosti (pyvista/VTK/PyQt5) i `earth_texture.jpg`; engine nepromijenjen.
 4. **Sitnije**: sferni `R_EARTH` u orbitama vs WGS-84 u geodeziji (namjerno, ali
    trajni izvor zabune); ~~`receiver.py` radi previše~~ (**riješeno §19.2**:
    `measurement.py` mjerni model + `receiver.py` estimator); najveći TS moduli se
@@ -478,7 +475,7 @@ Prioritetno (po omjeru vrijednost/trud):
 5. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
    ~~write-up o Sagnac bugu~~ ([`docs/sagnac-bug.md`](docs/sagnac-bug.md))
    **napravljeni**, uz showcase figure u `docs/media/`; preostaju GIF-ovi žive
-   web/desktop 3D scene (traže snimku pokrenutog GUI-ja).
+   web 3D scene (traže snimku pokrenutog GUI-ja).
 
 ---
 

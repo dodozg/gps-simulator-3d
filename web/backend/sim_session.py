@@ -1,10 +1,9 @@
 """Živa simulacijska sesija — tanki omotač oko konstelacije + Receivera.
 
-Drži stanje jednog "prijemnika u svijetu" i napreduje ga po epohama, jednako kao
-`main.py:_step`, ali headless i serijalizabilno. Kvarove (spoofing/jamming)
-ubrizgava na razinu mjerenja prije rješavanja — isti obrazac kao
-`scenario.run_scenario`. Deterministički: konstelacija i prijemnik dijele isti
-seedani `np.random.default_rng`.
+Drži stanje jednog "prijemnika u svijetu" i napreduje ga po epohama, headless i
+serijalizabilno. Kvarove (spoofing/jamming) ubrizgava na razinu mjerenja prije
+rješavanja — isti obrazac kao `scenario.run_scenario`. Deterministički:
+konstelacija i prijemnik dijele isti seedani `np.random.default_rng`.
 """
 from types import SimpleNamespace
 

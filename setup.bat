@@ -3,8 +3,7 @@ REM ============================================================
 REM  GPS_Simulator_3D  -  ciscenje i ponovno kreiranje .venv-a
 REM
 REM  Pokreni ovo samo ako je .venv trajno pokvaren. Kreira svjez
-REM  virtualni okolis i instalira sve ovisnosti (GUI + testovi).
-REM  NAPOMENA: skida ~150 MB (pyvista/vtk/PyQt5), moze potrajati.
+REM  virtualni okolis i instalira ovisnosti (web + alati + testovi).
 REM ============================================================
 setlocal
 cd /d "%~dp0"
@@ -19,7 +18,7 @@ if errorlevel 1 (
 
 call ".venv\Scripts\activate.bat"
 python -m pip install --upgrade pip
-pip install -r requirements-viz.txt -r requirements-dev.txt
+pip install -r requirements-web.txt -r requirements-dev.txt
 if errorlevel 1 (
     echo [GRESKA] Instalacija ovisnosti nije uspjela.
     pause
@@ -27,6 +26,6 @@ if errorlevel 1 (
 )
 
 echo.
-echo Gotovo. Pokreni run_simulator.bat.
+echo Gotovo. Buildaj web (build_web.bat) pa pokreni run_webapp.bat.
 pause
 endlocal

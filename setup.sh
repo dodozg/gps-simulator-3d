@@ -12,8 +12,8 @@ echo "[i] Kreiram .venv ($("$PY" --version))..."
 source .venv/bin/activate
 
 python -m pip install --upgrade pip >/dev/null
-echo "[i] Instaliram ovisnosti (engine + viz + dev + web)..."
-pip install -r requirements-viz.txt -r requirements-dev.txt -r requirements-web.txt
+echo "[i] Instaliram ovisnosti (web + alati + dev)..."
+pip install -r requirements-web.txt -r requirements-dev.txt
 
 echo "[OK] Gotovo. Aktiviraj s: source .venv/bin/activate"
 echo "     Web: ./build_web.sh pa ./run_webapp.sh"

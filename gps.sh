@@ -3,7 +3,6 @@
 # Ekvivalent pojedinačnih run_*.bat datoteka na Windowsu.
 #
 # Uporaba:
-#   ./gps.sh simulator            # 3D PyVista GUI (traži GPU/render)
 #   ./gps.sh benchmark [args]     # headless: greška / NIS / RAIM
 #   ./gps.sh skyplot [args]       # skyplot + GDOP/greška/NIS grafovi (PNG)
 #   ./gps.sh rtk [args]           # carrier-phase RTK demo
@@ -30,7 +29,6 @@ cmd="${1:-}"
 [ $# -gt 0 ] && shift || true
 
 case "$cmd" in
-  simulator|gui)  exec "$PY" main.py "$@" ;;
   benchmark|bench) exec "$PY" benchmark.py "$@" ;;
   skyplot)        exec "$PY" skyplot.py "$@" ;;
   rtk)            exec "$PY" rtk.py "$@" ;;
@@ -42,7 +40,7 @@ case "$cmd" in
   web)            [ -f "${GPSWEB_BUILD:-$HOME/.local/share/gpsweb}/dist/index.html" ] || ./build_web.sh
                   exec ./run_webapp.sh ;;
   ""|-h|--help|help)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
     exit 0 ;;
   *)
     echo "[!] Nepoznata naredba: $cmd"

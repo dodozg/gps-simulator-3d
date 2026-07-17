@@ -1,0 +1,4 @@
+# 2D grafovi (matplotlib, Agg headless) za CLI alate skyplot/iono/spoofing/
+# multignss i za web /api/skyplot endpoint. Sam engine treba samo numpy.
+-r requirements.txt
+matplotlib>=3.7,<4

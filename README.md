@@ -5,7 +5,8 @@
 Simulator satelitske navigacije u Pythonu: Walker-Delta konstelacija, eliptične
 orbite (Kepler + J2), fizička obrada signala (PRN + FFT korelacija, multipath,
 AWGN), dual-frequency iono-free kombinacija te navigacijski procesor s Extended
-Kalman filterom i RAIM zaštitom. 3D vizualizacija radi na PyVista/VTK.
+Kalman filterom i RAIM zaštitom. 3D prikaz i živa simulacija su u web kontrolnom
+centru (CesiumJS + FastAPI).
 
 Za detaljan opis algoritama vidi [`GPS_Simulator_Documentation.md`](GPS_Simulator_Documentation.md);
 za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vidi
@@ -18,11 +19,11 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `physics_engine.py`   | Orbite, atmosfera (iono/tropo), relativnost, modeli satova |
 | `terrain.py`          | Pravi globalni DEM (NASA SRTM) + bilinearna interpolacija visina |
 | `satellite.py`        | Walker-Delta konstelacija i satelitski satovi |
-| `signal_processing.py`| PRN kodovi, RF kanal, FFT korelacija |
-| `receiver.py`         | LS inicijalizacija + EKF + RAIM + DOP selekcija |
+| `signal_processing.py`| Pravi C/A Gold kodovi, RF kanal, FFT korelacija |
+| `receiver.py`         | Estimator: LS inicijalizacija + EKF + RAIM (vlasi mjerni model) |
 | `utils.py`            | Geodezija: LLA ↔ ECEF na WGS-84 elipsoidu, DMS format |
-| `main.py`             | PyVista GUI (jedini dio koji treba GPU/render) |
-| `web/`                | Web kontrolni centar + GPS učilište (FastAPI + CesiumJS) |
+| `measurement.py`      | Mjerni model: kanal + korekcije + DOP selekcija → pseudoudaljenosti |
+| `web/`                | Web kontrolni centar + GPS učilište (FastAPI + CesiumJS) — 3D prikaz |
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
@@ -31,7 +32,7 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |
 | `scenario.py`         | Snimanje/reprodukcija scenarija (JSON) + usporedba algoritama |
 
-Engine (sve osim `main.py`) radi bez GUI-ja, pa se testira i mjeri na CI-ju.
+Cijeli engine radi bez GUI-ja, pa se testira i mjeri na CI-ju (3D prikaz je u `web/`).
 
 Teren je stvarni globalni DEM (`terrain_dem.npz`, izveden iz NASA SRTM RAMP2,
 javna domena) — oceani na razini mora, planine na pravim mjestima. Datoteka je
@@ -64,10 +65,9 @@ Bundlani primjeri su u `scenarios/` (vedro, teren, koordinirani/naivni spoof).
 Radi na Windowsu, macOS-u i Linuxu (engine je čisti Python; razlikuju se samo
 launcheri i putanje).
 
-- **Windows:** dvoklik **`setup.bat`** — kreira svjež `.venv` i instalira sve
-  ovisnosti (GUI + testovi + web).
-- **macOS / Linux:** **`./setup.sh`** — isto (kreira `.venv`, instalira viz +
-  dev + web ovisnosti). Prije toga možda `chmod +x *.sh`.
+- **Windows:** dvoklik **`setup.bat`** — kreira svjež `.venv` i instalira
+  ovisnosti (web + alati + testovi).
+- **macOS / Linux:** **`./setup.sh`** — isto. Prije toga možda `chmod +x *.sh`.
 
 Ručno (bilo koji OS):
 
@@ -75,16 +75,14 @@ Ručno (bilo koji OS):
 python -m venv .venv
 # Windows: .venv\Scripts\activate     |  Linux/macOS: source .venv/bin/activate
 
-# Samo engine + testovi (bez GPU-a):
-pip install -r requirements-dev.txt
-
-# Puni GUI (3D vizualizacija):
-pip install -r requirements-viz.txt
+pip install -r requirements-dev.txt    # engine + testovi
+pip install -r requirements-plots.txt  # + matplotlib za CLI alate (skyplot/iono/…)
+pip install -r requirements-web.txt    # + web kontrolni centar (uključuje plots)
 ```
 
-Launcheri (`run_simulator.bat` … na Windowsu; `./gps.sh <alat>` na macOS/Linux)
-prvo probaju venv python, a ako on ne radi padaju na sistemski Python +
-`PYTHONPATH` na `.venv` pakete.
+Launcheri (`run_*.bat` na Windowsu; `./gps.sh <alat>` na macOS/Linux) prvo probaju
+venv python, a ako on ne radi padaju na sistemski Python + `PYTHONPATH` na `.venv`
+pakete.
 
 > **Napomena o `.venv` na Google Driveu:** jedan `.venv` ne može posluživati i
 > Windows (`Scripts\`, `.exe`) i Mac (`bin/`) — layout je različit. `.venv` je
@@ -97,7 +95,6 @@ Na macOS/Linux svi alati idu kroz jedinstveni launcher **`./gps.sh <alat>`**
 postoje ekvivalentni `run_*.bat` (dvoklik). Izravno kroz Python (bilo koji OS):
 
 ```bash
-python main.py          # 3D simulator (Win: run_simulator.bat | Mac: ./gps.sh simulator)
 python benchmark.py     # headless: konvergencija EKF-a i statistika greške
 python skyplot.py       # skyplot + GDOP/greška/NIS grafovi -> skyplot.png
 python rtk.py           # carrier-phase RTK demo (cm-precizno)
@@ -109,10 +106,8 @@ python scenario.py compare scenarios/jamming_naive_spoof.json   # RAIM on vs off
 pytest                  # test suite
 ```
 
-Kontrole u 3D prikazu: **klik** na Zemlju postavlja prijemnik, **D** prebacuje
-DMS format, **M** uključuje kinematički način (let), **T** prebacuje između
-hipsometrijskog reljefa i stvarne satelitske teksture (NASA Blue Marble,
-`earth_texture.jpg`, javna domena).
+Interaktivni 3D prikaz (globus, klik-postavljanje prijemnika, telemetrija, živa
+simulacija) je u **web kontrolnom centru** — vidi niže i [`web/README.md`](web/README.md).
 
 ## Web kontrolni centar + GPS učilište
 

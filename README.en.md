@@ -11,8 +11,8 @@ Kalman Filter** (position/velocity/clock/drift + inter-system bias) →
 **MAD-robust RAIM** → elevation-dependent measurement noise → NIS consistency
 diagnostics.
 
-Two front-ends over one headless `numpy` engine: a desktop 3D view (PyVista/VTK)
-and a web **control center + GNSS academy** (FastAPI + CesiumJS, bilingual).
+A web **control center + GNSS academy** (FastAPI + CesiumJS, bilingual) over a
+headless `numpy` engine — live 3D globe, telemetry, guided lessons, experiments.
 
 > **What's real vs. simulated?** Everything *above the signal layer* is
 > authentic — the solver is the same algorithm that would run on a real
@@ -61,8 +61,8 @@ Headless analysis tools render figures directly from the engine:
 |---|---|
 | ![Spoofing/jamming: error, RAIM flags, satellite count](docs/media/spoofing.png) | ![Klobuchar diurnal TEC and elevation dependence](docs/media/iono.png) |
 
-> The 3D web control center and desktop globe are interactive; run them locally
-> to explore (see below). *(Animated GIFs of the live UI to follow.)*
+> The web control center is interactive; run it locally to explore the live 3D
+> globe (see below). *(Animated GIFs of the live UI to follow.)*
 
 ---
 
@@ -74,14 +74,14 @@ paths differ).
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate   |  Linux/macOS: source .venv/bin/activate
-pip install -r requirements-dev.txt      # engine + tests (no GPU)
-# pip install -r requirements-viz.txt    # add the 3D desktop GUI
+pip install -r requirements-dev.txt      # engine + tests
+pip install -r requirements-plots.txt    # + matplotlib for CLI plot tools
 
 python benchmark.py     # headless: EKF convergence + error statistics
 python skyplot.py       # skyplot + GDOP/error/NIS plots  -> skyplot.png
 python spoofing.py --attack coordinated --plot   # spoofing/jamming lab
 python multignss.py     # GPS+GAL+GLO+BDS: availability / PDOP / ISB
-pytest                  # 60 tests
+pytest                  # 62 tests
 ```
 
 One-command setup: **`setup.bat`** (Windows) or **`./setup.sh`** (macOS/Linux)
@@ -128,11 +128,11 @@ Full architecture, block diagrams and model derivations:
 | `physics_engine.py` | Orbits (Kepler + J2), iono/tropo, relativity, clocks, slowly-varying ephemeris |
 | `satellite.py` | Satellites + Walker-Delta and multi-GNSS (GPS/GAL/GLO/BDS) constellations |
 | `signal_processing.py` | Real C/A **Gold codes**, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
-| `receiver.py` | LS cold start → 11-D EKF → RAIM → DOP selection; iono-free, Sagnac, ISB |
+| `measurement.py` | Measurement model: channel + corrections + DOP selection → pseudoranges |
+| `receiver.py` | Estimator: LS cold start → 11-D EKF → RAIM (owns the measurement model) |
 | `terrain.py` | Global DEM (NASA SRTM) + bilinear interpolation |
 | `utils.py` | Geodesy: LLA ↔ ECEF on the WGS-84 ellipsoid |
-| `main.py` | PyVista desktop GUI (the only part that needs a GPU) |
-| `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) |
+| `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) — the 3D interface |
 | `rtk.py` · `spoofing.py` · `multignss.py` · `iono.py` · `skyplot.py` · `scenario.py` · `benchmark.py` | Standalone headless tools |
 
 ---
@@ -150,5 +150,4 @@ A **zero-noise consistency test** guards against the whole class of
 
 ## License & data
 
-Terrain (`terrain_dem.npz`) is derived from NASA SRTM RAMP2 (public domain);
-`earth_texture.jpg` is NASA Blue Marble (public domain).
+Terrain (`terrain_dem.npz`) is derived from NASA SRTM RAMP2 (public domain).
