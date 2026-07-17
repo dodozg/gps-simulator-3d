@@ -13,6 +13,7 @@ const COL = {
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
   spoof: Cesium.Color.fromCssColorString("#f76b6b"),
   jam: Cesium.Color.fromCssColorString("#f76b6b").withAlpha(0.16),
+  selected: Cesium.Color.fromCssColorString("#ffcf3d"),   // istaknuti (odabrani) satelit
 };
 
 // Cesium svaki frame za točke/oznake/polilinije PREDRAČUNA 2D-projiciranu
@@ -66,6 +67,8 @@ export class Globe {
   private rayRover: Cesium.Cartesian3 | null = null;      // baza zrake (rover)
   private rayGeom = new Map<string, Cesium.Cartesian3>(); // jedinični smjer zrake po satelitu
   private satClickCb: ((id: string) => void) | null = null; // klik na satelit -> editor
+  private selectedSat: string | null = null;                // istaknuti (u editoru otvoreni) satelit
+  private lastFrame: StateFrame | null = null;              // za restyle pri promjeni odabira (pauza)
   private orbitInertial: Cesium.Cartesian3[][] = [];
   private orbitEntities: Cesium.Entity[] = [];
   private rover: Cesium.Entity | null = null;
@@ -77,7 +80,7 @@ export class Globe {
   private show = { orbits: true, rays: true, labels: false };
   // Cache stila satelita (boja/veličina) da ne alociramo ConstantProperty svaki
   // frame kad se ništa nije promijenilo.
-  private satStyle = new Map<string, { col: Cesium.Color; size: number }>();
+  private satStyle = new Map<string, string>();   // cache stila (ključ) po satelitu
   // Throttle orbita: rebuild samo kad se Zemljin kut osjetno pomakne.
   private lastOrbitTheta = NaN;
   private orbitsDirty = true;
@@ -167,10 +170,35 @@ export class Globe {
     // Klik na satelit (točku, oznaku ili oznaku uz zraku) otvara njegov editor —
     // isto kao klik na redak u tablici satelita. Sve te primitive nose `id = sat.id`.
     handler.setInputAction((m: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+      // GPU pick (točka/oznaka nose id=sat.id); ako promaši — točke su sitne, a
+      // pod requestRenderMode pick zna biti nepouzdan — fallback na najbliži
+      // satelit u zaslonskom prostoru.
       const picked = this.viewer.scene.pick(m.position) as { id?: unknown } | undefined;
-      const id = picked?.id;
-      if (typeof id === "string" && this.satPoints.has(id)) this.satClickCb?.(id);
+      let id: string | null =
+        typeof picked?.id === "string" && this.satPoints.has(picked.id) ? picked.id : null;
+      if (!id) id = this._nearestSatOnScreen(m.position);
+      if (id) this.satClickCb?.(id);
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  }
+
+  // Najbliži VIDLJIVI satelit u zaslonskom prostoru (px) — pouzdan fallback za pick.
+  private _nearestSatOnScreen(win: Cesium.Cartesian2): string | null {
+    const scene = this.viewer.scene;
+    // Sfera Zemlje kao okluder — satelit iza horizonta nije klikabilan.
+    const occluder = new Cesium.Occluder(
+      new Cesium.BoundingSphere(Cesium.Cartesian3.ZERO, scene.globe.ellipsoid.minimumRadius),
+      scene.camera.positionWC);
+    const scr = new Cesium.Cartesian2();
+    let best: string | null = null;
+    let bestD = 22;   // prag [px]
+    for (const [id, p] of this.satPoints) {
+      if (!p.show || !occluder.isPointVisible(p.position)) continue;   // skriven / iza horizonta
+      const s = Cesium.SceneTransforms.worldToWindowCoordinates(scene, p.position, scr);
+      if (!s) continue;
+      const d = Math.hypot(s.x - win.x, s.y - win.y);
+      if (d < bestD) { bestD = d; best = id; }
+    }
+    return best;
   }
 
   // Callback kad se klikne satelit na globusu (postavlja main.ts -> otvori editor).
@@ -270,7 +298,38 @@ export class Globe {
     return p;
   }
 
+  // Boja/veličina/isticanje satelita; piše u primitiv SAMO kad se ključ promijeni.
+  // Odabrani (u editoru otvoreni) satelit dobije veći biljeg + zlatni obrub, a
+  // zadržava boju statusa (praćen/odbačen) da se ne izgubi informacija.
+  private _styleSat(p: Cesium.PointPrimitive, sat: SatFrame): void {
+    const selected = sat.id === this.selectedSat;
+    const status = sat.rejected ? "r" : sat.tracked ? "t" : "s";
+    const key = status + (selected ? "S" : "");
+    if (this.satStyle.get(sat.id) === key) return;
+    p.color = sat.rejected ? COL.rejected : sat.tracked ? COL.tracked : COL.sat;
+    p.pixelSize = (sat.tracked ? 9 : 6) + (selected ? 6 : 0);
+    p.outlineColor = selected ? COL.selected : Cesium.Color.BLACK;
+    p.outlineWidth = selected ? 3 : 1;
+    this.satStyle.set(sat.id, key);
+  }
+
+  // Istakni odabrani (u editoru otvoreni) satelit; null poništava. Restyle radimo
+  // odmah za stari+novi (i kad je sim pauziran, bez novih frameova).
+  setSelectedSat(id: string | null): void {
+    if (this.selectedSat === id) return;
+    const prev = this.selectedSat;
+    this.selectedSat = id;
+    for (const sid of [prev, id]) {
+      if (!sid) continue;
+      const p = this.satPoints.get(sid);
+      const s = this.lastFrame?.satellites.find((x) => x.id === sid);
+      if (p && s) this._styleSat(p, s);
+    }
+    this.viewer.scene.requestRender();
+  }
+
   update(frame: StateFrame): void {
+    this.lastFrame = frame;
     // sateliti (Primitive API — izravna, jeftina mutacija svojstava)
     const seen = new Set<string>();
     for (const sat of frame.satellites) {
@@ -291,15 +350,7 @@ export class Globe {
       // depth-test pa bi inače "probijao" kroz Zemlju za satelite iza horizonta.
       // Bez postavljenog rovera (el nedostupan) prikaži sve kao i prije.
       l.show = this.show.labels && (sat.el == null || sat.el >= 0);
-      // Boju/veličinu piši samo na promjenu.
-      const col = sat.rejected ? COL.rejected : sat.tracked ? COL.tracked : COL.sat;
-      const size = sat.tracked ? 9 : 6;
-      const st = this.satStyle.get(sat.id);
-      if (!st || st.col !== col || st.size !== size) {
-        p.color = col;
-        p.pixelSize = size;
-        this.satStyle.set(sat.id, { col, size });
-      }
+      this._styleSat(p, sat);   // boja/veličina/isticanje — piše samo na promjenu
     }
     for (const [id, p] of this.satPoints) {
       if (!seen.has(id)) { p.show = false; const l = this.satLabels.get(id); if (l) l.show = false; }

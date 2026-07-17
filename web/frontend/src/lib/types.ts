@@ -14,7 +14,7 @@ export interface SatFrame {
   az?: number;
   rejected?: boolean;
   residual_m?: number;
-  params?: { clock_offset_m: number; alt_km: number; inc_deg: number; lan_deg: number };
+  params?: { clock_offset_m: number; alt_km: number; inc_deg: number; lan_deg: number; ecc: number; pos_offset_m: number };
 }
 
 export interface SystemInfo {

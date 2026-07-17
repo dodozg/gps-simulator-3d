@@ -1,17 +1,19 @@
-// Mali kontrolni panel pojedinog satelita: uključi/isključi, ubrizgaj kvar sata
-// (RAIM demo), mijenjaj orbitu (visina/inklinacija/RAAN), fokusiraj kameru + žive
-// informacije (elevacija/azimut/rezidual/status). Plutajuća kartica (ne blokira
-// globus) — otvara se klikom na redak u tablici satelita ILI na oznaku satelita na
-// globusu. Uređivačke vrijednosti se postave pri otvaranju; svaki frame se osvježe
-// samo žive informacije, da se ne bore s unosom.
+// Mali kontrolni panel pojedinog satelita: uključi/isključi, napadi (kvar sata,
+// spoof pozicije), orbita (visina/inklinacija/RAAN/ekscentricitet), fokus kamere
+// + žive informacije (elevacija/azimut/rezidual/status). Plutajuća kartica —
+// otvara se klikom na redak u tablici satelita ILI na satelit na globusu.
+// Uređivačke vrijednosti se postave pri otvaranju; svaki frame se osvježe samo
+// žive informacije, da se ne bore s unosom.
 import { h } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import type { StateFrame, SatFrame } from "../lib/types";
 
 type Send = (msg: Record<string, unknown>) => void;
 type OnFocus = (ecef: [number, number, number]) => void;
+type OnSelect = (id: string | null) => void;
+type SatParam = "clock_offset_m" | "pos_offset_m" | "alt_km" | "inc_deg" | "lan_deg" | "ecc";
 
-export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocus) {
+export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocus, onSelect?: OnSelect) {
   let curId: string | null = null;
   let last: StateFrame | null = null;
 
@@ -37,53 +39,59 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   });
   enRow.append(enLabel, enBtn);
 
-  // --- žive informacije (elevacija / azimut / rezidual) ---
+  // --- žive informacije ---
   const info = h("div", "sat-editor-info");
-  function infoRow(): { row: HTMLElement; label: HTMLElement; val: HTMLElement } {
+  function infoRow(): { label: HTMLElement; val: HTMLElement } {
     const row = h("div", "sat-editor-info-row");
     const label = h("span", "sat-editor-info-k");
     const val = h("span", "sat-editor-info-v", "—");
     row.append(label, val);
     info.appendChild(row);
-    return { row, label, val };
+    return { label, val };
   }
   const elRow = infoRow();
   const azRow = infoRow();
   const resRow = infoRow();
-
   const statusEl = h("div", "sat-editor-status");
 
-  // --- kvar sata ---
-  const faultWrap = h("div", "sat-editor-field");
-  const faultLabel = h("label", "ctl-label");
-  const faultRow = h("div", "sat-editor-inline");
-  const faultSlider = h("input", "slider") as HTMLInputElement;
-  faultSlider.type = "range"; faultSlider.min = "0"; faultSlider.max = "5000"; faultSlider.step = "50";
-  const faultVal = h("span", "sat-editor-val");
-  faultRow.append(faultSlider, faultVal);
-  const faultNote = h("div", "sat-editor-note");
-  faultWrap.append(faultLabel, faultRow, faultNote);
-  faultSlider.addEventListener("input", () => {
-    faultVal.textContent = faultSlider.value + " m";
-    if (curId) send({ type: "set_sat_param", id: curId, param: "clock_offset_m", value: Number(faultSlider.value) });
-  });
-
-  // --- orbita ---
-  const orbitTitle = h("div", "sat-editor-subhead");
-  function numField(param: "alt_km" | "inc_deg" | "lan_deg", step: number): { wrap: HTMLElement; input: HTMLInputElement; lab: HTMLElement } {
+  // --- slider (kvar sata / spoof pozicije) ---
+  function sliderField(param: SatParam, max: number, step: number) {
     const wrap = h("div", "sat-editor-field");
-    const lab = h("label", "ctl-label");
+    const label = h("label", "ctl-label");
+    const row = h("div", "sat-editor-inline");
+    const slider = h("input", "slider") as HTMLInputElement;
+    slider.type = "range"; slider.min = "0"; slider.max = String(max); slider.step = String(step);
+    const val = h("span", "sat-editor-val");
+    row.append(slider, val);
+    const note = h("div", "sat-editor-note");
+    wrap.append(label, row, note);
+    slider.addEventListener("input", () => {
+      val.textContent = slider.value + " m";
+      if (curId) send({ type: "set_sat_param", id: curId, param, value: Number(slider.value) });
+    });
+    return { wrap, label, slider, val, note };
+  }
+  const attacksTitle = h("div", "sat-editor-subhead");
+  const faultF = sliderField("clock_offset_m", 5000, 50);
+  const spoofF = sliderField("pos_offset_m", 5000, 50);
+
+  // --- orbita (brojčana polja) ---
+  const orbitTitle = h("div", "sat-editor-subhead");
+  function numField(param: SatParam, step: number) {
+    const wrap = h("div", "sat-editor-field");
+    const label = h("label", "ctl-label");
     const input = h("input", "ctl-select") as HTMLInputElement;
     input.type = "number"; input.step = String(step);
     input.addEventListener("change", () => {
       if (curId && input.value !== "") send({ type: "set_sat_param", id: curId, param, value: Number(input.value) });
     });
-    wrap.append(lab, input);
-    return { wrap, input, lab };
+    wrap.append(label, input);
+    return { wrap, label, input };
   }
   const altF = numField("alt_km", 100);
   const incF = numField("inc_deg", 1);
   const lanF = numField("lan_deg", 5);
+  const eccF = numField("ecc", 0.01);
 
   // --- akcije ---
   const btnRow = h("div", "sat-editor-inline");
@@ -94,12 +102,17 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   });
   const resetBtn = h("button", "btn");
   resetBtn.addEventListener("click", () => {
-    faultSlider.value = "0"; faultVal.textContent = "0 m";
-    if (curId) send({ type: "set_sat_param", id: curId, param: "clock_offset_m", value: 0 });
+    faultF.slider.value = "0"; faultF.val.textContent = "0 m";
+    spoofF.slider.value = "0"; spoofF.val.textContent = "0 m";
+    if (curId) {
+      send({ type: "set_sat_param", id: curId, param: "clock_offset_m", value: 0 });
+      send({ type: "set_sat_param", id: curId, param: "pos_offset_m", value: 0 });
+    }
   });
   btnRow.append(focusBtn, resetBtn);
 
-  card.append(head, enRow, info, statusEl, faultWrap, orbitTitle, altF.wrap, incF.wrap, lanF.wrap, btnRow);
+  card.append(head, enRow, info, statusEl, attacksTitle, faultF.wrap, spoofF.wrap,
+    orbitTitle, altF.wrap, incF.wrap, lanF.wrap, eccF.wrap, btnRow);
   parent.appendChild(card);
 
   function find(id: string): SatFrame | undefined {
@@ -111,12 +124,16 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     elRow.label.textContent = t("sat_info_el");
     azRow.label.textContent = t("sat_info_az");
     resRow.label.textContent = t("sat_info_res");
-    faultLabel.textContent = t("sat_clock_fault");
-    faultNote.textContent = t("sat_fault_note");
+    attacksTitle.textContent = t("sat_attacks");
+    faultF.label.textContent = t("sat_clock_fault");
+    faultF.note.textContent = t("sat_fault_note");
+    spoofF.label.textContent = t("sat_pos_spoof");
+    spoofF.note.textContent = t("sat_spoof_note");
     orbitTitle.textContent = t("sat_orbit");
-    altF.lab.textContent = t("sat_altitude");
-    incF.lab.textContent = t("sat_inclination");
-    lanF.lab.textContent = t("sat_raan");
+    altF.label.textContent = t("sat_altitude");
+    incF.label.textContent = t("sat_inclination");
+    lanF.label.textContent = t("sat_raan");
+    eccF.label.textContent = t("sat_ecc");
     focusBtn.textContent = t("sat_focus");
     resetBtn.textContent = t("sat_reset_health");
   }
@@ -128,7 +145,7 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     return `${s.system}  ·  ${st}`;
   }
 
-  // Žive informacije + status (svaki frame). NE dira polja za unos orbite.
+  // Žive informacije + status (svaki frame). NE dira polja/slidere za unos.
   function refreshLive(): void {
     if (!curId) return;
     const s = find(curId);
@@ -140,15 +157,28 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     resRow.val.classList.toggle("bad", s.rejected === true);
   }
 
-  // on/off prekidač sinkroniziramo SAMO pri otvaranju (kao i polja orbite), da
+  // on/off prekidač sinkroniziramo SAMO pri otvaranju (kao i polja/slideri), da
   // optimistični klik ne "vrati" prije nego backend odgovori u sljedećem frameu.
-  function syncEnabled(s: SatFrame | undefined): void {
+  function syncControls(s: SatFrame | undefined): void {
     const on = s?.enabled !== false;
     enBtn.classList.toggle("on", on);
     enBtn.setAttribute("aria-checked", String(on));
+    const p = s?.params;
+    faultF.slider.value = String(p ? Math.min(5000, Math.max(0, Math.round(p.clock_offset_m))) : 0);
+    faultF.val.textContent = faultF.slider.value + " m";
+    spoofF.slider.value = String(p ? Math.min(5000, Math.max(0, Math.round(p.pos_offset_m))) : 0);
+    spoofF.val.textContent = spoofF.slider.value + " m";
+    altF.input.value = p ? p.alt_km.toFixed(0) : "";
+    incF.input.value = p ? p.inc_deg.toFixed(1) : "";
+    lanF.input.value = p ? p.lan_deg.toFixed(0) : "";
+    eccF.input.value = p ? p.ecc.toFixed(3) : "";
   }
 
-  function hide(): void { curId = null; card.style.display = "none"; }
+  function hide(): void {
+    curId = null;
+    card.style.display = "none";
+    onSelect?.(null);
+  }
 
   applyLabels();
   onLangChange(() => { applyLabels(); refreshLive(); });
@@ -158,16 +188,10 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
       curId = satId;
       const s = find(satId);
       titleEl.textContent = `${t("edit_sat")} ${satId}`;
-      const p = s?.params;
-      const clk = p ? p.clock_offset_m : 0;
-      faultSlider.value = String(Math.min(5000, Math.max(0, Math.round(clk))));
-      faultVal.textContent = faultSlider.value + " m";
-      altF.input.value = p ? p.alt_km.toFixed(0) : "";
-      incF.input.value = p ? p.inc_deg.toFixed(1) : "";
-      lanF.input.value = p ? p.lan_deg.toFixed(0) : "";
-      syncEnabled(s);
+      syncControls(s);
       refreshLive();
       card.style.display = "block";
+      onSelect?.(satId);
     },
     update(f: StateFrame): void {
       last = f;

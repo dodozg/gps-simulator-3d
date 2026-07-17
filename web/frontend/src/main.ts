@@ -70,7 +70,8 @@ const globe = new Globe(cesiumRoot, (lat, lon) => {
   socket.send({ type: "set_receiver", lat, lon });   // alt izostavljen -> teren (DEM)
 });
 
-const satEditor = mountSatEditor(ui, (msg) => socket.send(msg), (ecef) => globe.lookAtSat(ecef));
+const satEditor = mountSatEditor(ui, (msg) => socket.send(msg),
+  (ecef) => globe.lookAtSat(ecef), (id) => globe.setSelectedSat(id));
 // Klik na satelit na globusu otvara njegov editor (kao klik na redak u tablici).
 globe.onSatelliteClick((id) => satEditor.open(id));
 const telemetry = mountTelemetry(rightPanel, (msg) => socket.send(msg), (id) => satEditor.open(id));

@@ -105,6 +105,10 @@ class SimSession:
                     s.i = float(np.clip(v, 0.0, 90.0))
                 elif param == "lan_deg":
                     s.lan = float(v) % 360.0   # rektascenzija uzlaznog čvora (rotacija ravnine)
+                elif param == "ecc":
+                    s.e = float(np.clip(v, 0.0, 0.3))   # ekscentricitet (0 = kružna)
+                elif param == "pos_offset_m":
+                    s.user_pos_offset_m = float(max(v, 0.0))   # spoof pozicije (radijalni pomak)
                 return
 
     def set_iono_tow0(self, tow):

@@ -20,6 +20,7 @@ class Satellite:
         self.is_spoofed = False # RAIM testing flag
         self.enabled = True     # živa sesija može ugasiti sat/konstelaciju (web toggle)
         self.user_clock_offset_m = 0.0  # korisnički ubrizgan kvar sata [m] (editor satelita)
+        self.user_pos_offset_m = 0.0    # korisnički pomak BROADCAST pozicije [m] (spoof pozicije)
         
         self.clock_bias = 0.0 # Stvarni offset [s] (hardverski)
         self.total_bias = 0.0 # Uključuje dinamičku relativnost
@@ -57,6 +58,13 @@ class Satellite:
             self.ephemeris_error, dt if dt > 0 else 0.0, rng=rng, ideal=ideal
         )
         self.broadcast_pos = self.current_pos + self.ephemeris_error
+        if self.user_pos_offset_m:
+            # Spoof pozicije: pomakni OBJAVLJENU poziciju radijalno (od Zemlje) — mjerenje
+            # je iz PRAVE pozicije, ali prijemnik korigira iz krive broadcast pozicije, pa
+            # nastaje rezidual (RAIM ga izbaci ako je velik). Editor satelita "Spoof pozicije".
+            rnorm = np.linalg.norm(self.current_pos)
+            if rnorm > 0:
+                self.broadcast_pos = self.broadcast_pos + (self.current_pos / rnorm) * self.user_pos_offset_m
         self.last_update_time = t
 
         return self.current_pos
