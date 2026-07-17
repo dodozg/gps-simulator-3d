@@ -25,7 +25,7 @@ const COL = {
 // kamere od rovera), pa je njen PRIVIDNI (zaslonski) odmak od rovera ~konstantan
 // bez obzira na zoom — kako zumiraš prema roveru, oznaka mu se dinamički primiče.
 // Poziciju svaki render osvježava _repositionRayLabels (na preRender).
-const RAY_LABEL_SCREEN_FRAC = 0.08;   // odmak uz zraku = ovaj udio udaljenosti kamere
+const RAY_LABEL_SCREEN_FRAC = 0.16;   // odmak uz zraku = ovaj udio udaljenosti kamere
 const RAY_LABEL_MIN = 30;             // [m] donja granica (ekstremni zoom-in)
 const RAY_LABEL_MAX = 400_000;        // [m] gornja granica (ekstremni zoom-out)
 
@@ -439,10 +439,11 @@ export class Globe {
             backgroundColor: Cesium.Color.fromCssColorString("#0d1117cc"),
             pixelOffset: new Cesium.Cartesian2(0, -10),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            show: this.show.labels,   // dijele isti "oznake" prekidač kao satelitske oznake
           });
           this.rayLabels.set(sat.id, rl);
         } else {
-          rl.show = true;
+          rl.show = this.show.labels;
         }
       }
     }
@@ -482,6 +483,10 @@ export class Globe {
     this.show[key] = on;
     if (key === "labels") {
       for (const l of this.satLabels.values()) l.show = on;
+      // Oznake uz zrake dijele isti prekidač; kad se pale, prikaži samo one čija
+      // je zraka vidljiva (praćeni sateliti) pa ih pravilno pozicioniraj.
+      for (const [id, rl] of this.rayLabels) rl.show = on && (this.rays.get(id)?.show ?? false);
+      if (on) this._repositionRayLabels();
     } else if (key === "orbits" && on) {
       this.orbitsDirty = true;
     }
