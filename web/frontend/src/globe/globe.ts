@@ -25,7 +25,7 @@ const COL = {
 // kamere od rovera), pa je njen PRIVIDNI (zaslonski) odmak od rovera ~konstantan
 // bez obzira na zoom — kako zumiraš prema roveru, oznaka mu se dinamički primiče.
 // Poziciju svaki render osvježava _repositionRayLabels (na preRender).
-const RAY_LABEL_SCREEN_FRAC = 0.04;   // odmak uz zraku = ovaj udio udaljenosti kamere
+const RAY_LABEL_SCREEN_FRAC = 0.08;   // odmak uz zraku = ovaj udio udaljenosti kamere
 const RAY_LABEL_MIN = 30;             // [m] donja granica (ekstremni zoom-in)
 const RAY_LABEL_MAX = 400_000;        // [m] gornja granica (ekstremni zoom-out)
 
