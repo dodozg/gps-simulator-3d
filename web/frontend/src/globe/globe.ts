@@ -120,10 +120,10 @@ export class Globe {
     if (s.skyAtmosphere) s.skyAtmosphere.show = true;
     s.fog.enabled = true;
     // Ograniči zoom-out: bez ovoga se kamera može odzumirati u beskonačnost (Zemlja
-    // postane točka u praznom svemiru). Cap ~55 000 km drži CIJELU konstelaciju
-    // (orbite na ~20–30 tis. km visine) u kadru s marginom, ali ne dalje.
-    // minimumZoomDistance ostaje default (blizu, za precizno postavljanje rovera).
-    s.screenSpaceCameraController.maximumZoomDistance = 55_000_000;
+    // postane točka u praznom svemiru). Cap ~150 000 km je dovoljno da CIJELA
+    // konstelacija (najviši sateliti ~30 tis. km) stane u kadar s marginom za
+    // oznake, ali ne dalje. minimumZoomDistance ostaje default (blizu, za rover).
+    s.screenSpaceCameraController.maximumZoomDistance = 150_000_000;
     this.viewer.clock.shouldAnimate = false;
     this.viewer.camera.flyHome(0);
 
