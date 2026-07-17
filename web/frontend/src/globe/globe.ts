@@ -124,6 +124,11 @@ export class Globe {
     // konstelacija (najviši sateliti ~30 tis. km) stane u kadar s marginom za
     // oznake, ali ne dalje. minimumZoomDistance ostaje default (blizu, za rover).
     s.screenSpaceCameraController.maximumZoomDistance = 150_000_000;
+    // Sjeverni pol drži "gore": bez ovoga se odzumirani globus (malen na ekranu)
+    // pri povlačenju preko praznog neba počne kotrljati/prevrtati oko osi pogleda
+    // umjesto urednog vrtnje oko polarne osi. UNIT_Z veže rotaciju na Z-os pa se
+    // globus ponaša kao pravi globus (horizontalno = vrtnja, vertikalno = nagib).
+    this.viewer.camera.constrainedAxis = Cesium.Cartesian3.UNIT_Z;
     this.viewer.clock.shouldAnimate = false;
     this.viewer.camera.flyHome(0);
 
