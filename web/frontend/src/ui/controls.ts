@@ -36,6 +36,16 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
   // Po sustavu spremljeno on/off (prazno = koristi backend default, GPS-only).
   const systemsOn: Record<string, boolean> = (saved.systemsOn as Record<string, boolean>) ?? {};
 
+  // "Doba dana" slider prikazuje LOKALNO sunčevo vrijeme PRIJEMNIKA. Backend (i
+  // ionosfera) rade u globalnom tow-u gdje je lokalno = tow + dužina/15 (240 s/°),
+  // pa slider pretvaramo: tow = lokalno − 240·dužina. Tako 14:00 znači 14 h kod
+  // rovera bez obzira gdje je, a globusova sjena (koju pogoni isti tow) se poklapa.
+  let roverLon = 0;
+  function sendTow(): void {
+    const towGlobal = (((state.tow - 240 * roverLon) % 86400) + 86400) % 86400;
+    send({ type: "iono_tow0", value: towGlobal });
+  }
+
   function persist(): void {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify({
@@ -136,7 +146,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       state.tow = Number(todIn.value) * 3600;
       tod.querySelector(".ctl-label")!.textContent =
         `${t("time_of_day")}: ${String(todIn.value).padStart(2, "0")}:00`;
-      send({ type: "iono_tow0", value: state.tow });
+      sendTow();
       persist();
     });
     tod.appendChild(todIn);
@@ -213,7 +223,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
   // konfiguraciju; nakon običnog reloada je ovo uglavnom no-op (backend ih već ima).
   function pushPersisted(): void {
     send({ type: "time_scale", value: state.timeScale });
-    send({ type: "iono_tow0", value: state.tow });
+    sendTow();
     send({ type: "kinematic", on: state.kinematic });
     send({ type: "raim", on: state.raim });
     if (state.attack !== "none") send({ type: "attack", spec: state.attack });
@@ -237,14 +247,21 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
   let needSync = true;
   return {
     syncFromFrame(f: StateFrame): void {
+      // Prati dužinu prijemnika za pretvorbu doba-dana. Kad se rover (pre)mjesti,
+      // zadrži isto LOKALNO vrijeme (ponovno pošalji preračunati globalni tow).
+      const lon = f.receiver.truth?.lla.lon;
+      const lonChanged = lon !== undefined && Math.abs(lon - roverLon) > 0.5;
+      if (lon !== undefined) roverLon = lon;
+
       if (needSync) {
         state.playing = f.playing;
         if (f.systems) { systems = f.systems; systemsSig = sigOf(f.systems); }
-        pushPersisted();                            // vrati zadnju konfiguraciju na backend
+        pushPersisted();                            // vrati zadnju konfiguraciju na backend (koristi roverLon)
         needSync = false;
         render();                                   // jednokratno; ne bori se s unosom
         return;
       }
+      if (lonChanged) sendTow();                    // rover premješten -> zadrži lokalno doba dana
       state.playing = f.playing;
       const btn = container.querySelector(".btn.primary");
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
@@ -261,7 +278,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
                          kinematic: boolean; raim: boolean; attack: string }>): void {
       if (patch.playing !== undefined) { state.playing = patch.playing; send({ type: patch.playing ? "play" : "pause" }); }
       if (patch.timeScale !== undefined) { state.timeScale = patch.timeScale; send({ type: "time_scale", value: patch.timeScale }); }
-      if (patch.tow !== undefined) { state.tow = patch.tow; send({ type: "iono_tow0", value: patch.tow }); }
+      if (patch.tow !== undefined) { state.tow = patch.tow; sendTow(); }
       if (patch.kinematic !== undefined) { state.kinematic = patch.kinematic; send({ type: "kinematic", on: patch.kinematic }); }
       if (patch.raim !== undefined) { state.raim = patch.raim; send({ type: "raim", on: patch.raim }); }
       if (patch.attack !== undefined) { state.attack = patch.attack; send({ type: "attack", spec: patch.attack === "none" ? null : patch.attack }); }

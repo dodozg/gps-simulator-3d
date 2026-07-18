@@ -87,6 +87,12 @@ export class Globe {
   // Koliko se miš pomaknuo tijekom trenutnog pritiska (px) — razlikuje povlačenje
   // (rotacija) od čistog klika (odabir satelita).
   private dragMovedPx = 0;
+  // Zadnje doba dana [s] postavljeno Suncu (da ne diramo sat kad se nije promijenilo).
+  private lastSunTowSec = NaN;
+  // Referentni datum za Sunce: ekvinocij (Sunce ~nad ekvatorom) u 00:00 UTC. Dodavanjem
+  // "doba dana" [s] dobijemo trenutak čiji podsunčani meridijan = 15°·(12−tow_h),
+  // pa se terminator poklapa s lokalnim vremenom (lokalno = tow + dužina/15).
+  private static readonly SUN_EPOCH = Cesium.JulianDate.fromIso8601("2024-03-20T00:00:00Z");
 
   constructor(container: HTMLElement, onPlace: (lat: number, lon: number) => void) {
     const token = import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined;
@@ -399,9 +405,24 @@ export class Globe {
     this._updateRays(frame);
     this._updateOrbits(frame.sim_time);
     this._updateAttack(frame);
+    this._updateSun(frame);
 
     // requestRenderMode: podaci su se promijenili -> zatraži jedan render.
     this.viewer.scene.requestRender();
+  }
+
+  // Poveži Sunce/sjenu na globusu s "dobom dana" iz slidera. Koristimo iono_tow0
+  // (bazno doba dana, referenca prijemnika) — NE dodajemo sim_time, da sjena uvijek
+  // odgovara postavljenom slideru, a ne akumuliranom (×100) vremenu simulacije.
+  // Backend model: lokalno = tow + dužina/15, pa je podsunčani meridijan 15°·(12−tow_h)
+  // i terminator se poklapa s lokalnim vremenom rovera. Pomak slidera => Sunce se
+  // pomakne u sljedećem frameu. enableLighting čita Sunce iz clock.currentTime.
+  private _updateSun(frame: StateFrame): void {
+    const towSec = ((frame.iono_tow0 % 86400) + 86400) % 86400;
+    if (Math.abs(towSec - this.lastSunTowSec) < 1) return;   // isto doba dana -> ne diraj sat
+    this.lastSunTowSec = towSec;
+    this.viewer.clock.currentTime =
+      Cesium.JulianDate.addSeconds(Globe.SUN_EPOCH, towSec, new Cesium.JulianDate());
   }
 
   // Prostorni prikaz napada: spoof "pull" vektor (kamo napadač povlači rješenje)
