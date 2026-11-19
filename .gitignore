@@ -3,6 +3,8 @@ skyplot.png
 spoofing.png
 iono.png
 multignss.png
+# izlaz istraživačkog sandboxa (python sandbox.py run ...)
+results/
 # ...ali kopije u docs/media/ SU commitane (showcase u README-u)
 !docs/media/
 !docs/media/*.png

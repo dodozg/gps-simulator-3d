@@ -293,7 +293,7 @@ def test_cancel_returns_partial_result():
 
 
 def test_cli_validate_and_list(capsys):
-    ex = os.path.join(sandbox.EXAMPLES_DIR, sorted(os.listdir(sandbox.EXAMPLES_DIR))[0])
+    ex = os.path.join(sandbox.EXAMPLES_DIR, sandbox.list_examples()[0][0])
     assert sandbox.main(["validate", ex]) == 0
     assert "OK" in capsys.readouterr().out
     assert sandbox.main(["list"]) == 0

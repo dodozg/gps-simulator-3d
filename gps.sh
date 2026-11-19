@@ -10,6 +10,7 @@
 #   ./gps.sh iono [args]          # Klobuchar dnevna ionosfera
 #   ./gps.sh multignss [args]     # GPS+GAL+GLO+BDS dostupnost/PDOP/ISB
 #   ./gps.sh scenario [args]      # snimanje/reprodukcija scenarija (JSON)
+#   ./gps.sh sandbox [args]       # istraživački sandbox: sweep × Monte Carlo (JSON spec)
 #   ./gps.sh tests [args]         # pytest
 #   ./gps.sh web                  # build (ako treba) + pokreni web centar
 set -euo pipefail
@@ -36,11 +37,12 @@ case "$cmd" in
   iono)           exec "$PY" iono.py "$@" ;;
   multignss|multi) exec "$PY" multignss.py "$@" ;;
   scenario)       exec "$PY" scenario.py "$@" ;;
+  sandbox)        exec "$PY" sandbox.py "$@" ;;
   tests|test|pytest) exec "$PY" -m pytest "$@" ;;
   web)            [ -f "${GPSWEB_BUILD:-$HOME/.local/share/gpsweb}/dist/index.html" ] || ./build_web.sh
                   exec ./run_webapp.sh ;;
   ""|-h|--help|help)
-    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
     exit 0 ;;
   *)
     echo "[!] Nepoznata naredba: $cmd"

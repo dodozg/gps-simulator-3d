@@ -2,11 +2,11 @@
   "name": "multignss_mask",
   "description": "Multi-GNSS vs elevacijska maska (urbani kanjon): dostupnost fixa, HPL i dostupnost integriteta uz HAL = 100 m. Sva tri skupa sustava iz iste multi-GNSS konstelacije.",
   "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 60, "constellation": "multi", "max_sats": 16, "terrain": false, "t0_random_s": 86164},
-  "seeds": 3,
+  "seeds": 8,
   "raim": {"hal": 100},
   "sweep": {"mask_deg": [5, 10, 15, 20, 25, 30, 35, 40], "systems": [["GPS"], ["GPS", "GAL"], ["GPS", "GAL", "GLO", "BDS"]]},
   "estimators": ["ekf"],
   "metrics": ["availability", "integrity_availability", "hpl_median", "h_err_p95", "gdop_median", "n_sats_mean"],
   "warmup_s": 20,
-  "plot": [{"metric": "hpl_median", "x": "mask_deg"}, {"metric": "integrity_availability", "x": "mask_deg"}]
+  "plot": [{"metric": "hpl_median", "x": "mask_deg", "logy": true}, {"metric": "integrity_availability", "x": "mask_deg"}]
 }

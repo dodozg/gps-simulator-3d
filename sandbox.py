@@ -573,6 +573,12 @@ def m_runtime(tr):
     return float(np.mean(tr["runtime_s"]) * 1e3) if len(tr["runtime_s"]) else float("nan")
 
 
+# Sve ugrađene metrike su nenegativne (udjeli već imaju (0, 1)) — CI ne ide ispod 0.
+for _m in list(METRICS.values()):
+    if _m.bounds is None:
+        _m.bounds = (0.0, None)
+
+
 DEFAULT_METRICS = ["availability", "h_err_median", "h_err_p95", "v_err_p95", "err3d_median",
                    "integrity_availability", "hpl_median", "mi_events", "raim_detections",
                    "false_alarms", "fix_loss_count", "nis_mean", "runtime_ms"]
@@ -1376,8 +1382,8 @@ class Result:
             paths["traces"] = tdir
         return paths
 
-    def plot(self, metric=None, x=None, out=None, logx=None, title=None):
-        return plot_result(self, metric=metric, x=x, out=out, logx=logx, title=title)
+    def plot(self, metric=None, x=None, out=None, logx=None, title=None, logy=False):
+        return plot_result(self, metric=metric, x=x, out=out, logx=logx, title=title, logy=logy)
 
 
 def _csvnum(v):
@@ -1537,7 +1543,7 @@ def _is_num(v):
     return _num(v)
 
 
-def plot_result(res, metric=None, x=None, out=None, logx=None, title=None):
+def plot_result(res, metric=None, x=None, out=None, logx=None, title=None, logy=False):
     """Metrika vs sweep parametar, s 95 % CI vrpcom; jedna linija po ostalim parametrima × estimatoru."""
     import matplotlib
     matplotlib.use("Agg")
@@ -1591,6 +1597,8 @@ def plot_result(res, metric=None, x=None, out=None, logx=None, title=None):
         lab = ", ".join(parts)
         if numeric:
             ax.plot(xp, mean, color=c, lw=1.8, marker="o", ms=4, label=lab)
+            if logy:                       # log os: donja granica vrpce mora biti > 0
+                lo = np.where(lo > 0, lo, np.nan)
             okb = np.isfinite(lo) & np.isfinite(hi)
             if okb.any():
                 ax.fill_between(xp[okb], lo[okb], hi[okb], color=c, alpha=0.18, lw=0)
@@ -1605,6 +1613,8 @@ def plot_result(res, metric=None, x=None, out=None, logx=None, title=None):
         ax.set_xticklabels(cats, color=fg)
     if logx or (logx is None and numeric and x and x.endswith(("pfa", "pmd"))):
         ax.set_xscale("log")
+    if logy:
+        ax.set_yscale("log")
     unit = METRICS[metric].unit if metric in METRICS else ""
     ax.set_xlabel(x or "", color=fg)
     ax.set_ylabel(metric + (f" [{unit}]" if unit else ""), color=fg)
@@ -1653,7 +1663,7 @@ def cmd_run(args):
         try:
             for ps in _plot_specs(spec_d, res):
                 p = res.plot(metric=ps.get("metric"), x=ps.get("x"), logx=ps.get("logx"),
-                             title=ps.get("title"),
+                             title=ps.get("title"), logy=bool(ps.get("logy")),
                              out=os.path.join(out, f"plot_{ps.get('metric') or res.metric_names[0]}.png"))
                 print(f"  plot      {p}")
         except ImportError:
@@ -1675,6 +1685,29 @@ def _print_summary(res, max_metrics=6):
             cells.append("—" if s["n"] == 0 else (f"{s['mean']:.3g}±{(s['ci_hi'] - s['mean']):.2g}"
                                                  if math.isfinite(s["ci_hi"]) else f"{s['mean']:.3g}"))
         print(" | ".join(cells))
+
+
+def load_result(path):
+    """Učitaj results.json natrag u Result (npr. za naknadno crtanje u notebooku)."""
+    with open(path, "r", encoding="utf-8") as f:
+        d = json.load(f)
+    nanify = lambda m: {k: (float("nan") if v is None else v) for k, v in m.items()}  # noqa: E731
+    for a in d["aggregate"]:
+        a["metrics"] = {k: nanify(v) for k, v in a["metrics"].items()}
+    return Result(spec=d["spec"], points=d["points"], locations=d["locations"], runs=d["runs"],
+                  aggregate=d["aggregate"], meta=d["meta"], traces=d.get("traces"))
+
+
+def cmd_plot(args):
+    res = load_result(args.results)
+    specs = [{"metric": args.metric, "x": args.x, "logy": args.logy}] if args.metric else _plot_specs(res.spec, res)
+    for ps in specs:
+        m = ps.get("metric") or res.metric_names[0]
+        out = args.out if (args.out and len(specs) == 1) else os.path.join(
+            os.path.dirname(os.path.abspath(args.results)), f"plot_{m}.png")
+        print(res.plot(metric=m, x=ps.get("x"), logx=ps.get("logx"), title=ps.get("title"),
+                       logy=bool(ps.get("logy") or args.logy), out=out))
+    return 0
 
 
 def cmd_validate(args):
@@ -1724,6 +1757,13 @@ def main(argv=None):
     pv = sub.add_parser("validate", help="provjeri spec")
     pv.add_argument("spec")
     pv.set_defaults(func=cmd_validate)
+    pp = sub.add_parser("plot", help="nacrtaj graf iz postojećeg results.json")
+    pp.add_argument("results")
+    pp.add_argument("--metric", default=None)
+    pp.add_argument("--x", default=None)
+    pp.add_argument("--logy", action="store_true")
+    pp.add_argument("--out", default=None)
+    pp.set_defaults(func=cmd_plot)
     pl = sub.add_parser("list", help="popiši registrirane estimatore/napade/metrike")
     pl.add_argument("--plugin", action="append", help="dodatni plugin modul/.py")
     pl.set_defaults(func=cmd_list)
