@@ -2,7 +2,7 @@
   "name": "ekf_vs_wls",
   "description": "EKF vs snapshot WLS na ISTIM mjerenjima (uparena usporedba), pet lokacija × deset sjemena: točnost, konzistentnost (NIS/dof) i vrijeme solvera.",
   "world": {
-    "duration_s": 180, "systems": ["GPS"], "terrain": false,
+    "duration_s": 180, "systems": ["GPS"], "terrain": false, "t0_random_s": 86164,
     "locations": [
       {"name": "Zagreb", "lat": 45.815, "lon": 15.982, "alt": 120},
       {"name": "London", "lat": 51.507, "lon": -0.128, "alt": 50},

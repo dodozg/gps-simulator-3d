@@ -1,7 +1,7 @@
 {
   "name": "jamming_jn",
   "description": "Ometanje: dostupnost fixa i integriteta za napada vs J/N, GPS sam vs četiri sustava. Ometač se uključi u t=30 s (rampa 1 s) i drži puni J/N.",
-  "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 120, "constellation": "multi", "terrain": false},
+  "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 120, "constellation": "multi", "terrain": false, "t0_random_s": 86164},
   "seeds": 3,
   "attack": {"type": "jamming", "js_db": 0, "start": 30, "end": 31},
   "sweep": {"attack.js_db": [0, 6, 9, 12, 14, 16, 18], "systems": [["GPS"], ["GPS", "GAL", "GLO", "BDS"]]},

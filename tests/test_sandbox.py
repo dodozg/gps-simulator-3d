@@ -340,3 +340,16 @@ def test_rest_job_flow():
     assert csv_r.status_code == 200 and csv_r.text.startswith("point,mask_deg,estimator")
     assert "attachment" in csv_r.headers["content-disposition"]
     assert client.get("/api/sandbox/jobs/nope").status_code == 404
+
+
+def test_t0_random_varies_geometry_not_noise_stream():
+    """t0_random_s: svako sjeme dobije drugu geometriju (Monte Carlo geometrije)."""
+    base = {"world": {"duration_s": 3, "terrain": False}}
+    loc = sandbox._locations({})[0]
+    g = [sandbox.simulate(base, {}, loc, s)["ekf"]["gdop"][-1] for s in (1, 2)]
+    assert abs(g[0] - g[1]) < 1e-3                        # ista geometrija bez t0_random_s
+    rnd = {"world": {"duration_s": 3, "terrain": False, "t0_random_s": 86164}}
+    tr = [sandbox.simulate(rnd, {}, loc, s)["ekf"] for s in (1, 2)]
+    assert tr[0]["meta"]["t0"] != tr[1]["meta"]["t0"] and 0 < tr[0]["meta"]["t0"] < 86164
+    assert abs(tr[0]["gdop"][-1] - tr[1]["gdop"][-1]) > 1e-2
+    assert tr[0]["fix"].all() and tr[1]["fix"].all()

@@ -19,7 +19,8 @@ Ovaj modul to radi iz jednog JSON opisa (spec), bez diranja enginea:
 Spec (JSON; svi ključevi osim navedenih su greška — vidi `validate`):
     name, description
     world:     lat, lon, alt | locations [{name,lat,lon,alt}], pool_locations,
-               duration_s, step_s, systems ["GPS","GAL","GLO","BDS"], constellation
+               duration_s, step_s, t0_s, t0_random_s (Monte Carlo geometrije: početak
+               runa + U(0, t0_random_s) po sjemenu), systems ["GPS","GAL","GLO","BDS"], constellation
                ("auto"|"walker"|"multi"), mask_deg (≥ 5), max_sats, iono_tow0,
                kinematic (false | {speed_mps, heading_deg}), terrain, ideal
     seeds:     broj (→ seed_base + i) ili lista sjemena
@@ -112,15 +113,17 @@ def register_attack(name, description=None):
     return deco
 
 
-def register_metric(name, description=None, deterministic=True, unit=""):
+def register_metric(name, description=None, deterministic=True, unit="", bounds=None):
     """Dekorator: registriraj metriku `fn(trace) -> float` pod imenom `name`.
 
     deterministic=False za metrike koje ovise o stroju (npr. vrijeme izvođenja) —
-    provjere determinizma ih preskaču.
+    provjere determinizma ih preskaču. bounds=(lo, hi): granice vrijednosti (npr.
+    (0, 1) za udjele) — interval pouzdanosti se na njih odreže.
     """
     def deco(fn):
         METRICS[name] = SimpleNamespace(name=name, fn=fn, deterministic=deterministic,
-                                        unit=unit, description=description or _doc1(fn))
+                                        unit=unit, bounds=bounds,
+                                        description=description or _doc1(fn))
         return fn
     return deco
 
@@ -392,21 +395,21 @@ for _comp, _key, _lab in (("h", "err_h", "horizontalna"), ("v", "err_v", "vertik
         def _mk(key=_key, sf=_sf):
             return lambda tr: _stat(sf, tr[key][_acc_mask(tr)])
         register_metric(_name, f"{_lab} greška [m], {_sn} (epohe s fixom nakon warmup_s)",
-                        unit="m")(_mk())
+                        unit="m", bounds=(0.0, None))(_mk())
 
 
-@register_metric("availability", "udio epoha s fixom (sve epohe)")
+@register_metric("availability", "udio epoha s fixom (sve epohe)", bounds=(0.0, 1.0))
 def m_availability(tr):
     return float(np.mean(tr["fix"])) if len(tr["fix"]) else float("nan")
 
 
-@register_metric("win_availability", "udio epoha s fixom dok je napad aktivan")
+@register_metric("win_availability", "udio epoha s fixom dok je napad aktivan", bounds=(0.0, 1.0))
 def m_win_availability(tr):
     w = tr["attack_active"]
     return float(np.mean(tr["fix"][w])) if w.any() else float("nan")
 
 
-@register_metric("integrity_availability", "udio epoha s fixom i HPL ≤ HAL (i VPL ≤ VAL ako je zadan)")
+@register_metric("integrity_availability", "udio epoha s fixom i HPL ≤ HAL (i VPL ≤ VAL ako je zadan)", bounds=(0.0, 1.0))
 def m_integrity_availability(tr):
     if not len(tr["fix"]):
         return float("nan")
@@ -435,13 +438,13 @@ def _fault_epochs(tr):
     return w
 
 
-@register_metric("raim_pd", "vjerojatnost detekcije po epohi dok kvar djeluje (pokvareni satelit u mjerenjima)")
+@register_metric("raim_pd", "vjerojatnost detekcije po epohi dok kvar djeluje (pokvareni satelit u mjerenjima)", bounds=(0.0, 1.0))
 def m_raim_pd(tr):
     w = _fault_epochs(tr)
     return float(np.mean(tr["detect"][w])) if w.any() else float("nan")
 
 
-@register_metric("raim_detected", "1 ako je RAIM barem jednom detektirao za napada, inače 0")
+@register_metric("raim_detected", "1 ako je RAIM barem jednom detektirao za napada, inače 0", bounds=(0.0, 1.0))
 def m_raim_detected(tr):
     if not tr["meta"]["has_attack"]:
         return float("nan")
@@ -453,7 +456,7 @@ def m_raim_exclusions(tr):
     return float(np.sum((tr["excluded_n"] > 0) & tr["attack_active"]))
 
 
-@register_metric("correct_exclusion_rate", "udio aktivnih epoha napada u kojima je isključen BAŠ pokvareni satelit")
+@register_metric("correct_exclusion_rate", "udio aktivnih epoha napada u kojima je isključen BAŠ pokvareni satelit", bounds=(0.0, 1.0))
 def m_correct_exclusion(tr):
     w = _fault_epochs(tr)
     if not tr["meta"]["has_faulty"] or not w.any():
@@ -466,7 +469,7 @@ def m_false_alarms(tr):
     return float(np.sum(tr["detect"] & ~tr["attack_active"] & _post_warmup(tr)))
 
 
-@register_metric("false_alarm_rate", "lažni alarmi / epohe bez napada (nakon warmup_s)")
+@register_metric("false_alarm_rate", "lažni alarmi / epohe bez napada (nakon warmup_s)", bounds=(0.0, 1.0))
 def m_false_alarm_rate(tr):
     w = ~tr["attack_active"] & _post_warmup(tr) & tr["fix"]
     return float(np.mean(tr["detect"][w])) if w.any() else float("nan")
@@ -507,7 +510,7 @@ def m_mi_events(tr):
     return float(np.sum(mi & ~tr["detect"]))
 
 
-@register_metric("mi_rate", "udio epoha s HPL-om u kojima je horizontalna greška > HPL i nema alarma")
+@register_metric("mi_rate", "udio epoha s HPL-om u kojima je horizontalna greška > HPL i nema alarma", bounds=(0.0, 1.0))
 def m_mi_rate(tr):
     w, mi = _mi(tr)
     return float(np.sum(mi & ~tr["detect"]) / np.sum(w)) if w.any() else float("nan")
@@ -592,6 +595,8 @@ class World:
     mask_deg: float = 5.0
     max_sats: int = 10
     iono_tow0: float = 50400.0
+    t0_s: float = 0.0                 # početak runa u sim-vremenu (geometrija konstelacije)
+    t0_random_s: float = 0.0          # >0: početak + U(0, t0_random_s) po sjemenu (Monte Carlo geometrije)
     kinematic: object = False         # False | {"speed_mps": .., "heading_deg": ..}
     terrain: bool = True              # LOS raycasting kroz DEM (sporije; False = bez terena)
     ideal: bool = False               # zero-noise mod (tests/test_consistency.py)
@@ -720,7 +725,7 @@ def _check_world(w, errs, where=""):
     for k in w:
         if k not in WORLD_FIELDS:
             errs.append(f"{where}world: nepoznat ključ '{k}'")
-    for k in ("lat", "lon", "alt", "duration_s", "step_s", "mask_deg", "iono_tow0"):
+    for k in ("lat", "lon", "alt", "duration_s", "step_s", "mask_deg", "iono_tow0", "t0_s", "t0_random_s"):
         if k in w and not _num(w[k]):
             errs.append(f"{where}world.{k}: mora biti broj")
     if _num(w.get("lat", 0)) and not -90 <= w.get("lat", 0) <= 90:
@@ -729,6 +734,9 @@ def _check_world(w, errs, where=""):
         errs.append(f"{where}world.duration_s izvan [1, 86400]")
     if _num(w.get("step_s", 1)) and not 0.1 <= w.get("step_s", 1) <= 3600:
         errs.append(f"{where}world.step_s izvan [0.1, 3600]")
+    for k in ("t0_s", "t0_random_s"):
+        if _num(w.get(k, 0)) and not 0 <= w.get(k, 0) <= 864000:
+            errs.append(f"{where}world.{k} izvan [0, 864000]")
     if _num(w.get("mask_deg", 5)) and not MIN_MASK_DEG <= w.get("mask_deg", 5) <= 80:
         errs.append(f"{where}world.mask_deg izvan [{MIN_MASK_DEG:g}, 80] (mjerni model ima ugrađenu masku 5°)")
     ms = w.get("max_sats", 10)
@@ -1024,16 +1032,26 @@ def simulate(spec, params, location, seed):
     spec = parse_spec(spec)
     world, rcfg, attack_spec, est_names = resolve_config(spec, params, location)
     rng = np.random.default_rng(seed)
+    # Početak runa u sim-vremenu. Slučajni pomak (Monte Carlo GEOMETRIJE) dolazi iz
+    # zasebnog generatora pa ne mijenja tok šuma zajedničkog `rng`-a.
+    t0 = float(world["t0_s"])
+    if float(world["t0_random_s"]) > 0:
+        t0 += float(np.random.default_rng([int(seed), 0x7105]).uniform(0.0, float(world["t0_random_s"])))
     con = _build_constellation(world, rng)
     traj = _trajectory(world)
     gt0 = traj(0.0)
     meas = _SandboxMeasurement(gt0, rng=rng, ideal=bool(world["ideal"]), terrain=bool(world["terrain"]))
     meas.iono_tow0 = float(world["iono_tow0"])
+    if t0:
+        # satovi kreću "svježe" u t0 (bez integracije drifta od t=0)
+        meas.last_update_time = t0
+        for s in con.satellites:
+            s.last_update_time = t0
 
     winfo = SimpleNamespace(lat=world["lat"], lon=world["lon"], alt=world["alt"], gt0=gt0.copy(),
                             ideal=bool(world["ideal"]), systems=list(world["systems"]),
                             step_s=float(world["step_s"]), raim=dict(rcfg), seed=int(seed),
-                            world=dict(world))
+                            t0=t0, world=dict(world))
     attack = None
     if attack_spec:
         a = dict(attack_spec)
@@ -1050,12 +1068,13 @@ def simulate(spec, params, location, seed):
         last_pos = {name: None for name in est_names}
         driver_name, driver = ests[0]
         for k in range(n_ep):
-            t = k * step
-            con.update_all(t, ideal=bool(world["ideal"]))
+            t = k * step                  # vrijeme od početka runa (napadi, metrike)
+            ts = t0 + t                   # apsolutno sim-vrijeme (orbite, satovi, ionosfera)
+            con.update_all(ts, ideal=bool(world["ideal"]))
             gt = traj(t)
             meas.set_position(gt)
             est = driver.estimate() if hasattr(driver, "estimate") else last_pos[driver_name]
-            signals = meas.build(_visible_view(con, gt, world), t, est_pos=est,
+            signals = meas.build(_visible_view(con, gt, world), ts, est_pos=est,
                                  ref_pos=est if est is not None else gt)
             active = False
             if attack is not None:
@@ -1067,9 +1086,9 @@ def simulate(spec, params, location, seed):
             R = enu_rotation(gt)
             for name, obj in ests:
                 sig_copy = [dict(s) for s in signals]
-                t0 = time.perf_counter()
-                pos, info = obj.solve(sig_copy, t)
-                dt_run = time.perf_counter() - t0
+                tic = time.perf_counter()
+                pos, info = obj.solve(sig_copy, ts)
+                dt_run = time.perf_counter() - tic
                 info = info or {}
                 r = rec[name]
                 r["t"].append(t)
@@ -1111,7 +1130,7 @@ def simulate(spec, params, location, seed):
                       "attack_start": (float(getattr(attack, "start")) if attack is not None
                                        and getattr(attack, "start", None) is not None else None),
                       "has_faulty": has_faulty, "estimator": name, "seed": int(seed),
-                      "location": location["name"]}
+                      "location": location["name"], "t0": t0}
         traces[name] = tr
     return traces
 
@@ -1193,8 +1212,11 @@ def t_crit_975(df):
     return _T975[hi] + w * (_T975[lo] - _T975[hi])
 
 
-def summarize(values):
-    """mean/median/p95/std/min/max i 95 % CI srednje vrijednosti (t-razdioba) preko sjemena."""
+def summarize(values, bounds=None):
+    """mean/median/p95/std/min/max i 95 % CI srednje vrijednosti (t-razdioba) preko sjemena.
+
+    bounds=(lo, hi): CI se odreže na dopušteni raspon metrike (npr. udio ∈ [0, 1]).
+    """
     a = np.asarray([v for v in values if v is not None], float)
     a = a[np.isfinite(a)]
     n = len(a)
@@ -1205,10 +1227,15 @@ def summarize(values):
     mean = float(a.mean())
     std = float(a.std(ddof=1)) if n > 1 else nan
     half = t_crit_975(n - 1) * std / math.sqrt(n) if n > 1 else nan
+    ci_lo, ci_hi = (mean - half, mean + half) if n > 1 else (nan, nan)
+    if bounds is not None and n > 1:
+        if bounds[0] is not None:
+            ci_lo = max(ci_lo, bounds[0])
+        if bounds[1] is not None:
+            ci_hi = min(ci_hi, bounds[1])
     return {"n": n, "mean": mean, "median": float(np.median(a)),
             "p95": float(np.percentile(a, 95)), "std": std, "min": float(a.min()),
-            "max": float(a.max()), "ci_lo": mean - half if n > 1 else nan,
-            "ci_hi": mean + half if n > 1 else nan}
+            "max": float(a.max()), "ci_lo": ci_lo, "ci_hi": ci_hi}
 
 
 # =============================================================================
@@ -1393,7 +1420,8 @@ def _aggregate(spec, points, locs, jobs, outs):
             aggregate.append({"point": job0["point"], "group": g,
                               "location": "pooled" if pooled else job0["location"]["name"],
                               "estimator": e, "params": job0["params"],
-                              "metrics": {m: summarize([r.get(m) for r in ms]) for m in spec.metrics}})
+                              "metrics": {m: summarize([r.get(m) for r in ms], METRICS[m].bounds)
+                                          for m in spec.metrics}})
     return runs, aggregate
 
 
