@@ -90,3 +90,17 @@ def api_benchmark(p: dict = Body(...)):
             "raim_alarms": len(alarms),
         },
     })
+
+
+@router.post("/realdata")
+def api_realdata(p: dict = Body(default={})):
+    """Pravi GNSS podaci: SPP na priloženom RINEX uzorku (GEONET 0759, 2005-04-02).
+
+    Isti EKF/RAIM (`receiver.Receiver`) kao u simulaciji, ali mjerenja dolaze iz
+    stvarne RINEX datoteke + broadcast efemerida (vidi realdata.py). Rezultat se
+    kešira po (maska, solver) jer je obrada deterministička.
+    """
+    import realdata
+    mask = float(min(max(float(p.get("mask_deg", 10.0)), 0.0), 40.0))
+    solver = "ls" if p.get("solver") == "ls" else "ekf"
+    return to_jsonable(realdata.run_sample(mask_deg=mask, solver=solver))

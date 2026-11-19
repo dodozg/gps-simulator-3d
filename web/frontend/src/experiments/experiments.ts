@@ -16,6 +16,8 @@ interface ScnMeta { file: string; name: string; description: string; lat: number
 interface ScnMetrics { solved: number; total: number; median_err: number; conv_p95: number; max_err: number; gdop_median: number; raim_alarms: number; fix_lost: number; takeover_m: number | null; win_median_err: number | null; }
 interface ScnRun { scenario: string; raim: boolean; result: ScnMetrics; }
 interface ScnCompare { mode: string; a: { name: string; result: ScnMetrics }; b: { name: string; result: ScnMetrics }; }
+interface RdSummary { n: number; h_median?: number; h_p95?: number; v_median?: number; v_p95?: number; d3_rms?: number; mean_enu?: [number, number, number]; }
+interface RdRes { ok: boolean; station: string; receiver: string; start: string; solver: string; mask_deg: number; t: number[]; h_err: Array<number | null>; v_err: Array<number | null>; ls_h_err: Array<number | null>; nsat: number[]; gdop: Array<number | null>; raim_alarms: Array<[number, string]>; summary: RdSummary; ls_summary: RdSummary; n_epochs: number; solved: number; source: string; }
 
 type Field = { key: string; label: () => string; def: number; min?: number; max?: number; step?: number };
 
@@ -40,6 +42,10 @@ const EDU: Record<string, Record<Lang, string>> = {
   scenarios: {
     hr: "Scenarij fiksira SVE što određuje simulaciju (lokacija, trajanje, sjeme RNG-a, doba dana, napad) pa reprodukcija istog JSON-a daje bajt-identične metrike — idealno za poštenu usporedbu algoritama. 'Usporedi' vrti isti scenarij s RAIM-om uključenim i isključenim: kod naivnog spoofa razlika je dramatična (RAIM izolira lažne satelite), a kod koordiniranog spoofa RAIM ne pomaže jer je laž konzistentna.",
     en: "A scenario fixes EVERYTHING that determines the simulation (location, duration, RNG seed, time of day, attack), so replaying the same JSON yields byte-identical metrics — ideal for a fair algorithm comparison. 'Compare' runs the same scenario with RAIM on and off: for a naive spoof the difference is dramatic (RAIM isolates the fake satellites), while for a coordinated spoof RAIM does not help because the lie is self-consistent.",
+  },
+  realdata: {
+    hr: "Ovdje nema simulacije: pseudoudaljenosti su STVARNA mjerenja geodetskog prijemnika (GEONET stanica 0759, Japan, 2. 4. 2005., 1 h @ 30 s, RINEX), a pozicije satelita računaju se iz emitiranih efemerida (IS-GPS-200: Kepler + harmonijske korekcije + rotacija Zemlje). Korigira se sat satelita (af0/af1/af2 + relativnost, TGD), ionosfera (Klobuchar s koeficijentima iz navigacijske poruke) i troposfera (Saastamoinen). Mjerenja ulaze u ISTI EKF/RAIM kao simulacija. Greška je razlika od poznate koordinate stanice — jednofrekvencijski SPP tipično daje nekoliko metara; ovaj prijemnik i mirna ionosfera daju i bolje.",
+    en: "No simulation here: the pseudoranges are REAL measurements from a geodetic receiver (GEONET station 0759, Japan, 2 Apr 2005, 1 h @ 30 s, RINEX), and satellite positions come from the broadcast ephemerides (IS-GPS-200: Kepler + harmonic corrections + Earth rotation). The satellite clock (af0/af1/af2 + relativity, TGD), ionosphere (Klobuchar with coefficients from the navigation message) and troposphere (Saastamoinen) are corrected. The measurements feed the SAME EKF/RAIM as the simulation. The error is the offset from the station's known coordinate — single-frequency SPP is typically a few metres; this receiver and a quiet ionosphere do better.",
   },
 };
 
@@ -71,6 +77,7 @@ export function mountExperiments() {
     { id: "multignss", title: () => t("exp_multignss"), body: mgPanel },
     { id: "iono", title: () => t("exp_iono"), body: ionoPanel },
     { id: "scenarios", title: () => t("scenarios"), body: scenarioPanel },
+    { id: "realdata", title: () => t("exp_realdata"), body: realDataPanel },
   ];
 
   function renderTabs(): void {
@@ -438,4 +445,65 @@ function scenarioPanel(root: HTMLElement): void {
       ]));
     } catch (e) { fail(out, String(e)); } finally { runBtn.disabled = false; cmpBtn.disabled = false; }
   });
+}
+
+// ---------- Pravi podaci (RINEX) ----------
+function realDataPanel(root: HTMLElement): void {
+  root.appendChild(eduCard("realdata"));
+  const solverSel = h("select", "exp-select") as HTMLSelectElement;
+  for (const [val, key] of [["ekf", "rd_solver_ekf"], ["ls", "rd_solver_ls"]] as const) {
+    const o = h("option", undefined, t(key)) as HTMLOptionElement; o.value = val; solverSel.appendChild(o);
+  }
+  const selCell = h("div", "exp-field");
+  selCell.appendChild(h("label", "exp-flabel", t("rd_solver")));
+  selCell.appendChild(solverSel);
+
+  const out = h("div", "exp-out");
+  const f = form([
+    { key: "mask_deg", label: () => t("f_mask"), def: 10, min: 0, max: 40 },
+  ], async (v, btn) => {
+    btn.disabled = true; busy(out);
+    try {
+      const d = await api.realdata({ mask_deg: v.mask_deg, solver: solverSel.value }) as unknown as RdRes;
+      clear(out);
+      if (!d.ok) { fail(out, "—"); return; }
+      const s = d.summary;
+      const m = (x?: number) => (x != null && Number.isFinite(x) ? x.toFixed(2) + " m" : "—");
+      const row = h("div", "exp-metrics");
+      row.append(
+        metric(t("rd_h_med"), m(s.h_median), "good"),
+        metric(t("rd_h_p95"), m(s.h_p95)),
+        metric(t("rd_v_med"), m(s.v_median)),
+        metric(t("rd_v_p95"), m(s.v_p95)),
+        metric(t("rd_epochs"), `${d.solved}/${d.n_epochs}`),
+        metric(t("m_alarms"), String(d.raim_alarms.length), d.raim_alarms.length ? "bad" : ""),
+      );
+      out.appendChild(row);
+      const enu = s.mean_enu ? s.mean_enu.map((x) => (x >= 0 ? "+" : "") + x.toFixed(2)).join(" / ") + " m" : "—";
+      out.appendChild(h("div", "exp-note",
+        `${t("rd_station")}: ${d.station} (${d.receiver}) · ${d.start} GPST · ${t("rd_mean_enu")}: ${enu}`));
+      const xs = d.t.map((x) => x / 60);
+      const leg = h("div", "legend");
+      leg.append(legendChip(CHART_COLORS.cyan, t("rd_h")), legendChip(CHART_COLORS.amber, t("rd_v")),
+        legendChip(CHART_COLORS.dim, t("rd_ls")));
+      const { card, canvas } = canvasCard(t("rd_err_chart"), leg);
+      out.appendChild(card);
+      requestAnimationFrame(() => drawLine(canvas, [
+        { label: "ls", color: CHART_COLORS.dim, data: d.ls_h_err },
+        { label: "h", color: CHART_COLORS.cyan, data: d.h_err },
+        { label: "v", color: CHART_COLORS.amber, data: d.v_err },
+      ], { x: xs, xLabel: "min", hlines: [{ y: 0, color: CHART_COLORS.dim, dash: true }] }));
+      const leg2 = h("div", "legend");
+      leg2.append(legendChip(CHART_COLORS.green, t("sats")), legendChip(CHART_COLORS.red, "GDOP"));
+      const { card: c2, canvas: cv2 } = canvasCard(t("rd_sats_chart"), leg2);
+      out.appendChild(c2);
+      requestAnimationFrame(() => drawLine(cv2, [
+        { label: "sats", color: CHART_COLORS.green, data: d.nsat },
+        { label: "gdop", color: CHART_COLORS.red, data: d.gdop },
+      ], { x: xs, yMin: 0, xLabel: "min" }));
+      out.appendChild(h("div", "exp-note", `${t("rd_source")}: ${d.source}`));
+    } catch (e) { fail(out, String(e)); } finally { btn.disabled = false; }
+  });
+  f.insertBefore(selCell, f.lastChild);
+  root.append(f, out);
 }

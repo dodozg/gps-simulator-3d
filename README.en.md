@@ -134,6 +134,7 @@ Full architecture, block diagrams and model derivations:
 | `terrain.py` | Global DEM (NASA SRTM) + bilinear interpolation |
 | `utils.py` | Geodesy: LLA ↔ ECEF on the WGS-84 ellipsoid |
 | `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) — the 3D interface |
+| `rinex.py` · `ephemeris.py` · `realdata.py` · `broadcast_constellation.py` | **Real data**: RINEX obs/nav (v2/v3) + SP3 parsers, IS-GPS-200 broadcast orbits, single-point positioning on real RINEX through the same EKF/RAIM, constellation driven by a real nav file |
 | `rtk.py` · `spoofing.py` · `multignss.py` · `iono.py` · `skyplot.py` · `scenario.py` · `benchmark.py` | Standalone headless tools |
 
 ---

@@ -32,6 +32,10 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
 | `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |
 | `scenario.py`         | Snimanje/reprodukcija scenarija (JSON) + usporedba algoritama |
+| `rinex.py`            | Parseri PRAVIH podataka: RINEX opažanja v2/v3, GPS navigacija v2/v3, SP3 |
+| `ephemeris.py`        | IS-GPS-200 broadcast efemeride → ECEF pozicija i sat satelita |
+| `realdata.py`         | SPP na pravim RINEX podacima kroz isti EKF/RAIM (CLI + `/api/realdata`) |
+| `broadcast_constellation.py` | Konstelacija iz prave nav datoteke (isto sučelje kao Walker-Delta) |
 
 Cijeli engine radi bez GUI-ja, pa se testira i mjeri na CI-ju (3D prikaz je u `web/`).
 
@@ -109,6 +113,16 @@ pytest                  # test suite
 
 Interaktivni 3D prikaz (globus, klik-postavljanje prijemnika, telemetrija, živa
 simulacija) je u **web kontrolnom centru** — vidi niže i [`web/README.md`](web/README.md).
+
+**Pravi podaci.** `realdata.py` čita stvarna RINEX opažanja (v2.1x/v3.0x) i GPS
+navigacijsku datoteku, računa pozicije satelita iz broadcast efemerida
+(`ephemeris.py`, IS-GPS-200), korigira sat satelita, Klobuchar ionosferu i
+troposferu te mjerenja predaje ISTOM `Receiver` EKF-u/RAIM-u. Uzorak (RTKLIB test
+data, BSD-2; GEONET stanica 0759, 1 h) je u `tests/data/`:
+`python realdata.py tests/data/07590920.05o tests/data/07590920.05n --plot` →
+greška vs. koordinata stanice (horizontalno medijan ~0.4 m, 95% ~0.8 m).
+`BroadcastConstellation` daje STVARNE položaje satelita za odabrani datum (upute
+za spajanje u živu sesiju su u zaglavlju `broadcast_constellation.py`).
 
 ## Web kontrolni centar + GPS učilište
 
