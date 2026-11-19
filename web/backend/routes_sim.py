@@ -28,6 +28,7 @@ router = APIRouter()
 TICK_S = 0.1              # 10 Hz stream (ciljani razmak između frameova)
 MAX_WALL_DT = 0.5         # kapiraj realni dt (npr. nakon zastoja/taba u pozadini)
 ACTUAL_EMA = 0.3          # izglađivanje izmjerenog ubrzanja
+SEND_TIMEOUT_S = 2.0      # spor/zaglavljen klijent ne smije blokirati ostale
 
 
 def _apply(session, msg):
@@ -71,7 +72,10 @@ class SimRunner:
     def __init__(self, session):
         self.session = session
         self.lock = threading.Lock()
-        self.clients: set[WebSocket] = set()
+        # klijent -> event loop u kojem živi njegova veza. Uvicorn ima jedan loop,
+        # ali (npr. TestClient) svaka veza može imati vlastiti; slanje u tuđi loop
+        # mora ići kroz run_coroutine_threadsafe, inače zapne.
+        self.clients: dict[WebSocket, asyncio.AbstractEventLoop] = {}
         self._task: asyncio.Task | None = None
 
     # --- rad pod lockom (u radnoj niti) ------------------------------------
@@ -107,18 +111,36 @@ class SimRunner:
         except Exception:
             log.warning("odbačena kontrolna poruka %r", msg, exc_info=True)
 
+    def add_client(self, ws):
+        self.clients[ws] = asyncio.get_running_loop()
+
     def ensure_running(self):
-        if self._task is None or self._task.done():
-            self._task = asyncio.create_task(self._loop())
+        t = self._task
+        if t is None or t.done() or t.get_loop().is_closed():
+            self._task = asyncio.get_running_loop().create_task(self._loop())
 
     async def stop_if_idle(self):
-        if not self.clients and self._task is not None and not self._task.done():
-            self._task.cancel()
+        t = self._task
+        if self.clients or t is None or t.done():
+            return
+        self._task = None
+        loop = t.get_loop()
+        if loop is asyncio.get_running_loop():
+            t.cancel()
             try:
-                await self._task
+                await t
             except asyncio.CancelledError:
                 pass
-            self._task = None
+        elif not loop.is_closed():
+            loop.call_soon_threadsafe(t.cancel)
+
+    async def _send(self, ws, loop, frame):
+        coro = ws.send_json(frame)
+        if loop is asyncio.get_running_loop():
+            await asyncio.wait_for(coro, SEND_TIMEOUT_S)
+        else:
+            fut = asyncio.run_coroutine_threadsafe(coro, loop)
+            await asyncio.wait_for(asyncio.wrap_future(fut), SEND_TIMEOUT_S)
 
     async def _loop(self):
         last = time.monotonic()
@@ -134,13 +156,13 @@ class SimRunner:
                 await asyncio.sleep(TICK_S)
                 continue
             dead = []
-            for ws in list(self.clients):
+            for ws, loop in list(self.clients.items()):
                 try:
-                    await ws.send_json(frame)
+                    await self._send(ws, loop, frame)
                 except Exception:
                     dead.append(ws)
             for ws in dead:
-                self.clients.discard(ws)
+                self.clients.pop(ws, None)
             await asyncio.sleep(max(0.0, TICK_S - (time.monotonic() - t0)))
 
 
@@ -158,7 +180,7 @@ async def ws_sim(ws: WebSocket):
     runner = get_runner(ws.app)
     # pošalji početni frame odmah, pa se priključi zajedničkoj petlji
     await ws.send_json(await runner.frame())
-    runner.clients.add(ws)
+    runner.add_client(ws)
     runner.ensure_running()
     try:
         while True:
@@ -177,5 +199,5 @@ async def ws_sim(ws: WebSocket):
     except Exception:
         log.exception("WebSocket veza prekinuta zbog greške")
     finally:
-        runner.clients.discard(ws)
+        runner.clients.pop(ws, None)
         await runner.stop_if_idle()
