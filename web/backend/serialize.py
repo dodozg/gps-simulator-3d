@@ -146,6 +146,10 @@ def state_frame(session):
 
     # --- sateliti ---
     diag = rx.last_solution or {}
+    # C/N0 [dB-Hz] (L1, efektivni: uz ometač i cross-korelaciju) praćenih satelita
+    # iz signalnog modela (signal_model.py) — samo za satelite u rješenju.
+    cn0 = {m['sat_id']: m['cn0_dbhz'] for m in (rx.received_signals or [])
+           if m.get('cn0_dbhz') is not None}
     sats = []
     # sažetak po konstelaciji (za panel "Sustavi"): upaljeno? koliko ukupno/praćeno
     systems = {}
@@ -167,7 +171,8 @@ def state_frame(session):
                             "inc_deg": float(sat.i),
                             "lan_deg": float(sat.lan),
                             "ecc": float(sat.e),
-                            "pos_offset_m": float(getattr(sat, "user_pos_offset_m", 0.0))}}
+                            "pos_offset_m": float(getattr(sat, "user_pos_offset_m", 0.0)),
+                            "power_db": float(getattr(sat, "tx_power_offset_db", 0.0))}}
         if placed:
             azel = enu_azel(session.gt_pos, pos)
             if azel is not None:
@@ -177,6 +182,8 @@ def state_frame(session):
         if d is not None:
             entry["rejected"] = bool(d["rejected"])
             entry["residual_m"] = float(d["residual_m"])
+        if tracked and sat.sat_id in cn0:
+            entry["cn0_dbhz"] = _num(cn0[sat.sat_id])
         sats.append(entry)
 
     systems_on = getattr(session, "systems_on", set())

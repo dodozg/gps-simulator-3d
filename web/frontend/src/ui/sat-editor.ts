@@ -11,7 +11,7 @@ import type { StateFrame, SatFrame } from "../lib/types";
 type Send = (msg: Record<string, unknown>) => void;
 type OnFocus = (ecef: [number, number, number]) => void;
 type OnSelect = (id: string | null) => void;
-type SatParam = "clock_offset_m" | "pos_offset_m" | "alt_km" | "inc_deg" | "lan_deg" | "ecc";
+type SatParam = "clock_offset_m" | "pos_offset_m" | "alt_km" | "inc_deg" | "lan_deg" | "ecc" | "power_db";
 
 export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocus, onSelect?: OnSelect) {
   let curId: string | null = null;
@@ -52,21 +52,22 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   const elRow = infoRow();
   const azRow = infoRow();
   const resRow = infoRow();
+  const cn0Row = infoRow();
   const statusEl = h("div", "sat-editor-status");
 
   // --- slider (kvar sata / spoof pozicije) ---
-  function sliderField(param: SatParam, max: number, step: number) {
+  function sliderField(param: SatParam, max: number, step: number, min = 0, unit = "m") {
     const wrap = h("div", "sat-editor-field");
     const label = h("label", "ctl-label");
     const row = h("div", "sat-editor-inline");
     const slider = h("input", "slider") as HTMLInputElement;
-    slider.type = "range"; slider.min = "0"; slider.max = String(max); slider.step = String(step);
+    slider.type = "range"; slider.min = String(min); slider.max = String(max); slider.step = String(step);
     const val = h("span", "sat-editor-val");
     row.append(slider, val);
     const note = h("div", "sat-editor-note");
     wrap.append(label, row, note);
     slider.addEventListener("input", () => {
-      val.textContent = slider.value + " m";
+      val.textContent = slider.value + " " + unit;
       if (curId) send({ type: "set_sat_param", id: curId, param, value: Number(slider.value) });
     });
     return { wrap, label, slider, val, note };
@@ -74,6 +75,8 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   const attacksTitle = h("div", "sat-editor-subhead");
   const faultF = sliderField("clock_offset_m", 5000, 50);
   const spoofF = sliderField("pos_offset_m", 5000, 50);
+  // snaga signala [dB] (signalni model): jak satelit cross-korelacijom guši slabe (near-far)
+  const powerF = sliderField("power_db", 30, 1, -20, "dB");
 
   // --- orbita (brojčana polja) ---
   const orbitTitle = h("div", "sat-editor-subhead");
@@ -104,7 +107,9 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   resetBtn.addEventListener("click", () => {
     faultF.slider.value = "0"; faultF.val.textContent = "0 m";
     spoofF.slider.value = "0"; spoofF.val.textContent = "0 m";
+    powerF.slider.value = "0"; powerF.val.textContent = "0 dB";
     if (curId) {
+      send({ type: "set_sat_param", id: curId, param: "power_db", value: 0 });
       send({ type: "set_sat_param", id: curId, param: "clock_offset_m", value: 0 });
       send({ type: "set_sat_param", id: curId, param: "pos_offset_m", value: 0 });
     }
@@ -112,7 +117,7 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
   btnRow.append(focusBtn, resetBtn);
 
   card.append(head, enRow, info, statusEl, attacksTitle, faultF.wrap, spoofF.wrap,
-    orbitTitle, altF.wrap, incF.wrap, lanF.wrap, eccF.wrap, btnRow);
+    powerF.wrap, orbitTitle, altF.wrap, incF.wrap, lanF.wrap, eccF.wrap, btnRow);
   parent.appendChild(card);
 
   function find(id: string): SatFrame | undefined {
@@ -124,6 +129,9 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     elRow.label.textContent = t("sat_info_el");
     azRow.label.textContent = t("sat_info_az");
     resRow.label.textContent = t("sat_info_res");
+    cn0Row.label.textContent = t("sat_info_cn0");
+    powerF.label.textContent = t("sat_power");
+    powerF.note.textContent = t("sat_power_note");
     attacksTitle.textContent = t("sat_attacks");
     faultF.label.textContent = t("sat_clock_fault");
     faultF.note.textContent = t("sat_fault_note");
@@ -155,6 +163,7 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     azRow.val.textContent = s.az != null ? `${s.az.toFixed(0)}°` : "—";
     resRow.val.textContent = s.residual_m != null ? `${s.residual_m.toFixed(1)} m` : "—";
     resRow.val.classList.toggle("bad", s.rejected === true);
+    cn0Row.val.textContent = s.cn0_dbhz != null ? `${s.cn0_dbhz.toFixed(1)} dB-Hz` : "—";
   }
 
   // on/off prekidač sinkroniziramo SAMO pri otvaranju (kao i polja/slideri), da
@@ -168,6 +177,8 @@ export function mountSatEditor(parent: HTMLElement, send: Send, onFocus?: OnFocu
     faultF.val.textContent = faultF.slider.value + " m";
     spoofF.slider.value = String(p ? Math.min(5000, Math.max(0, Math.round(p.pos_offset_m))) : 0);
     spoofF.val.textContent = spoofF.slider.value + " m";
+    powerF.slider.value = String(p?.power_db != null ? Math.round(p.power_db) : 0);
+    powerF.val.textContent = powerF.slider.value + " dB";
     altF.input.value = p ? p.alt_km.toFixed(0) : "";
     incF.input.value = p ? p.inc_deg.toFixed(1) : "";
     lanF.input.value = p ? p.lan_deg.toFixed(0) : "";

@@ -14,7 +14,8 @@ export interface SatFrame {
   az?: number;
   rejected?: boolean;
   residual_m?: number;
-  params?: { clock_offset_m: number; alt_km: number; inc_deg: number; lan_deg: number; ecc: number; pos_offset_m: number };
+  cn0_dbhz?: number | null;   // C/N0 (L1, efektivni) iz signalnog modela — samo praćeni
+  params?: { clock_offset_m: number; alt_km: number; inc_deg: number; lan_deg: number; ecc: number; pos_offset_m: number; power_db?: number };
 }
 
 export interface SystemInfo {
