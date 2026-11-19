@@ -53,6 +53,9 @@ def api_examples():
 
 
 def _check(spec_d):
+    # Plugini se ne učitavaju preko weba: validate() bi importao proizvoljan modul/.py.
+    if isinstance(spec_d, dict) and spec_d.get("plugins"):
+        return None, ["plugins: nisu dopušteni preko web sučelja (pokreni sandbox.py lokalno)"], None
     spec, errs = sandbox.validate(spec_d)
     if errs:
         return None, errs, None
@@ -111,8 +114,8 @@ def api_run(p: dict = Body(...)):
             raise HTTPException(404, f"Primjer ne postoji: {p['example']}")
     if spec_d is None:
         raise HTTPException(400, "Treba 'spec' ili 'example'.")
-    if spec_d.get("plugins"):
-        raise HTTPException(400, "Plugini nisu dopušteni preko web sučelja (pokreni sandbox.py lokalno).")
+    if not isinstance(spec_d, dict):
+        raise HTTPException(400, "spec mora biti JSON objekt.")
     spec, errs, size = _check(spec_d)
     if errs:
         raise HTTPException(400, {"errors": errs, "size": size})

@@ -1601,12 +1601,12 @@ def plot_result(res, metric=None, x=None, out=None, logx=None, title=None, logy=
                 lo = np.where(lo > 0, lo, np.nan)
             okb = np.isfinite(lo) & np.isfinite(hi)
             if okb.any():
-                ax.fill_between(xp[okb], lo[okb], hi[okb], color=c, alpha=0.18, lw=0)
+                ax.fill_between(xp[okb], lo[okb], hi[okb], color=c, alpha=0.18 if len(groups) <= 2 else 0.10, lw=0)
         else:
             off = (gi - (len(groups) - 1) / 2) * 0.08
             yerr = np.vstack([mean - lo, hi - mean])
             yerr = np.where(np.isfinite(yerr), yerr, 0.0)
-            ax.errorbar(xp + off, mean, yerr=yerr, color=c, lw=1.6, marker="o", ms=5,
+            ax.errorbar(xp + off, mean, yerr=yerr, color=c, lw=1.6, marker="o", ms=5, ls="none",
                         capsize=4, label=lab)
     if not numeric:
         ax.set_xticks(range(len(cats)))
@@ -1675,11 +1675,12 @@ def cmd_run(args):
 def _print_summary(res, max_metrics=6):
     ms = res.metric_names[:max_metrics]
     keys = res.sweep_keys
-    head = " | ".join([*(k.split(".")[-1] for k in keys), "est", *ms])
+    multi_loc = len({a["location"] for a in res.aggregate}) > 1
+    head = " | ".join([*(k.split(".")[-1] for k in keys), *(["lok"] if multi_loc else []), "est", *ms])
     print(head)
     print("-" * len(head))
     for a in res.aggregate:
-        cells = [_label(a["params"].get(k)) for k in keys] + [a["estimator"]]
+        cells = [_label(a["params"].get(k)) for k in keys] + ([a["location"]] if multi_loc else []) + [a["estimator"]]
         for m in ms:
             s = a["metrics"][m]
             cells.append("—" if s["n"] == 0 else (f"{s['mean']:.3g}±{(s['ci_hi'] - s['mean']):.2g}"

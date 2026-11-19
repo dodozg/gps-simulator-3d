@@ -318,6 +318,8 @@ def test_rest_job_flow():
     big = client.post("/api/sandbox/run", json={"spec": _spec(seeds=500)})
     assert big.status_code == 400 and "previše" in json.dumps(big.json(), ensure_ascii=False)
     assert client.post("/api/sandbox/run", json={"spec": _spec(plugins=["x"])}).status_code == 400
+    pv = client.post("/api/sandbox/validate", json={"spec": _spec(plugins=["os"])}).json()
+    assert not pv["ok"] and "plugins" in pv["errors"][0]
 
     spec = _spec(sweep={"mask_deg": [5, 15]}, seeds=1, world=dict(FAST_WORLD, duration_s=8))
     ok = client.post("/api/sandbox/validate", json={"spec": spec}).json()
