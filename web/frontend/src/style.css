@@ -360,3 +360,25 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .ctl-row.rtk-base-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: -4px; }
 .ctl-row.rtk-base-row .ctl-label { margin-bottom: 0; font-size: 11px; }
 .rtk-base-btn { padding: 3px 8px; font-size: 11px; }
+
+/* istraživački sandbox (kartica u eksperimentima) */
+.sb-spec { width: 100%; min-height: 220px; resize: vertical; box-sizing: border-box; background: #0b111a; border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.45; margin: 4px 0 10px; tab-size: 2; }
+.sb-spec:focus { outline: none; border-color: var(--cyan); }
+.sb-btns { flex-direction: row; gap: 8px; flex-wrap: wrap; }
+.sb-btns a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+.sb-msg { font-size: 12px; margin-bottom: 8px; line-height: 1.5; }
+.sb-msg.good { color: var(--green); }
+.sb-msg.bad { color: var(--red); }
+.sb-msg ul { margin: 4px 0 0 18px; padding: 0; }
+.sb-hint { font-size: 11px; }
+.sb-status { margin-bottom: 12px; }
+.sb-status-line { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.sb-badge { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.sb-badge.sb-running, .sb-badge.sb-queued { color: var(--amber); border-color: rgba(250,191,41,0.5); }
+.sb-badge.sb-done { color: var(--green); border-color: rgba(61,216,153,0.5); }
+.sb-badge.sb-error, .sb-badge.sb-cancelled { color: var(--red); border-color: rgba(247,107,107,0.5); }
+.sb-progress { height: 6px; background: #0f1621; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.sb-progress-fill { height: 100%; background: var(--cyan); transition: width 0.4s ease; }
+.sb-select { width: 190px; }
+.sb-canvas { height: 260px; }
+.sb-table-wrap { max-height: 260px; overflow: auto; }

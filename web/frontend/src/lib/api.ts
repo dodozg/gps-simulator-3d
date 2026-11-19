@@ -1,5 +1,5 @@
 // REST klijent prema backendu. Isti origin u produkciji; u dev-u Vite proxira.
-import type { ConstellationMeta } from "./types";
+import type { ConstellationMeta, SandboxExample, SandboxJob, SandboxSize } from "./types";
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const r = await fetch(`/api${path}`, {
@@ -17,6 +17,18 @@ async function get<T>(path: string): Promise<T> {
   return r.json();
 }
 
+// POST koji ne baca na 4xx: sandbox vraća poruke validacije/ograničenja u tijelu.
+async function postRaw<T>(path: string, body: unknown): Promise<{ ok: boolean; status: number; body: T }> {
+  const r = await fetch(`/api${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let data: unknown = null;
+  try { data = await r.json(); } catch { data = null; }
+  return { ok: r.ok, status: r.status, body: data as T };
+}
+
 export const api = {
   constellation: () => get<ConstellationMeta>("/constellation"),
   glossary: (lang: string) => get<Record<string, GlossaryTerm>>(`/glossary?lang=${lang}`),
@@ -30,6 +42,13 @@ export const api = {
   scenarioList: () => get<{ scenarios: ScenarioMeta[] }>("/scenario/list"),
   scenarioRun: (body: unknown) => post<Record<string, unknown>>("/scenario/run", body),
   scenarioCompare: (body: unknown) => post<Record<string, unknown>>("/scenario/compare", body),
+  // istraživački sandbox (pozadinski jobovi)
+  sandboxExamples: () => get<{ examples: SandboxExample[]; limits: { max_runs: number; max_epochs: number; max_workers: number } }>("/sandbox/examples"),
+  sandboxValidate: (spec: unknown) => post<{ ok: boolean; errors: string[]; size: SandboxSize | null }>("/sandbox/validate", { spec }),
+  sandboxRun: (spec: unknown) => postRaw<{ job_id?: string; size?: SandboxSize; detail?: unknown }>("/sandbox/run", { spec }),
+  sandboxJob: (id: string) => get<SandboxJob>(`/sandbox/jobs/${id}`),
+  sandboxCancel: (id: string) => post<{ ok: boolean }>(`/sandbox/jobs/${id}/cancel`, {}),
+  sandboxCsvUrl: (id: string, kind: "aggregate" | "runs" = "aggregate") => `/api/sandbox/jobs/${id}/csv?kind=${kind}`,
 };
 
 export interface GlossaryTerm {

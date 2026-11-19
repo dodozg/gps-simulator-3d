@@ -191,3 +191,130 @@ export const CHART_COLORS = {
   get red() { return palette().red; },
   get dim() { return palette().text; },
 };
+
+// ---- Graf metrike vs parametar s vrpcom intervala pouzdanosti (sandbox) ----
+// Svaka serija: srednje vrijednosti u točkama x + donja/gornja granica CI-ja
+// (null = nema podatka). Os x je brojčana (opcionalno log) ili kategorijska
+// (xLabels: oznake za x = 0, 1, 2, …).
+export interface CiSeries {
+  label: string;
+  color: string;
+  x: number[];
+  mean: Array<number | null>;
+  lo: Array<number | null>;
+  hi: Array<number | null>;
+}
+export interface CiOpts {
+  xLabels?: string[];
+  logX?: boolean;
+  xLabel?: string;
+  yMin?: number;
+}
+
+function fmtTick(v: number): string {
+  const a = Math.abs(v);
+  if (a === 0) return "0";
+  if (a >= 1000) return (v / 1000).toFixed(a >= 10000 ? 0 : 1) + "k";
+  if (a < 0.01) return v.toExponential(0);
+  if (a < 1) return v.toFixed(2);
+  if (a < 10) return v.toFixed(1);
+  return v.toFixed(0);
+}
+
+export function drawCiChart(canvas: HTMLCanvasElement, series: CiSeries[], opts: CiOpts = {}): void {
+  const P = palette();
+  const { ctx, w, h } = fitCanvas(canvas);
+  const ok = (v: number | null | undefined): v is number => v != null && Number.isFinite(v);
+  const tx = (x: number) => (opts.logX ? Math.log10(Math.max(x, 1e-300)) : x);
+  let xlo = Infinity, xhi = -Infinity, lo = opts.yMin ?? Infinity, hi = -Infinity;
+  for (const s of series) {
+    s.x.forEach((x, i) => {
+      xlo = Math.min(xlo, tx(x)); xhi = Math.max(xhi, tx(x));
+      for (const v of [s.mean[i], s.lo[i], s.hi[i]]) {
+        if (!ok(v)) continue;
+        if (opts.yMin == null) lo = Math.min(lo, v);
+        hi = Math.max(hi, v);
+      }
+    });
+  }
+  if (!Number.isFinite(xlo)) return;
+  [lo, hi] = niceExtent(lo, hi);
+  if (opts.yMin != null) lo = opts.yMin;
+  if (opts.xLabels) { xlo = -0.5; xhi = opts.xLabels.length - 0.5; }
+  else if (xlo === xhi) { xlo -= 1; xhi += 1; }
+  const L = 52;
+  const px = (x: number) => L + ((tx(x) - xlo) / (xhi - xlo || 1)) * (w - L - PAD.r);
+  const py = (y: number) => h - PAD.b - ((y - lo) / (hi - lo || 1)) * (h - PAD.t - PAD.b);
+
+  ctx.strokeStyle = P.grid; ctx.fillStyle = P.text; ctx.lineWidth = 1;
+  ctx.font = "10px " + cssVar("--mono", "monospace");
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i++) {
+    const y = lo + ((hi - lo) * i) / 4, yy = py(y);
+    ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(L, yy); ctx.lineTo(w - PAD.r, yy); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.fillText(fmtTick(y), L - 5, yy);
+  }
+  // x oznake: kategorije, ili sve različite vrijednosti x (najviše ~10)
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  if (opts.xLabels) {
+    opts.xLabels.forEach((lab, i) => ctx.fillText(lab, px(i), h - PAD.b + 4));
+  } else {
+    const xs = Array.from(new Set(series.flatMap((s) => s.x))).sort((a, b) => a - b);
+    const stepN = Math.max(1, Math.ceil(xs.length / 10));
+    xs.forEach((x, i) => { if (i % stepN === 0) ctx.fillText(fmtTick(x), px(x), h - PAD.b + 4); });
+  }
+  if (opts.xLabel) { ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(opts.xLabel, L + 4, PAD.t + 2); }
+
+  const nS = series.length;
+  series.forEach((s, si) => {
+    // kategorijski x: mali pomak po seriji da se trake ne preklapaju
+    const off = opts.xLabels ? (si - (nS - 1) / 2) * Math.min(14, 60 / Math.max(nS, 1)) : 0;
+    const idx = s.x.map((_, i) => i).sort((a, b) => s.x[a] - s.x[b]);
+    // vrpca CI-ja (poligon gornja granica → donja natrag), prekida se na rupama
+    ctx.fillStyle = s.color; ctx.globalAlpha = 0.16;
+    let seg: number[] = [];
+    const flush = () => {
+      if (seg.length >= 2 && !opts.xLabels) {
+        ctx.beginPath();
+        seg.forEach((i, k) => { const X = px(s.x[i]), Y = py(s.hi[i] as number); if (k === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y); });
+        for (let k = seg.length - 1; k >= 0; k--) { const i = seg[k]; ctx.lineTo(px(s.x[i]), py(s.lo[i] as number)); }
+        ctx.closePath(); ctx.fill();
+      }
+      seg = [];
+    };
+    for (const i of idx) { if (ok(s.lo[i]) && ok(s.hi[i])) seg.push(i); else flush(); }
+    flush();
+    ctx.globalAlpha = 1;
+    // kategorijski: okomite trake pogreške
+    if (opts.xLabels) {
+      ctx.strokeStyle = s.color; ctx.lineWidth = 1.4;
+      for (const i of idx) {
+        if (!ok(s.lo[i]) || !ok(s.hi[i])) continue;
+        const X = px(s.x[i]) + off;
+        ctx.beginPath(); ctx.moveTo(X, py(s.lo[i] as number)); ctx.lineTo(X, py(s.hi[i] as number));
+        ctx.moveTo(X - 4, py(s.lo[i] as number)); ctx.lineTo(X + 4, py(s.lo[i] as number));
+        ctx.moveTo(X - 4, py(s.hi[i] as number)); ctx.lineTo(X + 4, py(s.hi[i] as number));
+        ctx.stroke();
+      }
+    }
+    // linija srednje vrijednosti + točke
+    ctx.strokeStyle = s.color; ctx.fillStyle = s.color; ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    let pen = false;
+    for (const i of idx) {
+      const v = s.mean[i];
+      if (!ok(v)) { pen = false; continue; }
+      const X = px(s.x[i]) + off, Y = py(v);
+      if (!pen || opts.xLabels) { ctx.moveTo(X, Y); pen = true; } else ctx.lineTo(X, Y);
+    }
+    if (!opts.xLabels) ctx.stroke();
+    for (const i of idx) {
+      const v = s.mean[i];
+      if (!ok(v)) continue;
+      ctx.beginPath(); ctx.arc(px(s.x[i]) + off, py(v), 3, 0, 2 * Math.PI); ctx.fill();
+    }
+  });
+}
+
+// Dodatne boje za više serija (uz CHART_COLORS).
+export const EXTRA_COLORS = ["#bc8cff", "#ff9bce", "#7ee787", "#f0883e"];
