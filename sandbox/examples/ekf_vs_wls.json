@@ -1,0 +1,19 @@
+{
+  "name": "ekf_vs_wls",
+  "description": "EKF vs snapshot WLS na ISTIM mjerenjima (uparena usporedba), pet lokacija × deset sjemena: točnost, konzistentnost (NIS/dof) i vrijeme solvera.",
+  "world": {
+    "duration_s": 180, "systems": ["GPS"], "terrain": false,
+    "locations": [
+      {"name": "Zagreb", "lat": 45.815, "lon": 15.982, "alt": 120},
+      {"name": "London", "lat": 51.507, "lon": -0.128, "alt": 50},
+      {"name": "Tokio", "lat": 35.68, "lon": 139.77, "alt": 40},
+      {"name": "Quito", "lat": -0.18, "lon": -78.47, "alt": 2850},
+      {"name": "Anchorage", "lat": 61.22, "lon": -149.9, "alt": 30}
+    ]
+  },
+  "seeds": 10,
+  "estimators": ["ekf", "wls"],
+  "metrics": ["h_err_median", "h_err_p95", "v_err_p95", "err3d_rms", "nis_mean", "availability", "runtime_ms"],
+  "warmup_s": 30,
+  "plot": [{"metric": "h_err_p95", "x": "location"}, {"metric": "err3d_rms", "x": "location"}]
+}
