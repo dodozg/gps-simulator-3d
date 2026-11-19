@@ -16,14 +16,17 @@ fi
 
 echo "[i] Node $(node --version), build dir: $BUILD"
 mkdir -p "$BUILD"
-cp "$SRC/package.json" "$SRC/vite.config.ts" "$SRC/tsconfig.json" "$SRC/index.html" "$BUILD/"
+cp "$SRC/package.json" "$SRC/package-lock.json" "$SRC/vite.config.ts" "$SRC/tsconfig.json" "$SRC/index.html" "$BUILD/"
 rm -rf "$BUILD/src"
 cp -R "$SRC/src" "$BUILD/src"
 
 cd "$BUILD"
+# Verzije su zaključane u package-lock.json (reproducibilan build).
 if [ ! -d node_modules ]; then
-  echo "[i] npm install (prvi put, može potrajati)..."
-  npm install
+  echo "[i] npm ci (prvi put, može potrajati)..."
+  npm ci --no-audit --no-fund
+else
+  npm install --no-audit --no-fund   # uskladi s lockfileom ako se promijenio
 fi
 echo "[i] npm run build..."
 npm run build

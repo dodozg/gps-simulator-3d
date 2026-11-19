@@ -411,14 +411,15 @@ export class Globe {
     this.viewer.scene.requestRender();
   }
 
-  // Poveži Sunce/sjenu na globusu s "dobom dana" iz slidera. Koristimo iono_tow0
-  // (bazno doba dana, referenca prijemnika) — NE dodajemo sim_time, da sjena uvijek
-  // odgovara postavljenom slideru, a ne akumuliranom (×100) vremenu simulacije.
+  // Poveži Sunce/sjenu na globusu s dobom dana koje model UPRAVO koristi
+  // (`tow_now` = iono_tow0 + sim_time; stariji frame bez tog polja -> iono_tow0).
+  // Sjena tako prati simulirano vrijeme, isto kao ionosfera.
   // Backend model: lokalno = tow + dužina/15, pa je podsunčani meridijan 15°·(12−tow_h)
   // i terminator se poklapa s lokalnim vremenom rovera. Pomak slidera => Sunce se
   // pomakne u sljedećem frameu. enableLighting čita Sunce iz clock.currentTime.
   private _updateSun(frame: StateFrame): void {
-    const towSec = ((frame.iono_tow0 % 86400) + 86400) % 86400;
+    const tow = frame.tow_now ?? frame.iono_tow0;
+    const towSec = ((tow % 86400) + 86400) % 86400;
     if (Math.abs(towSec - this.lastSunTowSec) < 1) return;   // isto doba dana -> ne diraj sat
     this.lastSunTowSec = towSec;
     this.viewer.clock.currentTime =

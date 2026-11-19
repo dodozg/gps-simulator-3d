@@ -59,3 +59,18 @@ def test_jamming_denies_service_without_raim():
     assert len(data["fix_lost"]) > 0
     assert int(data["tracked"].min()) < 6
     assert len(data["alarms"]) == 0
+
+
+def test_attack_stop_ends_effect():
+    # `stop` gasi napad: nakon njega jamming više ne uklanja satelite.
+    from spoofing import Jamming
+    atk = Jamming(js_db=60.0, start=10.0, end=20.0, stop=30.0)
+    assert not atk.is_active(5.0) and atk.is_active(25.0) and not atk.is_active(31.0)
+    sig = {"sat_pos": np.array([0.0, 0.0, 26_000e3]), "pseudorange": 2.0e7}
+    rx = np.array([0.0, 0.0, 6_371e3])
+    sigs = [dict(sig)]
+    atk.apply(sigs, 25.0, rx, np.random.default_rng(0))
+    assert sigs == []                                   # aktivan -> satelit izgubljen
+    sigs = [dict(sig)]
+    atk.apply(sigs, 31.0, rx, np.random.default_rng(0))
+    assert len(sigs) == 1 and sigs[0]["pseudorange"] == 2.0e7   # nakon stop-a netaknut

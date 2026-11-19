@@ -147,3 +147,77 @@ def test_websocket_live_sim_converges():
             f = ws.receive_json()
         assert f["receiver"]["placed"] and f["receiver"]["ekf_initialized"]
         assert f["sats_tracked"] >= 4
+
+
+def test_live_attack_stays_active_and_visible_after_ramp():
+    # Nakon rampe napad i dalje DJELUJE (drži punu snagu) — pa ga i prikaz mora
+    # javljati kao aktivan. Prije: učinak je ostajao, a UI je javljao "nema napada".
+    s = SimSession(seed=1)
+    s.set_receiver(45.815, 15.982, 120.0)
+    for _ in range(10):
+        s.advance(5.0)
+    s.set_attack("jamming")
+    end = s._attack_obj.end
+    while s.sim_time < end + 60:
+        s.advance(30.0)
+    f = state_frame(s)
+    assert f["attack_active"] is True and f["attack_overlay"]["active"] is True
+    assert f["sats_tracked"] == 0                       # jamming i dalje guši signale
+    s.set_attack(None)                                  # korisnik ugasi napad
+    s.advance(5.0)
+    assert state_frame(s)["attack_active"] is False and len(s.tracked_ids) >= 4
+
+
+def test_coordinated_spoof_follows_relocated_receiver():
+    # Cilj spoofa je relativan na TRENUTNU poziciju: nakon premještanja rovera
+    # (Zagreb -> Tokio) procjena ne smije odletjeti natrag na staru lokaciju.
+    import numpy as np
+    s = SimSession(seed=1)
+    s.set_receiver(45.815, 15.982, 120.0)
+    for _ in range(20):
+        s.advance(5.0)
+    s.set_attack({"type": "coordinated", "offset_e": 600.0})
+    for _ in range(10):
+        s.advance(5.0)
+    s.set_receiver(35.68, 139.69)
+    for _ in range(60):
+        s.advance(5.0)
+    tgt = s._attack_obj.target_ecef(s.gt_pos)
+    assert abs(np.linalg.norm(tgt - s.gt_pos) - 600.0) < 1.0
+    assert np.linalg.norm(s.calc_pos - s.gt_pos) < 5_000.0
+
+
+def test_frame_reports_model_time_of_day_and_actual_speed():
+    s = SimSession(seed=1)
+    s.set_receiver(45.815, 15.982, 120.0)
+    s.set_iono_tow0(50400.0)
+    for _ in range(4):
+        s.advance(30.0)
+    f = state_frame(s)
+    assert abs(f["tow_now"] - (50400.0 + 120.0)) < 1e-6
+    assert f["time_scale_actual"] == 0.0                # mjeri ga tek SimRunner
+
+
+def test_websocket_bad_message_keeps_connection():
+    with client.websocket_connect("/ws/sim") as ws:
+        ws.receive_json()
+        ws.send_text("ovo nije json")
+        ws.send_json({"type": "set_receiver", "lat": "abc", "lon": 1})
+        ws.send_json({"type": "nepoznato"})
+        ws.send_json({"type": "set_receiver", "lat": 45.815, "lon": 15.982, "alt": 120})
+        f = None
+        for _ in range(5):
+            f = ws.receive_json()
+        assert f["receiver"]["placed"]                  # veza je preživjela loše poruke
+
+
+def test_two_clients_share_one_simulation_loop():
+    # Dva taba ne smiju dvostruko ubrzati simulaciju: jedna petlja, svi klijenti.
+    from web.backend.routes_sim import get_runner
+    with client.websocket_connect("/ws/sim") as a, client.websocket_connect("/ws/sim") as b:
+        a.receive_json(); b.receive_json()
+        a.receive_json(); b.receive_json()
+        runner = get_runner(app)
+        assert len(runner.clients) == 2
+        fa, fb = a.receive_json(), b.receive_json()
+        assert abs(fa["sim_time"] - fb["sim_time"]) <= 30.0

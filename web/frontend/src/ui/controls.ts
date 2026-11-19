@@ -20,8 +20,17 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
                               onGuide?: () => void) {
   const saved = loadSaved();
   const savedShow = (saved.show ?? {}) as Partial<{ orbits: boolean; rays: boolean; labels: boolean }>;
-  const state = {
+  // Zadano stanje = ono na koje se backend vraća pri Poništi (SimSession._build).
+  const defaults = () => ({
     playing: false,   // playing se NE pamti (ne auto-startaj nakon restarta)
+    timeScale: 100,
+    tow: 50400,       // 14:00 lokalnog vremena prijemnika
+    kinematic: false,
+    raim: true,
+    attack: "none",
+  });
+  const state = {
+    ...defaults(),
     timeScale: (saved.timeScale as number) ?? 100,
     tow: (saved.tow as number) ?? 50400,
     kinematic: (saved.kinematic as boolean) ?? false,
@@ -54,6 +63,23 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }));
     } catch { /* localStorage nedostupan (privatni mod) — ignoriraj */ }
   }
+
+  // Elementi koje frame osvježava bez ponovnog crtanja panela (brzina, doba dana).
+  let spdLabel: HTMLElement | null = null;
+  let todLabel: HTMLElement | null = null;
+  let todInput: HTMLInputElement | null = null;
+  let actualScale = 0;               // ostvareno ubrzanje iz frame-a (0 = nepoznato)
+
+  // Pri velikim zadanim ubrzanjima CPU ne stigne odvrtjeti tražene epohe, pa uz
+  // zadanu vrijednost pokazujemo i STVARNO ostvarenu (inače sučelje obećava ×1000
+  // a simulacija teče ×300).
+  function speedText(): string {
+    const req = `${t("speed")} ×${state.timeScale}`;
+    return (state.playing && actualScale > 0 && actualScale < state.timeScale * 0.9)
+      ? `${req} (${t("speed_actual")} ×${Math.round(actualScale)})` : req;
+  }
+  const todText = (hh: number): string =>
+    `${t("time_of_day")}: ${String(hh).padStart(2, "0")}:00`;
 
   let systems: Record<string, SystemInfo> | null = null;
   let systemsSig = "";
@@ -101,6 +127,18 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     return r;
   }
 
+  // Poništi: backend rebuilda sesiju na zadano. Kontrole moraju krenuti s njim, inače
+  // panel pokazuje RAIM/kinematiku/napad/brzinu koje simulacija više ne koristi.
+  // Isti put koriste i gumb i vođene lekcije (korak "reset").
+  function resetAll(): void {
+    send({ type: "reset" });
+    Object.assign(state, defaults());
+    for (const k of Object.keys(systemsOn)) delete systemsOn[k];
+    persist();
+    pushPersisted();       // doba dana ovisi o dužini rovera -> pošalji preračunato
+    render();
+  }
+
   function render(): void {
     clear(container);
     container.appendChild(h("div", "panel-title", t("controls")));
@@ -113,23 +151,20 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       playBtn.textContent = state.playing ? t("pause") : t("play");
     });
     const resetBtn = h("button", "btn", t("reset"));
-    resetBtn.addEventListener("click", () => {
-      state.playing = false;
-      send({ type: "reset" });
-      playBtn.textContent = t("play");
-    });
+    resetBtn.addEventListener("click", resetAll);
     const bar = h("div", "btn-bar");
     bar.append(playBtn, resetBtn);
     container.appendChild(bar);
 
     // brzina
-    const spd = row(`${t("speed")} ×${state.timeScale}`);
+    const spd = row(speedText());
+    spdLabel = spd.querySelector(".ctl-label") as HTMLElement;
     const spdIn = h("input", "slider") as HTMLInputElement;
     spdIn.type = "range"; spdIn.min = "1"; spdIn.max = "1000"; spdIn.step = "1";
     spdIn.value = String(state.timeScale);
     spdIn.addEventListener("input", () => {
       state.timeScale = Number(spdIn.value);
-      spd.querySelector(".ctl-label")!.textContent = `${t("speed")} ×${state.timeScale}`;
+      spdLabel!.textContent = speedText();
       send({ type: "time_scale", value: state.timeScale });
       persist();
     });
@@ -138,14 +173,15 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
 
     // doba dana (ionosfera)
     const hh = Math.floor(state.tow / 3600);
-    const tod = row(`${t("time_of_day")}: ${String(hh).padStart(2, "0")}:00`);
+    const tod = row(todText(hh));
+    todLabel = tod.querySelector(".ctl-label") as HTMLElement;
     const todIn = h("input", "slider") as HTMLInputElement;
     todIn.type = "range"; todIn.min = "0"; todIn.max = "23"; todIn.step = "1";
     todIn.value = String(hh);
+    todInput = todIn;
     todIn.addEventListener("input", () => {
       state.tow = Number(todIn.value) * 3600;
-      tod.querySelector(".ctl-label")!.textContent =
-        `${t("time_of_day")}: ${String(todIn.value).padStart(2, "0")}:00`;
+      todLabel!.textContent = todText(Number(todIn.value));
       sendTow();
       persist();
     });
@@ -265,6 +301,25 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       state.playing = f.playing;
       const btn = container.querySelector(".btn.primary");
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
+
+      // Ostvarena brzina (backend mjeri koliko sim-vremena stvarno prođe).
+      const act = f.time_scale_actual ?? 0;
+      if (spdLabel && Math.abs(act - actualScale) > Math.max(1, state.timeScale * 0.02)) {
+        actualScale = act;
+        spdLabel.textContent = speedText();
+      }
+
+      // Doba dana teče sa simulacijom (tow_now = tow0 + sim_time), pa slider prati
+      // STVARNO vrijeme modela umjesto da zauvijek pokazuje trenutak odabira.
+      if (f.tow_now !== undefined && todInput && document.activeElement !== todInput) {
+        const local = (((f.tow_now + 240 * roverLon) % 86400) + 86400) % 86400;
+        const hh = Math.floor(local / 3600);
+        if (Number(todInput.value) !== hh) {
+          todInput.value = String(hh);
+          state.tow = hh * 3600;
+          if (todLabel) todLabel.textContent = todText(hh);
+        }
+      }
       // Sustavi (konstelacije): re-render tek kad se on-stanje promijeni.
       if (f.systems) {
         const sig = sigOf(f.systems);
@@ -272,6 +327,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }
     },
     resync(): void { needSync = true; },            // pozovi na ponovno spajanje
+    reset: resetAll,                                // Poništi (backend + kontrole na zadano)
     // Programsko podešavanje (vođene lekcije): ažurira stanje, pošalje backendu,
     // pa ponovno iscrta panel da UI odražava promjenu.
     set(patch: Partial<{ playing: boolean; timeScale: number; tow: number;

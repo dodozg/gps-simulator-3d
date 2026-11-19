@@ -37,6 +37,9 @@ export interface ReceiverFrame {
   nis_dof: number;
   nis_ratio: number | null;
   clock_bias_us: number;
+  // Epoha bez dovoljno neovisnih mjerenja za sve nepoznanice (položaj+sat+ISB):
+  // rješenje se drži na apriornoj kovarijanci, DOP-a nema.
+  underdetermined?: boolean;
   isb?: Array<{ system: string; est: number | null; true: number }>;
 }
 
@@ -61,9 +64,11 @@ export interface StateFrame {
   sim_time: number;
   playing: boolean;
   time_scale: number;
+  time_scale_actual?: number;   // ostvareno ubrzanje (0 = pauza/nepoznato)
   kinematic: boolean;
   raim_enabled: boolean;
   iono_tow0: number;
+  tow_now?: number;             // doba dana koje model UPRAVO koristi (tow0 + sim_time)
   attack: AttackSpec | null;
   attack_active: boolean;
   attack_overlay: AttackOverlay | null;

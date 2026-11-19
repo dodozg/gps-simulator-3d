@@ -111,10 +111,20 @@ function onFrame(f: StateFrame): void {
     if (savedRx) socket.send({ type: "set_receiver", lat: savedRx.lat, lon: savedRx.lon });
   }
 }
+// Stanje veze i njegov ispis su ODVOJENI: prekidač jezika smije ponovno iscrtati
+// natpis, ali ne smije glumiti događaj spajanja (prije je onLangChange zvao
+// onStatus("connected") pa je promjena jezika ponovno slala spremljene postavke —
+// uključujući napad, kojemu backend tad iznova pomakne vremenski prozor — i
+// prikazivala "povezano" i kad je veza bila prekinuta).
+let connState: "connecting" | "connected" | "disconnected" = "connecting";
+function renderStatus(): void {
+  status.textContent = connState === "connected" ? t("connected")
+    : connState === "connecting" ? t("connecting") : t("disconnected");
+  status.className = "conn " + connState;
+}
 function onStatus(s: "connecting" | "connected" | "disconnected"): void {
-  status.textContent = s === "connected" ? t("connected")
-    : s === "connecting" ? t("connecting") : t("disconnected");
-  status.className = "conn " + s;
+  connState = s;
+  renderStatus();
   // Pri (ponovnom) spajanju: uskladi kontrole i vrati spremljenu lokaciju prijemnika.
   if (s === "connected") { controls?.resync(); needRxRestore = true; }
 }
@@ -132,7 +142,7 @@ const lessons = mountLessons({
   speed: (v) => controls?.set({ timeScale: v }),
   play: () => controls?.set({ playing: true }),
   pause: () => controls?.set({ playing: false }),
-  reset: () => { socket.send({ type: "reset" }); controls?.set({ playing: false }); },
+  reset: () => controls?.reset(),
   experiment: (tab) => experiments.open(tab),
   flyTo: (lat, lon) => globe.flyTo(lat, lon),
 });
@@ -149,4 +159,4 @@ mountGlobeControls(ui, globe);
 
 api.constellation().then((meta) => globe.setMeta(meta)).catch(() => { /* orbite kasnije */ });
 socket.connect();
-onLangChange(() => onStatus("connected"));
+onLangChange(renderStatus);     // samo natpis; stanje veze se ne dira

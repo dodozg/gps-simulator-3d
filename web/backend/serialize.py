@@ -143,6 +143,11 @@ def state_frame(session):
         "kinematic": bool(session.kinematic),
         "raim_enabled": bool(rx.raim_enabled),
         "iono_tow0": float(rx.iono_tow0),
+        # Doba dana [s, UTC] koje model UPRAVO koristi (ionosfera: tow0 + sim_time);
+        # frontend po njemu crta Sunce i pomiče klizač "doba dana".
+        "tow_now": float((rx.iono_tow0 + session.sim_time) % 86400.0),
+        # Ostvareno ubrzanje simulacije (0 = pauza / još nije izmjereno).
+        "time_scale_actual": float(getattr(session, "time_scale_actual", 0.0)),
         "attack": to_jsonable(session.attack) if session.attack else None,
         "attack_active": session.attack_active(),
         "attack_overlay": session.attack_overlay(),

@@ -69,9 +69,27 @@ def _ramp(t, start, end):
 
 
 # --- Napadi -------------------------------------------------------------------
+# Vremenska shema napada: [start, end] je RAMPA (napad se glatko pojačava), a nakon
+# `end` napad se DRŽI punom snagom sve do `stop` (None = dok ga netko ne ugasi).
+# Headless scenariji (60-240 s) ovako mjere "preuzimanje" na kraju rampe; živa
+# sesija ostavlja stop=None pa je napad aktivan dok je odabran u sučelju.
+# `is_active(t)` je JEDINI izvor istine i za učinak (apply) i za prikaz (UI).
 class Attack:
     name = "none"
     desc = "bez napada"
+    start = 0.0
+    end = 0.0
+    stop = None
+
+    def is_active(self, t):
+        """Djeluje li napad u trenutku t (od starta rampe do stop-a)."""
+        if self.name == "none":
+            return False
+        return t > self.start and (self.stop is None or t <= self.stop)
+
+    def _strength(self, t):
+        """Faktor 0..1: rampa kroz [start, end], 0 izvan aktivnog intervala."""
+        return _ramp(t, self.start, self.end) if self.is_active(t) else 0.0
 
     def apply(self, signals, t, rx_pos, rng):
         """Izmijeni listu 'signals' (received_signals) na mjestu. Vrati opis stanja."""
@@ -85,13 +103,13 @@ class NoAttack(Attack):
 class Jamming(Attack):
     name = "jamming"
 
-    def __init__(self, js_db=35.0, start=60.0, end=240.0):
+    def __init__(self, js_db=35.0, start=60.0, end=240.0, stop=None):
         self.js_db = js_db
-        self.start, self.end = start, end
-        self.desc = f"ometanje: J/N do {js_db:.0f} dB (t={start:.0f}-{end:.0f} s)"
+        self.start, self.end, self.stop = start, end, stop
+        self.desc = f"ometanje: J/N do {js_db:.0f} dB (rampa t={start:.0f}-{end:.0f} s, zatim drži)"
 
     def apply(self, signals, t, rx_pos, rng):
-        js = self.js_db * _ramp(t, self.start, self.end)
+        js = self.js_db * self._strength(t)
         if js <= 0:
             return
         survivors = []
@@ -112,13 +130,15 @@ class Jamming(Attack):
 class Meaconing(Attack):
     name = "meaconing"
 
-    def __init__(self, delay_m=4000.0, start=60.0, end=240.0):
+    def __init__(self, delay_m=4000.0, start=60.0, end=240.0, stop=None):
         self.delay_m = delay_m
-        self.start, self.end = start, end
-        self.desc = f"meaconing: uniformno kašnjenje {delay_m:.0f} m (t={start:.0f}-{end:.0f} s)"
+        self.start, self.end, self.stop = start, end, stop
+        self.desc = f"meaconing: uniformno kašnjenje {delay_m:.0f} m (rampa t={start:.0f}-{end:.0f} s, zatim drži)"
 
     def apply(self, signals, t, rx_pos, rng):
-        d = self.delay_m * _ramp(t, self.start, self.end)
+        d = self.delay_m * self._strength(t)
+        if d <= 0:
+            return
         for sig in signals:
             sig['pseudorange'] += d                        # isti pomak SVIMA
 
@@ -126,21 +146,25 @@ class Meaconing(Attack):
 class CoordinatedSpoof(Attack):
     name = "coordinated"
 
-    def __init__(self, offset_e=600.0, offset_n=0.0, offset_u=0.0, start=60.0, end=240.0):
+    def __init__(self, offset_e=600.0, offset_n=0.0, offset_u=0.0, start=60.0, end=240.0, stop=None):
         self.off = np.array([offset_e, offset_n, offset_u], float)
-        self.start, self.end = start, end
+        self.start, self.end, self.stop = start, end, stop
         self.desc = (f"koordinirani spoof: povlačenje na E{offset_e:+.0f} N{offset_n:+.0f} "
-                     f"U{offset_u:+.0f} m (t={start:.0f}-{end:.0f} s)")
-        self._target = None
+                     f"U{offset_u:+.0f} m (rampa t={start:.0f}-{end:.0f} s, zatim drži)")
 
     def target_ecef(self, rx_pos):
-        if self._target is None:
-            e, n, u = _enu_basis(rx_pos)
-            self._target = rx_pos + e * self.off[0] + n * self.off[1] + u * self.off[2]
-        return self._target
+        """Cilj spoofa = trenutna prava pozicija + ENU pomak.
+
+        Računa se iz TRENUTNE pozicije prijemnika (ne kešira se): kad se prijemnik
+        premjesti (živa sesija) ili giba, cilj ide s njim. Prije se cilj zapamtio
+        pri prvom pozivu pa je, nakon premještanja rovera, napad vukao rješenje
+        tisućama km natrag na staru lokaciju.
+        """
+        e, n, u = _enu_basis(rx_pos)
+        return rx_pos + e * self.off[0] + n * self.off[1] + u * self.off[2]
 
     def apply(self, signals, t, rx_pos, rng):
-        f = _ramp(t, self.start, self.end)
+        f = self._strength(t)
         if f <= 0:
             return
         target = self.target_ecef(rx_pos)
@@ -155,14 +179,14 @@ class CoordinatedSpoof(Attack):
 class NaiveMultiSpoof(Attack):
     name = "naive"
 
-    def __init__(self, n=2, bias_m=5000.0, start=60.0, end=240.0):
+    def __init__(self, n=2, bias_m=5000.0, start=60.0, end=240.0, stop=None):
         self.n = n
         self.bias_m = bias_m
-        self.start, self.end = start, end
-        self.desc = f"naivni multi-SV: {n} satelita x ±{bias_m:.0f} m nezavisno (t={start:.0f}-{end:.0f} s)"
+        self.start, self.end, self.stop = start, end, stop
+        self.desc = f"naivni multi-SV: {n} satelita x ±{bias_m:.0f} m nezavisno (rampa t={start:.0f}-{end:.0f} s, zatim drži)"
 
     def apply(self, signals, t, rx_pos, rng):
-        if _ramp(t, self.start, self.end) <= 0:
+        if self._strength(t) <= 0:
             return
         for k, sig in enumerate(signals[:self.n]):
             sig['pseudorange'] += self.bias_m * (1.0 if k % 2 == 0 else -1.0)

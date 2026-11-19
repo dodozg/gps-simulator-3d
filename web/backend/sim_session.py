@@ -16,7 +16,12 @@ from utils import lla_to_ecef, ecef_to_lla
 import terrain
 from scenario import build_attack
 
-MAX_SIM_DT = 5.0          # gornja granica koraka sim-vremena [s] (stabilnost)
+# Gornja granica koraka sim-vremena po epohi [s]. Jedna epoha košta ~60-130 ms CPU-a
+# (FFT kanal po satelitu), pa se pri 10 Hz streamu ostvarivo ubrzanje ≈ MAX_SIM_DT /
+# trajanje_ticka. S 5 s je strop bio ~×30 dok je klizač nudio ×1000; 30 s daje
+# ~×150-250, a EKF (Q skaliran s dt) i orbite ostaju stabilni (vidi test). Stvarno
+# ostvareno ubrzanje se mjeri i šalje u frameu (`time_scale_actual`).
+MAX_SIM_DT = 30.0
 DEFAULT_SYSTEMS_ON = ("GPS",)   # ostale konstelacije korisnik pali iz UI-ja
 
 
@@ -37,6 +42,7 @@ class SimSession:
         self.receiver = Receiver(np.zeros(3), rng=self.rng)
         self.sim_time = 0.0
         self.time_scale = 100.0
+        self.time_scale_actual = 0.0          # izmjereno ubrzanje (postavlja SimRunner)
         self.playing = False
         self.kinematic = False
         self.kinematic_velocity = np.array([100.0, 50.0, 0.0])
@@ -122,17 +128,18 @@ class SimSession:
         s = {"type": spec} if isinstance(spec, str) else dict(spec)
         # Živa sesija: zadani prozor napada (60-240 s) je apsolutno sim-vrijeme,
         # a sesija tipično već ima veliki sim_time -> napad se ne bi nikad
-        # aktivirao. Zato prozor sidrimo relativno na SADA ako nije zadan.
+        # aktivirao. Zato rampu sidrimo relativno na SADA ako nije zadana. Nakon
+        # rampe napad djeluje punom snagom dok ga korisnik ne ugasi (stop=None),
+        # pa je prikaz (attack_active/overlay) uvijek usklađen sa stvarnim učinkom.
         s.setdefault("start", self.sim_time + 3.0)
         s.setdefault("end", float(s["start"]) + 300.0)
         self._attack_obj = build_attack(s)
         self.attack = s
 
     def attack_active(self):
+        """Djeluje li napad SADA — isti kriterij koji koristi i apply() napada."""
         a = self._attack_obj
-        if a is None:
-            return False
-        return getattr(a, "start", 0.0) <= self.sim_time <= getattr(a, "end", 0.0)
+        return bool(a is not None and a.is_active(self.sim_time))
 
     def attack_overlay(self):
         """Prostorni prikaz napada za globus (None ako nema/nije primjenjivo).
