@@ -16,9 +16,10 @@ headless `numpy` engine — live 3D globe, telemetry, guided lessons, experiment
 
 > **What's real vs. simulated?** Everything *above the signal layer* is
 > authentic — the solver is the same algorithm that would run on a real
-> receiver. The RF layer is a faithful but calibrated model: real C/A **Gold
-> codes** and FFT correlation, but each satellite is decoded from its own channel
-> (no carrier-phase tracking or combined-signal near-far model yet). See the
+> receiver. The RF layer is a semi-analytic correlator model: real C/A **Gold
+> codes**, **C/N0 from a link budget**, coherent integration + relative Doppler
+> (cross-correlation / near-far), jamming in the signal and DLL noise from C/N0
+> (no sample-level signal or carrier-phase tracking in the code chain). See the
 > [honest self-assessment](GPS_Simulator_Documentation.md#8-osvrt-i-analiza-iskreno).
 
 ---
@@ -127,7 +128,8 @@ Full architecture, block diagrams and model derivations:
 |--------|------|
 | `physics_engine.py` | Orbits (Kepler + J2), iono/tropo, relativity, clocks, slowly-varying ephemeris |
 | `satellite.py` | Satellites + Walker-Delta and multi-GNSS (GPS/GAL/GLO/BDS) constellations |
-| `signal_processing.py` | Real C/A **Gold codes**, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
+| `signal_processing.py` | Real C/A **Gold codes**, correlated L1/L2 multipath, reference 8× FFT RF channel |
+| `signal_model.py` | Signal model: **C/N0** link budget, jammer + cross-correlation (near-far), DLL bias/noise |
 | `measurement.py` | Measurement model: channel + corrections + DOP selection → pseudoranges |
 | `receiver.py` | Estimator: LS cold start → 11-D EKF → RAIM (owns the measurement model) |
 | `raim.py` | Integrity: χ² residual test, fault exclusion (FDE), protection levels HPL/VPL |
