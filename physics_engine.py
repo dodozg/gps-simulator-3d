@@ -4,6 +4,7 @@ C = 299792458.0 # m/s
 R_EARTH = 6371000.0 # m
 MU = 3.986004418e14 # m^3/s^2
 J2 = 1.08262668e-3 # Earth's J2 perturbation coefficient
+R_EQ_J2 = 6378137.0 # [m] ekvatorski radijus na koji je J2 normiran (WGS-84 a); NE srednji R_EARTH
 
 def calculate_terrain_elevation(lat, lon):
     """Visina terena [m] na (lat, lon). Delegira na `terrain` modul (pravi DEM).
@@ -50,11 +51,11 @@ def calculate_orbital_position(a, e, i, lan, w, m0, t):
     w_rad = np.radians(w)
     
     # J2 Perturbacija: Rektascenzija uzlaznog čvora (LAN) precesira
-    lan_dot = -1.5 * n * J2 * (R_EARTH / a)**2 * np.cos(inc_rad)
+    lan_dot = -1.5 * n * J2 * (R_EQ_J2 / a)**2 * np.cos(inc_rad)
     omega = np.radians(lan + np.degrees(lan_dot * t))
     
     # J2 Perturbacija: Argument perigeja (w) precesira
-    w_dot = 0.75 * n * J2 * (R_EARTH / a)**2 * (4 - 5*np.sin(inc_rad)**2)
+    w_dot = 0.75 * n * J2 * (R_EQ_J2 / a)**2 * (4 - 5*np.sin(inc_rad)**2)
     w_current = w_rad + w_dot * t
     
     # Rotacija: Rz(omega) * Rx(inc) * Rz(w_current)
