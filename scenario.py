@@ -86,6 +86,7 @@ def run_scenario(scn, raim=True):
     win_err, target_err = [], []
     for t in range(scn.seconds):
         con.update_all(float(t))
+        rx.jammer_jn_db = attack.jammer_jn_db(float(t))    # ometač djeluje u signalu
         rx.receive_signals(con, float(t))
         attack.apply(rx.received_signals, float(t), gt, rng)
         pos, gdop = rx.solve_position()

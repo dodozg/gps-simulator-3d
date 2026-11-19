@@ -35,8 +35,28 @@ Q_ISB = 0.01                        # [m^2/s] procesni šum ISB-a (skoro konstan
 # Prije je bilo 48 (dominirao grubi multipath 10–100 m + neriješeni Sagnac).
 # Rezultat: greška pozicije ~4–6 m (mediana), vrhovi ~13 m; nepristrana (Sagnac
 # fix). Vidi benchmark.py.
-SIGMA_ZENITH = 1.9      # [m] devijacija pseudoudaljenosti u zenitu
+SIGMA_ZENITH = 1.9      # [m] devijacija pseudoudaljenosti u zenitu (stari model bez C/N0)
 MIN_SIN_ELEV = 0.1      # granica (~5.7°) da R ne eksplodira na horizontu
+
+# C/N0 težinjenje (signalni model, signal_model.py). Mjerni model uz svako mjerenje
+# daje `sigma_code_m` — termalni šum koda iono-free kombinacije iz DLL formule i
+# procijenjenog C/N0 (kao prStdev u pravim prijemnicima). Ostatak budžeta (sporo-
+# promjenjiva ephemeris greška, multipath, rezidual tropo modela) nije vidljiv u
+# C/N0 pa ostaje elevacijski model:
+#     sigma² = sigma_code(C/N0)² + (SIGMA_RES_ZENITH / sin(elev))²
+# Jamming tako NE izaziva lažne RAIM alarme: preživjeli sateliti imaju nizak C/N0,
+# pa im prijemnik sam poveća sigmu (i u EKF R i u RAIM testu).
+SIGMA_RES_ZENITH = 0.8  # [m] ne-termalni rezidual u zenitu (kalibrirano na NIS/dof, vidi niže)
+
+
+def meas_sigma(sig, sin_el):
+    """Devijacija pseudoudaljenosti [m] za EKF R i RAIM: C/N0 model ako mjerenje
+    nosi `sigma_code_m`, inače stari elevacijski model (vanjska/RINEX mjerenja)."""
+    sin_el = max(float(sin_el), MIN_SIN_ELEV)
+    sc = sig.get('sigma_code_m')
+    if sc is None:
+        return SIGMA_ZENITH / sin_el
+    return float(np.hypot(sc, SIGMA_RES_ZENITH / sin_el))
 
 # Procesni šum Q (nesigurnost modela gibanja/sata) po jedinici vremena [/s].
 # Veći iznos = filter više vjeruje mjerenjima nego predviđanju.
@@ -59,11 +79,13 @@ RAIM_K = 6.0            # broj robusnih sigma za odbacivanje
 RAIM_MIN_ABS = 600.0    # [m] apsolutni prag grubog filtra
 RAIM_MIN_SATS = 5       # ne odbacuj ako bi ostalo < 4 satelita za rješenje
 
-# Devijacija mjerenja za RAIM test = RAIM_SIGMA_SCALE × sigma(elev) iz EKF-a.
-# Model šuma nije savršeno Gaussov (multipath je pristran, ephemeris greška
-# korelirana), pa je skala kalibrirana na čistim scenarijima tako da stvarna
-# stopa lažnih alarma ne prelazi nominalni P_FA (vidi tests/test_raim.py).
-RAIM_SIGMA_SCALE = 1.4     # kalibrirano: 0 lažnih alarma u 2940 čistih epoha, p99(T/T_d)≈0.5 kao χ²
+# Devijacija mjerenja za RAIM test = RAIM_SIGMA_SCALE × meas_sigma (isti C/N0 model
+# kao EKF R). Skala je kalibrirana na čistim scenarijima (4 lokacije × 18 seedova
+# × 300 s, alat raimtail) tako da raspodjela T/T_d odgovara χ² i nema lažnih alarma.
+# Stari elevacijski model trebao je 1.4 (σ = 1,9 m/sin(el) podcjenjivao je šum);
+# s C/N0 težinjenjem (DLL šum iz C/N0 ⊕ rezidual) σ je fizikalno ispravna pa skala
+# pada na 1.0: p99(T/T_d) ≈ 0.5, p99.9 ≈ 0.7, 0 lažnih alarma u 5400 epoha.
+RAIM_SIGMA_SCALE = 1.0
 
 
 class Receiver:
@@ -117,6 +139,15 @@ class Receiver:
     @property
     def last_update_time(self):
         return self.meas.last_update_time
+
+    @property
+    def jammer_jn_db(self):
+        """J/N ometača [dB] za tekuću epohu (signalni model; 0 = nema ometača)."""
+        return self.meas.jammer_jn_db
+
+    @jammer_jn_db.setter
+    def jammer_jn_db(self, value):
+        self.meas.jammer_jn_db = float(value)
 
     @property
     def iono_tow0(self):
@@ -313,9 +344,8 @@ class Receiver:
 
         # RAIM 2. stupanj: statistički test + FDE + zaštitne granice (raim.run_raim).
         sigmas = []
-        for (_, _, diff, r_est) in all_innovations:
-            sin_el = max(float(np.dot(up, -diff / r_est)), MIN_SIN_ELEV)
-            sigmas.append(RAIM_SIGMA_SCALE * SIGMA_ZENITH / sin_el)
+        for sig, (_, _, diff, r_est) in zip(received_signals, all_innovations):
+            sigmas.append(RAIM_SIGMA_SCALE * meas_sigma(sig, np.dot(up, -diff / r_est)))
         if self.raim_enabled:
             stat_rejected, self.integrity = self._integrity(
                 received_signals, all_innovations, sigmas, rejected, x_pred[:3])
@@ -365,9 +395,8 @@ class Receiver:
 
             # Adaptivni mjerni šum: sigma raste s 1/sin(elev). diff = est - sat,
             # pa je smjer prema satelitu -diff; sin(elev) = up · (sat - est)/r.
-            sin_elev = np.dot(up, -diff / r_est)
-            sin_elev = max(sin_elev, MIN_SIN_ELEV)
-            R_diag.append((SIGMA_ZENITH / sin_elev) ** 2)
+            # C/N0 model: sigma_code(C/N0) ⊕ rezidual/sin(elev) (vidi meas_sigma).
+            R_diag.append(meas_sigma(sig, np.dot(up, -diff / r_est)) ** 2)
 
         if len(H_valid) < 4:
             return None, None  # RAIM odbacio previše satelita
