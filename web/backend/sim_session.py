@@ -250,12 +250,17 @@ class SimSession:
     def set_base(self, lat=None, lon=None, alt=None):
         """Postavi RTK bazu na (lat, lon[, alt]); lat=None -> automatska baza."""
         if lat is None or lon is None:
+            if self.rtk.base_auto and self.rtk.base is not None:
+                return                         # već automatska -> ne resetiraj RTK
             self.rtk.base_auto = True
             self.rtk.base = None
             self._rtk_relocated()
             return
-        self.rtk.set_base(self._base_ecef(float(lat), float(lon), alt), auto=False,
-                          t=self.sim_time)
+        ecef = self._base_ecef(float(lat), float(lon), alt)
+        if (not self.rtk.base_auto and self.rtk.base is not None
+                and np.linalg.norm(ecef - self.rtk.base) < 1.0):
+            return                             # ista baza (npr. ponovno spajanje klijenta)
+        self.rtk.set_base(ecef, auto=False, t=self.sim_time)
 
     def _rtk_jam_filter(self, sats):
         """Ometanje (jamming) gasi i fazno praćenje: vrati sat_id koji ga prežive."""

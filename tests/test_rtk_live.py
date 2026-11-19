@@ -130,6 +130,10 @@ def test_user_base_and_back_to_auto():
     assert f["base"]["auto"] is False
     assert 7500 < f["baseline_m"] < 8600
     assert abs(f["base"]["lla"]["lat"] - (LAT + 0.072)) < 1e-6
+    # klijent pri ponovnom spajanju ponovno šalje istu bazu i "rtk on": bez reseta
+    _apply(s, {"type": "set_base", "lat": LAT + 0.072, "lon": LON})
+    _apply(s, {"type": "rtk", "on": True})
+    assert state_frame(s)["rtk"]["epochs"] == f["epochs"] > 0
     # premještanje rovera NE miče ručnu bazu
     _apply(s, {"type": "set_receiver", "lat": LAT, "lon": LON + 0.01})
     assert abs(state_frame(s)["rtk"]["base"]["lla"]["lat"] - (LAT + 0.072)) < 1e-6

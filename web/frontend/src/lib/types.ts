@@ -60,6 +60,28 @@ export interface AttackOverlay {
   radius_m?: number;
 }
 
+// Živi carrier-phase RTK (backend rtk.LiveRTK) — u frameu SAMO kad je uključen.
+export interface RtkFrame {
+  status: "none" | "float" | "fixed";
+  base: { lla: LLA; ecef: [number, number, number]; auto: boolean } | null;
+  base_switches: number;          // auto-prebacivanja na bližu baznu stanicu
+  baseline_m: number | null;      // duljina baze (baza–rover)
+  n_sats: number;                 // zajednički sateliti (rover+baza, iznad maske)
+  n_dd: number;                   // broj dvostrukih razlika (DD)
+  n_fixed: number;                // fiksirane DD neodređenosti
+  ratio: number | null;           // ratio test (LAMBDA)
+  position: { lla: LLA; ecef: [number, number, number] } | null;
+  error_m: number | null;         // 3D greška prema istini
+  error_h_m: number | null;
+  error_v_m: number | null;
+  float_error_m: number | null;
+  epochs: number;
+  fixed_epochs: number;
+  elapsed_s: number;              // sim-vrijeme od (ponovnog) starta RTK-a
+  time_to_fix_s: number | null;   // sim-vrijeme do prvog FIX-a (null = još nije)
+  cost_ms: number | null;         // CPU cijena RTK-a po epohi
+}
+
 export interface StateFrame {
   sim_time: number;
   playing: boolean;
@@ -78,6 +100,7 @@ export interface StateFrame {
   receiver: ReceiverFrame;
   satellites: SatFrame[];
   systems?: Record<string, SystemInfo>;
+  rtk?: RtkFrame;               // samo kad je živi RTK uključen
 }
 
 export interface ConstellationMeta {

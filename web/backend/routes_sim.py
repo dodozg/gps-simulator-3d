@@ -1,7 +1,7 @@
 """WebSocket živa simulacija: /ws/sim.
 
 Klijent šalje kontrolne poruke (postavi rover, play/pause, brzina, toggles,
-napad, RTK + baza), server strimuje serijalizirano stanje ~10 puta u sekundi. Sim-vrijeme
+napad), server strimuje serijalizirano stanje ~10 puta u sekundi. Sim-vrijeme
 napreduje realnim dt × time_scale kad je 'playing'.
 
 Arhitektura: JEDNA simulacijska petlja (`SimRunner`) po aplikaciji napreduje
