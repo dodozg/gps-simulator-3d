@@ -1,16 +1,20 @@
 """Spoofing / jamming laboratorij — napadi na GNSS i ponašanje EKF/RAIM obrane.
 
-Napadi se ubrizgavaju na razinu MJERENJA: nakon što prijemnik primi signale
-(`receive_signals`), a prije rješavanja (`solve_position`), izmijenimo listu
-`received_signals` (pseudoudaljenosti / izbačeni sateliti). Tako napad prolazi
-kroz PRAVI EKF i RAIM iz `receiver.py`, pa se vidi što obrana stvarno hvata.
+Spoofing napadi se ubrizgavaju na razinu MJERENJA: nakon što prijemnik primi
+signale (`receive_signals`), a prije rješavanja (`solve_position`), izmijenimo
+listu `received_signals` (pseudoudaljenosti). Jamming djeluje RANIJE — u samom
+SIGNALU: prije `receive_signals` napad postavi J/N ometača na mjerni model
+(`rx.jammer_jn_db = attack.jammer_jn_db(t)`), pa signalni model (signal_model.py)
+podigne šumni pod, sateliti ispod praga zabrave ispadnu, a preživjelima raste
+šum koda. Tako napad prolazi kroz PRAVI EKF i RAIM iz `receiver.py`.
 
 Modelirani napadi:
 
-  * Jamming — ometač podiže šumni pod (J/N u dB). Sateliti niske elevacije
-    (slabiji C/N0) prvi ispadaju iz praćenja; preostalima raste šum. Rezultat:
-    manje satelita, veći GDOP, na kraju gubitak fixa. RAIM tu ne pomaže (nije
-    riječ o lažnim mjerenjima nego o gubitku signala).
+  * Jamming — širokopojasni ometač podiže šumni pod (J/N u dB):
+    (C/N0)_eff = C/N0 − 10·log10(1 + J/N). Sateliti niske elevacije (slabiji C/N0
+    iz link budgeta) prvi ispadaju ispod praga zabrave; preostalima raste DLL šum
+    koda. Prijemnik težini mjerenja po C/N0, pa RAIM ne daje lažne alarme. Rezultat:
+    manje satelita, veći GDOP, na kraju gubitak fixa (gubitak signala, ne laž).
 
   * Meaconing (uniformni) — napadač snima i s kašnjenjem reemitira SVE signale,
     dodajući istu udaljenost svima. Kako je pomak zajednički, EKF ga upije u sat
@@ -40,7 +44,7 @@ from satellite import WalkerDeltaConstellation
 from receiver import Receiver
 from utils import lla_to_ecef
 
-TRACK_THRESHOLD_DBHZ = 30.0    # ispod ovog C/N0 prijemnik gubi zabravu na satelit
+from signal_model import TRACK_THRESHOLD_DBHZ, survives_jamming  # noqa: F401 (prag zabrave)
 
 
 def _enu_basis(rx_pos):
@@ -91,6 +95,10 @@ class Attack:
         """Faktor 0..1: rampa kroz [start, end], 0 izvan aktivnog intervala."""
         return _ramp(t, self.start, self.end) if self.is_active(t) else 0.0
 
+    def jammer_jn_db(self, t):
+        """J/N ometača [dB] koji napad u trenutku t unosi u SIGNAL (0 = nema)."""
+        return 0.0
+
     def apply(self, signals, t, rx_pos, rng):
         """Izmijeni listu 'signals' (received_signals) na mjestu. Vrati opis stanja."""
         return
@@ -108,23 +116,20 @@ class Jamming(Attack):
         self.start, self.end, self.stop = start, end, stop
         self.desc = f"ometanje: J/N do {js_db:.0f} dB (rampa t={start:.0f}-{end:.0f} s, zatim drži)"
 
-    def apply(self, signals, t, rx_pos, rng):
-        js = self.js_db * self._strength(t)
-        if js <= 0:
-            return
-        survivors = []
-        for sig in signals:
-            el = _elevation(sig['sat_pos'], rx_pos)
-            cn0 = 37.0 + 10.0 * np.sin(max(el, 0.0))     # ~37 dB-Hz horizont, ~47 zenit
-            eff = cn0 - js
-            if eff < TRACK_THRESHOLD_DBHZ:
-                continue                                   # signal potonuo u šum -> gubitak
-            # preostalima raste šum kako se približavaju pragu
-            margin = eff - TRACK_THRESHOLD_DBHZ
-            extra_sigma = 3.0 * 10 ** (max(0.0, 8.0 - margin) / 20.0)
-            sig['pseudorange'] += rng.normal(0.0, min(extra_sigma, 60.0))
-            survivors.append(sig)
-        signals[:] = survivors
+    def jammer_jn_db(self, t):
+        """J/N [dB] u trenutku t: rampa 0 → js_db kroz [start, end], zatim drži do stop."""
+        return self.js_db * self._strength(t)
+
+    def surviving(self, sats, t, rx_pos):
+        """sat_id-ovi koji ostaju u zabravi uz ometač (bez MAI) — za fazno praćenje (RTK).
+
+        sats: lista (sat_id, ECEF pozicija). Isti link budget i prag kao kodni lanac.
+        """
+        jn = self.jammer_jn_db(t)
+        return {sid for sid, pos in sats if survives_jamming(pos, rx_pos, jn)}
+
+    # apply() ostaje bazni no-op: jamming NE dira gotove pseudoudaljenosti, nego
+    # djeluje kroz signalni model (jammer_jn_db → mjerni model prije receive_signals).
 
 
 class Meaconing(Attack):
@@ -212,6 +217,7 @@ def run_attack(lat, lon, alt, attack, seconds=300, seed=1234):
 
     for t in range(seconds):
         con.update_all(float(t))
+        rx.jammer_jn_db = attack.jammer_jn_db(float(t))        # <-- ometač u signalu
         rx.receive_signals(con, float(t))
         attack.apply(rx.received_signals, float(t), gt, rng)   # <-- napad na mjerenja
         n_tracked = len(rx.received_signals)

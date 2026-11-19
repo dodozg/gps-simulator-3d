@@ -18,7 +18,7 @@ interface MeasInfo {
   id: string; system: string; az: Num; el: Num; used: boolean; excluded: boolean;
   pseudorange: Num; true_range: Num;
   model: { geometric: Num; clock: Num; sagnac: Num; isb: Num; predicted: Num };
-  innovation: Num; sigma: Num;
+  innovation: Num; sigma: Num; cn0_dbhz?: Num;
   error_budget: Record<string, Num>; error_total: Num; ephemeris_los: Num;
   los_enu: Num[]; gain_enu?: Num[]; contribution_enu?: Num[];
 }
@@ -207,10 +207,10 @@ export function mountInside(send: Send) {
       const st = m.excluded ? "✕" : m.used ? "●" : "○";
       return [id, m.system, fmt(m.el, 1) + "°", fmt(m.az, 0) + "°",
         fmtSigned(m.innovation), bar1(m.innovation, maxInn, m.excluded ? "var(--red)" : "var(--cyan)"),
-        fmt(m.sigma), st];
+        fmt(m.sigma), m.cn0_dbhz != null ? fmt(m.cn0_dbhz, 1) : "—", st];
     });
     const t = table(["sat", getLang() === "hr" ? "sustav" : "system", "el", "az",
-      getLang() === "hr" ? "inovacija [m]" : "innovation [m]", "", "σ [m]", ""], rows, "clickable");
+      getLang() === "hr" ? "inovacija [m]" : "innovation [m]", "", "σ [m]", "C/N0 [dB-Hz]", ""], rows, "clickable");
     Array.from(t.querySelectorAll("tr")).slice(1).forEach((tr, i) => {
       tr.addEventListener("click", () => { selected = ms[i].id; render(); });
     });

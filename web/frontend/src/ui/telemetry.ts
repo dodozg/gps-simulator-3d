@@ -150,7 +150,7 @@ export function mountTelemetry(container: HTMLElement,
   const satBody = document.createElement("tbody");
   satTbl.append(satHead, satBody);
   tableWrap.append(satTitle, satTbl);
-  interface SatRow { tr: HTMLElement; tog: HTMLElement; enabled: boolean; id: HTMLElement; sys: HTMLElement; el: HTMLElement; az: HTMLElement; status: HTMLElement; resid: HTMLElement; }
+  interface SatRow { tr: HTMLElement; tog: HTMLElement; enabled: boolean; id: HTMLElement; sys: HTMLElement; el: HTMLElement; az: HTMLElement; status: HTMLElement; cn0: HTMLElement; resid: HTMLElement; }
   const satRows = new Map<string, SatRow>();
   const rtkSec = mountRtkSection();
 
@@ -183,7 +183,7 @@ export function mountTelemetry(container: HTMLElement,
     isbR.BDS.label.textContent = "ISB " + t("sys_BDS");
     satTitle.textContent = t("satellite_table");
     satHead.replaceChildren(
-      ...["", t("col_sat"), t("col_sys"), t("col_el"), t("col_az"), t("col_used"), t("col_resid")]
+      ...["", t("col_sat"), t("col_sys"), t("col_el"), t("col_az"), t("col_used"), t("col_cn0"), t("col_resid")]
         .map((c) => h("th", undefined, c)));
     // truth oznaka ovisi o frameu (Istina/Let) — postavlja se u updateView().
     rtkSec.labels();
@@ -207,9 +207,10 @@ export function mountTelemetry(container: HTMLElement,
         const el = h("td", "mono");
         const az = h("td", "mono");
         const status = h("td");
+        const cn0 = h("td", "mono");
         const resid = h("td", "mono");
-        tr.append(tog, id, sys, el, az, status, resid);
-        const row: SatRow = { tr, tog, enabled: true, id, sys, el, az, status, resid };
+        tr.append(tog, id, sys, el, az, status, cn0, resid);
+        const row: SatRow = { tr, tog, enabled: true, id, sys, el, az, status, cn0, resid };
         const sid = s.id;   // stabilan id za klik (s se mijenja svaki frame)
         tog.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -232,6 +233,7 @@ export function mountTelemetry(container: HTMLElement,
       r.el.textContent = s.el != null ? s.el.toFixed(0) + "°" : "—";
       r.az.textContent = s.az != null ? s.az.toFixed(0) + "°" : "—";
       r.status.textContent = s.rejected ? t("used_rejected") : s.tracked ? t("used_yes") : t("used_visible");
+      r.cn0.textContent = s.cn0_dbhz != null ? s.cn0_dbhz.toFixed(0) : "—";
       r.resid.textContent = s.residual_m != null ? s.residual_m.toFixed(0) + " m" : "—";
       satBody.appendChild(r.tr);   // premjesti u sortirani položaj
     }

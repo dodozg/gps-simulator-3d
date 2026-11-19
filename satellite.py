@@ -21,6 +21,7 @@ class Satellite:
         self.enabled = True     # živa sesija može ugasiti sat/konstelaciju (web toggle)
         self.user_clock_offset_m = 0.0  # korisnički ubrizgan kvar sata [m] (editor satelita)
         self.user_pos_offset_m = 0.0    # korisnički pomak BROADCAST pozicije [m] (spoof pozicije)
+        self.tx_power_offset_db = 0.0   # pomak snage odašiljanja [dB] (signalni model: near-far)
         
         self.clock_bias = 0.0 # Stvarni offset [s] (hardverski)
         self.total_bias = 0.0 # Uključuje dinamičku relativnost

@@ -157,6 +157,9 @@ class SimSession:
                     s.e = float(np.clip(v, 0.0, 0.3))   # ekscentricitet (0 = kružna)
                 elif param == "pos_offset_m":
                     s.user_pos_offset_m = float(max(v, 0.0))   # spoof pozicije (radijalni pomak)
+                elif param == "power_db":
+                    # snaga odašiljanja [dB] (signalni model): jak satelit guši slabe (near-far)
+                    s.tx_power_offset_db = float(np.clip(v, -30.0, 30.0))
                 return
 
     def set_iono_tow0(self, tow):
@@ -267,9 +270,8 @@ class SimSession:
         a = self._attack_obj
         if not isinstance(a, Jamming) or not a.is_active(self.sim_time):
             return None
-        sigs = [{"sat_id": sid, "sat_pos": pos, "pseudorange": 0.0} for sid, pos in sats]
-        a.apply(sigs, self.sim_time, self.gt_pos, self.rtk.rng)
-        return {g["sat_id"] for g in sigs}
+        # Isti signalni model (link budget + J/N + prag zabrave) kao kodni lanac.
+        return a.surviving(sats, self.sim_time, self.gt_pos)
 
     def _rtk_step(self, enabled_sats):
         rtk = self.rtk
@@ -306,6 +308,10 @@ class SimSession:
         # (update_all) i crtaju, ali ih prijemnik ne prima.
         enabled = SimpleNamespace(
             satellites=[s for s in self.constellation.satellites if s.enabled])
+        # Ometač (jamming) djeluje u SIGNALU: J/N za ovu epohu ide u mjerni model
+        # prije primanja (signal_model.py); ostali napadi mijenjaju gotova mjerenja.
+        self.receiver.jammer_jn_db = (self._attack_obj.jammer_jn_db(t)
+                                      if self._attack_obj is not None else 0.0)
         self.receiver.receive_signals(enabled, t)
         if self._attack_obj is not None and self.gt_pos is not None:
             self._attack_obj.apply(self.receiver.received_signals, t, self.gt_pos, self.rng)

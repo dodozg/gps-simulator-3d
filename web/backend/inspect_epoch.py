@@ -21,7 +21,7 @@ import numpy as np
 
 import raim
 from physics_engine import (C, calculate_sagnac_correction, calculate_tropospheric_delay)
-from receiver import ISB_INDEX, SIGMA_ZENITH
+from receiver import ISB_INDEX, SIGMA_ZENITH, RAIM_SIGMA_SCALE
 from satellite import GNSS_SYSTEMS
 from utils import ecef_to_lla
 
@@ -108,8 +108,12 @@ def build_inspect(session):
         isb_idx = ISB_INDEX.get(sig.get("system"))
         isb_model = float(x_pred[isb_idx]) if isb_idx is not None else 0.0
         az, el = _azel(Rp, x_pred[:3], sp_b)
-        sin_el = max(math.sin(math.radians(el or 0.0)), 0.1)
-        sigma = SIGMA_ZENITH / sin_el
+        # σ koju je prijemnik STVARNO koristio (iz C/N0 signalnog modela ako postoji,
+        # inače elevacijski model); RAIM σ je ista uz RAIM_SIGMA_SCALE.
+        if i < len(E.get("raim_sigmas", [])):
+            sigma = E["raim_sigmas"][i] / max(RAIM_SIGMA_SCALE, 1e-9)
+        else:
+            sigma = SIGMA_ZENITH / max(math.sin(math.radians(el or 0.0)), 0.1)
 
         true_range = float(np.linalg.norm(sp_t - truth))
         pr = float(sig["pseudorange"])
@@ -144,6 +148,7 @@ def build_inspect(session):
                       "predicted": _r(r_model + x_pred[6] + sagnac_model + isb_model)},
             "innovation": _r(E["innovations"][i]),
             "sigma": _r(sigma),
+            "cn0_dbhz": _r(sig.get("cn0_dbhz"), 1),
             "error_budget": {kk: _r(v) for kk, v in parts.items()},
             "error_total": _r(total),
             "ephemeris_los": _r(eph_los),

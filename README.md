@@ -19,7 +19,8 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `physics_engine.py`   | Orbite, atmosfera (iono/tropo), relativnost, modeli satova |
 | `terrain.py`          | Pravi globalni DEM (NASA SRTM) + bilinearna interpolacija visina |
 | `satellite.py`        | Walker-Delta konstelacija i satelitski satovi |
-| `signal_processing.py`| Pravi C/A Gold kodovi, RF kanal, FFT korelacija |
+| `signal_processing.py`| Pravi C/A Gold kodovi, multipath, referentni FFT RF kanal |
+| `signal_model.py`     | Signalni model: C/N0 iz link budgeta, ometač + cross-korelacija (near-far), DLL šum |
 | `receiver.py`         | Estimator: LS inicijalizacija + EKF + RAIM (vlasi mjerni model) |
 | `utils.py`            | Geodezija: LLA ↔ ECEF na WGS-84 elipsoidu, DMS format |
 | `measurement.py`      | Mjerni model: kanal + korekcije + DOP selekcija → pseudoudaljenosti |
@@ -47,8 +48,9 @@ uključena; `fetch_terrain.py` je regenerira/finije (`--width`).
 prolaze kroz pravi EKF/RAIM: **koordinirani spoof** (konzistentna lažna mjerenja
 tiho odvuku poziciju — RAIM ne alarmira, temeljno ograničenje), **naivni
 multi-SV** (nezavisni pomaci — robusni RAIM ih izolira), **meaconing** (uniformno
-kašnjenje — upije se u sat prijemnika), **jamming** (J/N ruši broj satelita i
-gubi fix). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
+kašnjenje — upije se u sat prijemnika), **jamming** (ometač u SIGNALU: podiže
+šumni pod, C/N0 pada, sateliti gube zabravu, preživjeli su bučniji — i gubi se
+fix, bez lažnih RAIM alarma jer prijemnik težini po C/N0). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
 
 Ionosfera je pravi **Klobuchar model** (`physics_engine.klobuchar_delay`), ovisan
 o dobu dana (vrh TEC-a ~14:00 lokalno, noćni pod) i geometriji. Prijemnik injektira
