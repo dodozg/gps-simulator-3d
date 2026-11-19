@@ -114,7 +114,7 @@ simulacija) je u **web kontrolnom centru** — vidi niže i [`web/README.md`](we
 
 Moderno web sučelje (3D globus na CesiumJS, živa simulacija, telemetrija i
 edukativni pojmovnik na klik, dvojezično HR/EN) koje postojeći numpy engine
-koristi izravno preko FastAPI backenda. Jednom (traži Node 18+) pa pokreni:
+koristi izravno preko FastAPI backenda. Jednom (traži Node 20.19+ ili 22.12+) pa pokreni:
 **Windows** `build_web.bat` → `run_webapp.bat`; **macOS/Linux** `./build_web.sh`
 → `./run_webapp.sh` (ili kraće `./gps.sh web`). Detalji u
 [`web/README.md`](web/README.md).
