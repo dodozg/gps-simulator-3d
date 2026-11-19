@@ -11,6 +11,13 @@ const COL = {
   rejected: Cesium.Color.fromCssColorString("#f76b6b"),
   ray: Cesium.Color.fromCssColorString("#3dd899").withAlpha(0.5),
   orbit: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
+  // orbite po sustavu (GPS = isti cyan kao prije)
+  orbitSys: {
+    GPS: Cesium.Color.fromCssColorString("#24d3ed").withAlpha(0.28),
+    GAL: Cesium.Color.fromCssColorString("#8c9eff").withAlpha(0.28),
+    GLO: Cesium.Color.fromCssColorString("#ff8a65").withAlpha(0.28),
+    BDS: Cesium.Color.fromCssColorString("#ffd54f").withAlpha(0.28),
+  } as Record<string, Cesium.Color>,
   spoof: Cesium.Color.fromCssColorString("#f76b6b"),
   jam: Cesium.Color.fromCssColorString("#f76b6b").withAlpha(0.16),
   selected: Cesium.Color.fromCssColorString("#ffcf3d"),   // istaknuti (odabrani) satelit
@@ -69,14 +76,28 @@ export class Globe {
   private satClickCb: ((id: string) => void) | null = null; // klik na satelit -> editor
   private selectedSat: string | null = null;                // istaknuti (u editoru otvoreni) satelit
   private lastFrame: StateFrame | null = null;              // za restyle pri promjeni odabira (pauza)
-  private orbitInertial: Cesium.Cartesian3[][] = [];
-  private orbitEntities: Cesium.Entity[] = [];
+  // Orbite: po jedna kružnica po orbitalnoj ravnini SVAKOG sustava, u vlastitoj
+  // PolylineCollection (Primitive API). Entity polilinije su statička geometrija koja
+  // se gradi asinkrono u Workeru: kako se orbite rotiraju sa Zemljom i osvježavaju
+  // dok simulacija teče, gradnja se stalno poništavala pa orbite NISU bile vidljive
+  // dok sim radi (samo na pauzi). Primitive polilinije se ažuriraju odmah.
+  private orbitCol!: Cesium.PolylineCollection;
+  private orbitInertial: Array<{ sys: string; pts: Cesium.Cartesian3[] }> = [];
+  private orbitLines: Cesium.Polyline[] = [];
+  private systemsOn: Record<string, boolean> = { GPS: true };
   private rover: Cesium.Entity | null = null;
   private estimate: Cesium.Entity | null = null;
   private lastRoverLLA: { lat: number; lon: number } | null = null;
-  private spoofArrow: Cesium.Entity | null = null;
+  // Strelica spoofa: Primitive polilinija (vidi orbite — Entity geometrija se ne
+  // stigne izgraditi kad se mijenja svaki frame).
+  private attackCol!: Cesium.PolylineCollection;
+  private spoofArrow: Cesium.Polyline | null = null;
+  private jamPos = new Cesium.Cartesian3();
+  private jamR = 25000;
   private spoofTarget: Cesium.Entity | null = null;
   private jamRing: Cesium.Entity | null = null;
+  // Zaštitna granica (HPL) oko procjene: krug unutar kojeg RAIM jamči poziciju.
+  private hplRing: Cesium.Entity | null = null;
   private show = { orbits: true, rays: true, labels: false };
   // Cache stila satelita (boja/veličina) da ne alociramo ConstantProperty svaki
   // frame kad se ništa nije promijenilo.
@@ -140,6 +161,8 @@ export class Globe {
     this.pointCol = s.primitives.add(new Cesium.PointPrimitiveCollection());
     this.labelCol = s.primitives.add(new Cesium.LabelCollection());
     this.polyCol = s.primitives.add(new Cesium.PolylineCollection());
+    this.orbitCol = s.primitives.add(new Cesium.PolylineCollection());
+    this.attackCol = s.primitives.add(new Cesium.PolylineCollection());
 
     // Oznake uz zrake se primiču/odmiču s zoomom (odmak ∝ udaljenosti kamere) pa
     // ostaju na ~istom zaslonskom položaju od rovera. Zato ih repozicioniramo na
@@ -265,59 +288,61 @@ export class Globe {
 
   private _buildOrbits(): void {
     if (!this.meta) return;
-    const { a, i, w, planes } = this.meta.gps;
-    // Ako meta sadrži nekonačnu vrijednost, orbitne točke bi bile NaN -> polilinija
-    // sruši render (project(undefined)). Radije ne crtaj orbite nego sruši globus.
-    if (![a, i, w].every(Number.isFinite) || !planes.every(Number.isFinite)) return;
-    const inc = Cesium.Math.toRadians(i);
-    const wr = Cesium.Math.toRadians(w);
+    const m = this.meta;
     const N = 128;
-    this.orbitInertial = planes.map((lanDeg) => {
-      const lan = Cesium.Math.toRadians(lanDeg);
-      const pts: Cesium.Cartesian3[] = [];
-      for (let k = 0; k <= N; k++) {
-        const nu = (2 * Math.PI * k) / N;
-        // kružnica radijusa a u orbitalnoj ravnini -> Rz(w) Rx(inc) Rz(lan)
-        let x = a * Math.cos(nu), y = a * Math.sin(nu);
-        let x1 = x * Math.cos(wr) - y * Math.sin(wr);
-        let y1 = x * Math.sin(wr) + y * Math.cos(wr);
-        const x2 = x1, y2 = y1 * Math.cos(inc), z2 = y1 * Math.sin(inc);
-        const X = x2 * Math.cos(lan) - y2 * Math.sin(lan);
-        const Y = x2 * Math.sin(lan) + y2 * Math.cos(lan);
-        pts.push(new Cesium.Cartesian3(X, Y, z2));
+    // Ravnine po sustavu: GPS iz stvarnih LAN-ova konstelacije, ostali jednoliko
+    // raspoređeni (Walker: LAN_k = k·360°/P), polumjer a = R + visina.
+    const defs: Array<{ sys: string; a: number; inc: number; lans: number[] }> = [];
+    for (const [sys, d] of Object.entries(m.systems ?? {})) {
+      const a = sys === "GPS" && m.gps ? m.gps.a : m.r_earth + d.alt;
+      const inc = sys === "GPS" && m.gps ? m.gps.i : d.inc;
+      const lans = sys === "GPS" && m.gps ? m.gps.planes
+        : Array.from({ length: d.planes }, (_, k) => (k * 360) / d.planes);
+      defs.push({ sys, a, inc, lans });
+    }
+    this.orbitInertial = [];
+    for (const d of defs) {
+      // Nekonačne vrijednosti -> NaN točke -> sruše render (project(undefined)).
+      if (![d.a, d.inc].every(Number.isFinite) || !d.lans.every(Number.isFinite)) continue;
+      const inc = Cesium.Math.toRadians(d.inc);
+      for (const lanDeg of d.lans) {
+        const lan = Cesium.Math.toRadians(lanDeg);
+        const pts: Cesium.Cartesian3[] = [];
+        for (let k = 0; k <= N; k++) {
+          // kružnica u orbitalnoj ravnini -> Rx(inc) Rz(lan) (argument perigeja je
+          // za kružnicu samo pomak faze pa ga ne trebamo)
+          const nu = (2 * Math.PI * k) / N;
+          const x = d.a * Math.cos(nu), y = d.a * Math.sin(nu);
+          const y2 = y * Math.cos(inc), z2 = y * Math.sin(inc);
+          pts.push(new Cesium.Cartesian3(x * Math.cos(lan) - y2 * Math.sin(lan),
+            x * Math.sin(lan) + y2 * Math.cos(lan), z2));
+        }
+        this.orbitInertial.push({ sys: d.sys, pts });
       }
-      return pts;
-    });
-    this.orbitEntities.forEach((e) => this.viewer.entities.remove(e));
-    this.orbitEntities = this.orbitInertial.map(() =>
-      this.viewer.entities.add({
-        polyline: { positions: [], width: 1, material: COL.orbit, arcType: Cesium.ArcType.NONE },
-      }),
-    );
+    }
+    this.orbitCol.removeAll();
+    this.orbitLines = this.orbitInertial.map((o) => this.orbitCol.add({
+      positions: o.pts, width: 1,
+      material: Cesium.Material.fromType("Color", { color: COL.orbitSys[o.sys] ?? COL.orbit }),
+    }));
     this.orbitsDirty = true;
   }
 
   private _updateOrbits(simTime: number): void {
     if (!this.meta) return;
-    if (!this.show.orbits) { this.orbitEntities.forEach((e) => { e.show = false; }); return; }
+    const visible = (sys: string) => this.show.orbits && !!this.systemsOn[sys];
+    this.orbitLines.forEach((l, idx) => { l.show = visible(this.orbitInertial[idx].sys); });
+    if (!this.show.orbits) return;
     const theta = this.meta.omega_e * simTime; // ECEF = Rz(-theta) * inercijalno
     if (!Number.isFinite(theta)) return;
-    // Orbite se rotiraju sa Zemljom (sporo). Preskoči rebuild dok se kut nije
-    // osjetno pomaknuo — inače alociramo N×129 Cartesian3 + ConstantProperty svaki
-    // frame nizašto.
-    if (!this.orbitsDirty && Math.abs(theta - this.lastOrbitTheta) < 0.002) {
-      this.orbitEntities.forEach((e) => { e.show = true; });
-      return;
-    }
+    // Rotacija sa Zemljom je spora; preračunaj točke tek kad se kut osjetno pomakne.
+    if (!this.orbitsDirty && Math.abs(theta - this.lastOrbitTheta) < 0.002) return;
     this.lastOrbitTheta = theta;
     this.orbitsDirty = false;
     const ct = Math.cos(theta), st = Math.sin(theta);
-    this.orbitEntities.forEach((ent, idx) => {
-      ent.show = true;
-      const pts = this.orbitInertial[idx].map((p) =>
-        new Cesium.Cartesian3(p.x * ct + p.y * st, -p.x * st + p.y * ct, p.z),
-      );
-      (ent.polyline!.positions as unknown) = new Cesium.ConstantProperty(pts);
+    this.orbitLines.forEach((line, idx) => {
+      line.positions = this.orbitInertial[idx].pts.map((p) =>
+        new Cesium.Cartesian3(p.x * ct + p.y * st, -p.x * st + p.y * ct, p.z));
     });
   }
 
@@ -376,6 +401,9 @@ export class Globe {
 
   update(frame: StateFrame): void {
     this.lastFrame = frame;
+    if (frame.systems) {
+      for (const [k, v] of Object.entries(frame.systems)) this.systemsOn[k] = v.on;
+    }
     // sateliti (Primitive API — izravna, jeftina mutacija svojstava)
     const seen = new Set<string>();
     for (const sat of frame.satellites) {
@@ -405,6 +433,7 @@ export class Globe {
     this._updateRays(frame);
     this._updateOrbits(frame.sim_time);
     this._updateAttack(frame);
+    this._updateProtection(frame);
     this._updateSun(frame);
 
     // requestRenderMode: podaci su se promijenili -> zatraži jedan render.
@@ -439,9 +468,9 @@ export class Globe {
     if (rover && tgt) {
       const pts = [rover, tgt];
       if (!this.spoofArrow) {
-        this.spoofArrow = this.viewer.entities.add({
-          polyline: { positions: pts, width: 3, arcType: Cesium.ArcType.NONE,
-            material: new Cesium.PolylineArrowMaterialProperty(COL.spoof) },
+        this.spoofArrow = this.attackCol.add({
+          positions: pts, width: 6,
+          material: Cesium.Material.fromType("PolylineArrow", { color: COL.spoof }),
         });
         this.spoofTarget = this.viewer.entities.add({
           position: tgt,
@@ -453,7 +482,7 @@ export class Globe {
         });
       } else {
         this.spoofArrow.show = true;
-        (this.spoofArrow.polyline!.positions as unknown) = new Cesium.ConstantProperty(pts);
+        this.spoofArrow.positions = pts;
         this.spoofTarget!.show = true;
         (this.spoofTarget!.position as Cesium.ConstantPositionProperty).setValue(tgt);
       }
@@ -465,11 +494,14 @@ export class Globe {
     // --- jamming: crveni disk uskraćivanja oko prijemnika ---
     const jam = ov && ov.active && ov.type === "jamming" && rover ? ov : null;
     if (jam && rover) {
-      const r = jam.radius_m ?? 25000;
+      this.jamR = jam.radius_m ?? 25000;
+      Cesium.Cartesian3.clone(rover, this.jamPos);
       if (!this.jamRing) {
+        // CallbackProperty: rover se u kinematičkom modu miče svaki frame.
         this.jamRing = this.viewer.entities.add({
-          position: rover,
-          ellipse: { semiMajorAxis: r, semiMinorAxis: r, height: 0,
+          position: new Cesium.CallbackPositionProperty(() => this.jamPos, false),
+          ellipse: { semiMajorAxis: new Cesium.CallbackProperty(() => this.jamR, false),
+            semiMinorAxis: new Cesium.CallbackProperty(() => this.jamR, false), height: 0,
             material: COL.jam, outline: true, outlineColor: COL.spoof.withAlpha(0.6) },
           label: { text: "JAMMING", font: "bold 12px sans-serif", fillColor: COL.spoof,
             pixelOffset: new Cesium.Cartesian2(0, -18), showBackground: true,
@@ -478,11 +510,50 @@ export class Globe {
         });
       } else {
         this.jamRing.show = true;
-        (this.jamRing.position as Cesium.ConstantPositionProperty).setValue(rover);
       }
     } else if (this.jamRing) {
       this.jamRing.show = false;
     }
+  }
+
+  // Krug HPL-a (horizontalne zaštitne granice) oko procjene. Zelen kad je
+  // integritet dostupan (HPL ≤ HAL), crven kad nije ili kad je RAIM detektirao kvar
+  // koji ne može izolirati. Polumjer = HPL [m], pa se vidi i koliko je jamstvo
+  // šire od stvarne greške (žuta istina gotovo uvijek leži duboko unutar kruga).
+  //
+  // Središte i polumjer se mijenjaju svaki frame (10 Hz). Statička geometrija bi
+  // se pri svakoj promjeni iznova gradila u Workeru i nikad ne bi stigla do ekrana,
+  // pa su sva svojstva CallbackProperty (dinamička geometrija, crta se odmah).
+  private hplPos = new Cesium.Cartesian3();
+  private hplR = 1;
+  private hplBad = false;
+  private _updateProtection(frame: StateFrame): void {
+    const rx = frame.receiver;
+    const ig = rx.integrity;
+    const est = rx.ekf_initialized && rx.estimate ? c3(rx.estimate.ecef) : null;
+    const r = ig && ig.hpl != null && Number.isFinite(ig.hpl) ? Math.max(ig.hpl, 1) : null;
+    if (!est || r == null) {
+      if (this.hplRing) this.hplRing.show = false;
+      return;
+    }
+    Cesium.Cartesian3.clone(est, this.hplPos);
+    this.hplR = r;
+    this.hplBad = ig!.status === "alarm" || ig!.available === false;
+    if (!this.hplRing) {
+      const color = (alpha: number) => new Cesium.CallbackProperty(
+        () => (this.hplBad ? COL.rejected : COL.tracked).withAlpha(alpha), false);
+      this.hplRing = this.viewer.entities.add({
+        position: new Cesium.CallbackPositionProperty(() => this.hplPos, false),
+        ellipse: {
+          semiMajorAxis: new Cesium.CallbackProperty(() => this.hplR, false),
+          semiMinorAxis: new Cesium.CallbackProperty(() => this.hplR, false),
+          height: 0,
+          material: new Cesium.ColorMaterialProperty(color(0.12)),
+          outline: true, outlineColor: color(0.85),
+        },
+      });
+    }
+    this.hplRing.show = true;
   }
 
   private _updateReceiver(frame: StateFrame): void {

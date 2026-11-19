@@ -130,6 +130,7 @@ Full architecture, block diagrams and model derivations:
 | `signal_processing.py` | Real C/A **Gold codes**, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
 | `measurement.py` | Measurement model: channel + corrections + DOP selection → pseudoranges |
 | `receiver.py` | Estimator: LS cold start → 11-D EKF → RAIM (owns the measurement model) |
+| `raim.py` | Integrity: χ² residual test, fault exclusion (FDE), protection levels HPL/VPL |
 | `terrain.py` | Global DEM (NASA SRTM) + bilinear interpolation |
 | `utils.py` | Geodesy: LLA ↔ ECEF on the WGS-84 ellipsoid |
 | `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) — the 3D interface |

@@ -60,6 +60,8 @@ export function mountTelemetry(container: HTMLElement,
   const velEstR = mkRow("velocity");
   const gdopR = mkRow("gdop");
   const satsR = mkRow("sats");
+  const integR = mkRow("integrity");   // status integriteta (statistički RAIM)
+  const hplR = mkRow("hpl");           // zaštitne granice HPL / VPL
   const nisR = mkRow("nis");
   const clkR = mkRow("clock");
   // ISB (inter-system bias) — po jedan redak za Galileo/GLONASS/BeiDou (multi-GNSS).
@@ -80,7 +82,7 @@ export function mountTelemetry(container: HTMLElement,
   container.append(title, attackBanner, raimBanner, noFix,
     truthR.row, estR.row, errR.row,
     altTrueR.row, altEstR.row, velTrueR.row, velEstR.row, waiting,
-    gdopR.row, satsR.row, nisR.row, clkR.row,
+    gdopR.row, satsR.row, integR.row, hplR.row, nisR.row, clkR.row,
     isbR.GAL.row, isbR.GLO.row, isbR.BDS.row, tableWrap);
 
   // Statične (jezično ovisne) oznake — postave se jednom i na promjenu jezika.
@@ -93,6 +95,8 @@ export function mountTelemetry(container: HTMLElement,
     errR.label.textContent = t("error");
     gdopR.label.textContent = "GDOP";
     satsR.label.textContent = t("sats");
+    integR.label.textContent = t("integrity");
+    hplR.label.textContent = t("protection");
     nisR.label.textContent = "NIS/dof";
     altTrueR.label.textContent = t("altitude_true");
     altEstR.label.textContent = t("altitude_est");
@@ -167,7 +171,7 @@ export function mountTelemetry(container: HTMLElement,
     if (!f || !placed) {
       [attackBanner, raimBanner, truthR.row, estR.row, errR.row,
        altTrueR.row, altEstR.row, velTrueR.row, velEstR.row, waiting,
-       gdopR.row, satsR.row, nisR.row, clkR.row,
+       gdopR.row, satsR.row, integR.row, hplR.row, nisR.row, clkR.row,
        isbR.GAL.row, isbR.GLO.row, isbR.BDS.row, tableWrap]
         .forEach((n) => vis(n, false));
       return;
@@ -223,6 +227,26 @@ export function mountTelemetry(container: HTMLElement,
     gdopR.value.textContent = rx.gdop != null ? rx.gdop.toFixed(2) : "—";
     vis(satsR.row, true);
     satsR.value.textContent = `${f.sats_tracked}/${f.sats_total} ${t("tracked")}`;
+
+    // Integritet: status statističkog RAIM-a (+ test/prag u stručnom modu) i HPL/VPL.
+    const ig = rx.integrity;
+    vis(integR.row, !!ig);
+    vis(hplR.row, !!ig && ig.hpl != null);
+    if (ig) {
+      let txt = t("integ_" + ig.status);
+      if (ig.status === "excluded" && ig.excluded?.length) txt += ": " + ig.excluded.join(", ");
+      if (expert && ig.test != null && ig.threshold != null)
+        txt += `  (T ${ig.test.toFixed(1)} / ${ig.threshold.toFixed(1)}, dof ${ig.dof})`;
+      integR.value.textContent = txt;
+      integR.value.className = "tel-value integ-" + ig.status;
+      if (ig.hpl != null) {
+        let p = `H ${ig.hpl.toFixed(0)} m`;
+        if (ig.vpl != null) p += ` · V ${ig.vpl.toFixed(0)} m`;
+        if (ig.available === false) p += ` — ${t("integ_not_available")}`;
+        hplR.value.textContent = p;
+        hplR.value.classList.toggle("bad", ig.available === false);
+      }
+    }
 
     // stručni redci
     vis(nisR.row, expert);

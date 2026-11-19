@@ -83,6 +83,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .tel-label { font-size: 12px; color: var(--dim); }
 .tel-value { font-family: var(--mono); font-size: 13px; color: var(--text); }
 .tel-row.accent .tel-value { color: var(--amber); font-weight: 600; }
+/* integritet (statistički RAIM) */
+.tel-value.integ-ok { color: var(--green); }
+.tel-value.integ-excluded { color: var(--amber); }
+.tel-value.integ-alarm { color: var(--red); font-weight: 600; }
+.tel-value.integ-unavailable, .tel-value.integ-disabled { color: var(--dim); }
+.tel-value.bad { color: var(--red); }
 .tel-label .term { font-size: 12px; }   /* cyan pojam kao oznaka retka */
 .raim-banner { background: rgba(247,107,107,0.14); border: 1px solid rgba(247,107,107,0.5); color: var(--red); border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; font-weight: 600; }
 .attack-banner { display: flex; align-items: center; gap: 8px; background: rgba(247,107,107,0.14); border: 1px solid rgba(247,107,107,0.5); color: var(--red); border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; font-weight: 700; letter-spacing: 0.3px; }

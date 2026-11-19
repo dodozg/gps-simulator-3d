@@ -144,7 +144,7 @@ flowchart LR
     C --> D["Iono-free kombinacija<br/>(poništi ionosferu)"]
     D --> E["Korekcije mjerenja<br/>+ sat prijemnika<br/>− tropo (Hopfield)<br/>+ Sagnac + ISB(sustav)"]
     E --> F["EKF predict/update<br/>11 stanja"]
-    F --> G["RAIM (MAD)<br/>izbaci outliere"]
+    F --> G["RAIM: MAD filtar + χ² test<br/>FDE + HPL/VPL"]
     G --> H["Pozicija + GDOP + NIS"]
 ```
 
@@ -222,16 +222,49 @@ flowchart TB
 - **NIS** (Normalized Innovation Squared) se računa svaki korak: ~1 = zdrav,
   trajno >1 = R premalen (preoptimističan), <1 = prekonzervativan.
 
-### 5.3 RAIM — robusna detekcija outliera (MAD)
+### 5.3 RAIM — statistički test, FDE i zaštitne granice
 
-`_raim_screen`: iterativno nalazi satelit čija inovacija najviše odstupa od
-**medijane**; ako prelazi `RAIM_K` robusnih sigma (MAD skala) **i** apsolutni
-prag (600 m), izbacuje ga i ponavlja. MAD skala se sama prilagođava razini šuma,
-pa hvata i više istovremeno pokvarenih satelita, a ne dira normalni multipath.
+Dva stupnja (`receiver.py` + `raim.py`):
 
-Bitna edukativna poanta (spoofing lab): **koordinirani spoof** — konzistentna
-laž na svim satelitima — RAIM *ne može* uhvatiti. To nije bug simulatora, nego
-točno reproducirano temeljno ograničenje RAIM-a.
+1. **Grubi filtar** (`_raim_screen`, MAD): iterativno izbacuje inovacije koje od
+   medijane odstupaju više od `RAIM_K` robusnih sigma **i** 600 m. Štiti
+   linearizaciju od km-razine blundera (i više istovremenih).
+2. **Klasični snapshot RAIM** (`raim.run_raim`), nad ostatkom:
+   - težinski najmanji kvadrati (σ_i = `RAIM_SIGMA_SCALE`·σ(elev), jedan stupac
+     sata po sustavu prisutnom u mjerenjima) → rezidual r = S·y;
+   - **detekcija**: T = rᵀWr ~ χ²(n − m); prag T_d za P_FA = 10⁻⁵ po epohi;
+   - **FDE**: ako T > T_d i dof ≥ 2, isključi satelit s najvećim normaliziranim
+     rezidualom |r_i|/(σ_i√S_ii) i ponovi; ako dof = 1 → "kvar, ne može se
+     izolirati" (alarm bez isključivanja);
+   - **zaštitne granice** (slope metoda): HPL = max_i √(K_E,i² + K_N,i²)·σ_i/√S_ii ·
+     √λ, gdje je λ necentralni parametar za koji P(χ'²(dof, λ) < T_d) = P_MD = 10⁻³
+     (VPL analogno s K_U). Integritet je **dostupan** kad je HPL ≤ HAL
+     (zadano 556 m = NPA/RNP 0.3; VAL nema za klasični RAIM).
+
+Chi-kvadrat i necentralni chi-kvadrat su implementirani bez scipy-ja
+(nepotpuna gama funkcija: red + kontinuirani razlomak; Poissonov zbroj) i
+provjereni prema scipy-ju na < 10⁻¹⁰ (`tests/test_raim.py` drži referentne vrijednosti).
+
+**Kalibracija.** Model šuma nije savršeno Gaussov (multipath je pristran,
+ephemeris greška korelirana), pa je σ za RAIM skalirana: `RAIM_SIGMA_SCALE = 1.4`
+daje raspodjelu T/T_d koja odgovara χ² (p99 ≈ 0.5, p99.9 ≈ 0.7) i 0 alarma u
+5400 čistih epoha (4 lokacije × 18 seedova). Rijetki pojedinačni skokovi
+korelatora (~7σ, npr. −20 m u jednoj epohi) se isključe — to je ispravno
+ponašanje FDE-a, ne lažni alarm modela.
+
+**Osjetljivost.** Kvar sata od 30 m na jednom satelitu isključuje se u svakoj
+epohi (prije: tek iznad 600 m). Tipični HPL u Zagrebu (samo GPS) je 50–200 m,
+ovisno o geometriji; stvarna greška je uvijek duboko unutar njega.
+
+Sučelje: telemetrija prikazuje status integriteta (u redu / kvar isključen /
+kvar se ne može izolirati / nedostupan), test T prema pragu (stručni mod) i
+HPL/VPL; na globusu je **krug HPL-a** oko procjene (zelen = dostupno, crven =
+alarm ili HPL > HAL).
+
+Bitna edukativna poanta (spoofing lab) ostaje: **koordinirani spoof** —
+konzistentna laž na svim satelitima — ne ostavlja rezidual pa ga RAIM *ne može*
+uhvatiti. To nije bug simulatora, nego točno reproducirano temeljno
+ograničenje RAIM-a.
 
 ### 5.4 Modeli grešaka (fizika kanala)
 
@@ -376,7 +409,7 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
 
 ### Što je stvarno dobro
 
-1. **Solver je pravi, ne gluma.** LS → 11-D EKF → MAD-RAIM → NIS dijagnostika su
+1. **Solver je pravi, ne gluma.** LS → 11-D EKF → RAIM (χ² + FDE + HPL) → NIS dijagnostika su
    algoritmi iz GNSS udžbenika, korektno izvedeni. Posebna vrijednost je
    disciplina "prijemnik ne smije znati što ne bi znao" (selekcija iz procjene,
    greška mjerljiva samo zato što je ovo simulator).

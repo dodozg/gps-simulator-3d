@@ -40,7 +40,24 @@ export interface ReceiverFrame {
   // Epoha bez dovoljno neovisnih mjerenja za sve nepoznanice (položaj+sat+ISB):
   // rješenje se drži na apriornoj kovarijanci, DOP-a nema.
   underdetermined?: boolean;
+  // Integritet (statistički RAIM): test reziduala, isključeni sateliti, zaštitne granice.
+  integrity?: IntegrityFrame;
   isb?: Array<{ system: string; est: number | null; true: number }>;
+}
+
+export interface IntegrityFrame {
+  status: "ok" | "excluded" | "alarm" | "unavailable" | "disabled";
+  test?: number | null;        // chi-kvadrat statistika reziduala
+  threshold?: number | null;   // prag za zadani P_FA
+  dof?: number;                // stupnjevi slobode (redundancija)
+  hpl?: number | null;         // horizontalna zaštitna granica [m]
+  vpl?: number | null;         // vertikalna zaštitna granica [m]
+  hal?: number | null;         // horizontalna granica uzbune [m]
+  val?: number | null;         // vertikalna granica uzbune [m] (null = nema)
+  available?: boolean;         // HPL ≤ HAL (i VPL ≤ VAL)
+  excluded?: string[];         // isključeni sateliti
+  pfa?: number;
+  pmd?: number;
 }
 
 export interface AttackSpec {

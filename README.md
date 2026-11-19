@@ -27,6 +27,7 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
 | `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
+| `raim.py`             | Integritet: χ² test reziduala, isključivanje kvara (FDE), zaštitne granice HPL/VPL |
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
 | `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |

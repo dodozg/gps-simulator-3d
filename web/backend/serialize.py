@@ -95,6 +95,9 @@ def state_frame(session):
     receiver["nis"] = _num(rx.nis) if rx.nis_dof else None
     receiver["nis_dof"] = int(rx.nis_dof)
     receiver["nis_ratio"] = _num(rx.nis / rx.nis_dof) if rx.nis_dof else None
+    # Integritet (statistički RAIM): status, test vs prag, zaštitne granice HPL/VPL.
+    if initialized:
+        receiver["integrity"] = to_jsonable(getattr(rx, "integrity", {"status": "unavailable"}))
     receiver["clock_bias_us"] = _num(rx.clock_bias * 1e6)
 
     # --- sateliti ---

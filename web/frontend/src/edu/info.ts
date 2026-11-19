@@ -33,6 +33,8 @@ const CONCEPTS: Record<string, { term?: string; explain?: string; def?: InlineDe
   sats: { explain: "sats" },
   nis: { term: "NIS", explain: "nis" },
   isb: { term: "ISB" },
+  integrity: { term: "RAIM", explain: "integrity" },
+  hpl: { term: "HPL", explain: "hpl" },
   velocity: { def: {
     title: "Brzina / Velocity",
     hr: "Brzina kretanja prijemnika. 'Istina' je zadana (0 kad je statičan), 'procjena' je ono što je EKF izračunao iz promjene položaja. Razlika pokazuje koliko dobro filtar prati gibanje.",
@@ -106,6 +108,41 @@ const EXPLAIN: Record<string, (f: StateFrame) => Ex | null> = {
     return { verdict, value: `${n}/${f.sats_total}`,
       hr: "Sateliti koji ULAZE u rješenje. Trebaš ≥4 (3 za položaj + 1 za sat prijemnika). " + hrTail,
       en: "Satellites that ENTER the solution. You need ≥4 (3 for position + 1 for the receiver clock). " + enTail };
+  },
+  integrity(f) {
+    const ig = f.receiver.integrity;
+    if (!ig) return null;
+    const verdict: Verdict = ig.status === "ok" ? "good"
+      : ig.status === "excluded" || ig.status === "disabled" ? "ok" : "bad";
+    const val = ig.test != null && ig.threshold != null
+      ? `T ${ig.test.toFixed(1)} / ${ig.threshold.toFixed(1)}` : ig.status;
+    const pfa = (ig.pfa ?? 1e-5).toExponential(0);
+    const hr: Record<string, string> = {
+      ok: "Reziduali mjerenja se slažu s očekivanim šumom: testna statistika T je ispod praga. Vjerojatnost lažnog alarma je " + pfa + " po epohi.",
+      excluded: "Test je pao, ali je RAIM pronašao i ISKLJUČIO pokvareni satelit (FDE) — rješenje se računa bez njega.",
+      alarm: "Kvar je detektiran (T iznad praga), ali nema dovoljno redundancije da se nađe KOJI satelit — pozicija nije pouzdana.",
+      unavailable: "Premalo satelita: za detekciju kvara treba barem jedan satelit više od broja nepoznanica (≥5 za samo GPS).",
+      disabled: "RAIM je isključen — prijemnik vjeruje svim mjerenjima.",
+    };
+    const en: Record<string, string> = {
+      ok: "Measurement residuals agree with the expected noise: test statistic T is below the threshold. False-alarm probability is " + pfa + " per epoch.",
+      excluded: "The test failed, but RAIM found and EXCLUDED the faulty satellite (FDE) — the fix is computed without it.",
+      alarm: "A fault is detected (T above threshold) but there isn't enough redundancy to find WHICH satellite — the position is not trustworthy.",
+      unavailable: "Too few satellites: fault detection needs at least one more satellite than unknowns (≥5 for GPS only).",
+      disabled: "RAIM is off — the receiver trusts every measurement.",
+    };
+    return { verdict, value: val,
+      hr: hr[ig.status] + " Ograničenje: koordinirani spoof koji je konzistentan sa SVIM mjerenjima ne ostavlja rezidual.",
+      en: en[ig.status] + " Limitation: a coordinated spoof consistent with ALL measurements leaves no residual." };
+  },
+  hpl(f) {
+    const ig = f.receiver.integrity;
+    if (!ig || ig.hpl == null) return null;
+    const ok = ig.available !== false;
+    const hal = ig.hal != null ? `${ig.hal.toFixed(0)} m` : "—";
+    return { verdict: ok ? "good" : "bad", value: `${ig.hpl.toFixed(0)} m`,
+      hr: `HPL je jamstvo: kvar na jednom satelitu koji RAIM NE bi uočio (vjerojatnost ${(ig.pmd ?? 1e-3).toExponential(0)}) ne može pomaknuti poziciju vodoravno više od toga. Ovisi o geometriji, ne o trenutnoj grešci. Granica uzbune HAL = ${hal}: ` + (ok ? "HPL je ispod nje, navigacija s integritetom je DOSTUPNA." : "HPL je iznad nje, integritet NIJE dostupan za ovu fazu leta."),
+      en: `HPL is a guarantee: a single-satellite fault RAIM would NOT notice (probability ${(ig.pmd ?? 1e-3).toExponential(0)}) cannot move the position horizontally by more than this. It depends on geometry, not the current error. Alert limit HAL = ${hal}: ` + (ok ? "HPL is below it, navigation with integrity is AVAILABLE." : "HPL is above it, integrity is NOT available for this phase of flight.") };
   },
   clock(f) {
     const c = f.receiver.clock_bias_us;
