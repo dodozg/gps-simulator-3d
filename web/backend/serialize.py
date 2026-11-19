@@ -211,6 +211,8 @@ def state_frame(session):
         "receiver": receiver,
         "satellites": sats,
         "systems": systems,
+        # izvor orbita: idealizirane (walker) ili prave (CelesTrak/SGP4) s UTC i GMST
+        "orbits": to_jsonable(session.orbit_info()) if hasattr(session, "orbit_info") else {"mode": "walker"},
     }
     # Živi RTK: blok postoji SAMO kad je uključen (ne mijenja ostale ključeve).
     rtk = _rtk_block(session)

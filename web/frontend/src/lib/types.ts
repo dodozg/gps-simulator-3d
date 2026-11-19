@@ -46,6 +46,17 @@ export interface ReceiverFrame {
   isb?: Array<{ system: string; est: number | null; true: number }>;
 }
 
+export interface OrbitInfo {
+  mode: "walker" | "real";
+  origin?: "cache" | "download" | "snapshot";
+  fetched_utc?: string;
+  epoch_utc?: string;
+  utc?: string;                 // trenutni UTC simulacije (prave orbite)
+  gmst_rad?: number;            // kut rotacije Zemlje (za crtanje orbita)
+  elements_age_days?: number | null;
+  counts?: Record<string, number>;
+}
+
 export interface IntegrityFrame {
   status: "ok" | "excluded" | "alarm" | "unavailable" | "disabled";
   test?: number | null;        // chi-kvadrat statistika reziduala
@@ -119,6 +130,7 @@ export interface StateFrame {
   satellites: SatFrame[];
   systems?: Record<string, SystemInfo>;
   rtk?: RtkFrame;               // samo kad je živi RTK uključen
+  orbits?: OrbitInfo;           // izvor orbita (idealizirane / prave)
 }
 
 export interface ConstellationMeta {

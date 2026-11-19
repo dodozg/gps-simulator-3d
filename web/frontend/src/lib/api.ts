@@ -17,8 +17,12 @@ async function get<T>(path: string): Promise<T> {
   return r.json();
 }
 
+export interface OrbitsStatus { origin: string; fetched_utc?: string; counts: Record<string, number>; cache_age_h: number | null; }
+
 export const api = {
   constellation: () => get<ConstellationMeta>("/constellation"),
+  orbitsStatus: () => get<OrbitsStatus>("/orbits/status"),
+  orbitsRefresh: () => post<OrbitsStatus>("/orbits/refresh", {}),
   glossary: (lang: string) => get<Record<string, GlossaryTerm>>(`/glossary?lang=${lang}`),
   lessons: (lang: string) => get<{ lessons: Lesson[] }>(`/lessons?lang=${lang}`),
   guide: (lang: string) => get<{ md: string; lang: string }>(`/guide?lang=${lang}`),

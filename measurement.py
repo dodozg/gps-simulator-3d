@@ -19,7 +19,8 @@ from physics_engine import (
     calculate_sagnac_correction, simulate_clock_noise, calculate_terrain_elevation,
     calculate_orbital_position,
 )
-from utils import ecef_to_lla
+from utils import ecef_to_lla, ecef_to_lla_array
+import terrain
 from satellite import GNSS_SYSTEMS
 import signal_processing
 import signal_model
@@ -63,6 +64,19 @@ class MeasurementModel:
 
     def set_position(self, pos):
         self.pos = pos
+
+    @staticmethod
+    def los_clear_many(sat_positions, rec_pos):
+        """Vektorizirani check_los za više satelita: lista bool (True = put slobodan)."""
+        sp = np.asarray(sat_positions, dtype=float)
+        v = sp - rec_pos
+        n = np.linalg.norm(v, axis=1, keepdims=True)
+        n[n == 0] = 1.0
+        d = np.arange(2000, 60000, 2000, dtype=float)
+        pts = rec_pos + (v / n)[:, None, :] * d[None, :, None]      # (n_sat, n_uzoraka, 3)
+        lat, lon, alt = ecef_to_lla_array(pts)
+        h = terrain.elevation_array(lat.ravel(), lon.ravel()).reshape(lat.shape)
+        return list(np.all(alt >= h, axis=1))
 
     def check_los(self, sat_pos, rec_pos):
         """Matematički raycasting: provjerava blokira li teren (planine) putanju signala."""
@@ -119,12 +133,15 @@ class MeasurementModel:
             # Elevacijska maska: ignoriraj satelite ispod ~5°
             if elevation < np.radians(5):
                 continue
-            # LOS raycasting provjerava planine
-            if not self.check_los(sig['pos'], self.pos):
-                continue
 
             sig['true_dist'] = true_dist
             visible_signals.append((sat, sig))
+
+        # LOS raycasting kroz teren (planine) — vektorizirano za sve kandidate
+        # odjednom (jedan poziv DEM-a); iste točke uzorkovanja kao check_los.
+        if visible_signals:
+            clear = self.los_clear_many([sig['pos'] for _, sig in visible_signals], self.pos)
+            visible_signals = [p for p, ok in zip(visible_signals, clear) if ok]
 
         iono_tow = self.iono_tow0 + current_time
         rx_vel = self._receiver_velocity(current_time)
@@ -216,6 +233,8 @@ class MeasurementModel:
 
     def _sat_velocity(self, sat, t, h=0.5):
         """ECEF brzina satelita (centralna razlika orbitalnog modela) — za Doppler."""
+        if hasattr(sat, 'velocity_at'):          # prave orbite (SGP4) znaju svoju brzinu
+            return np.asarray(sat.velocity_at(t), dtype=float)
         if not hasattr(sat, 'a'):
             return np.zeros(3)
         p1, _ = calculate_orbital_position(sat.a, sat.e, sat.i, sat.lan, sat.w, sat.m0, t + h)

@@ -73,6 +73,24 @@ def ecef_to_lla(x, y, z):
     return np.degrees(lat), np.degrees(lon), alt
 
 
+def ecef_to_lla_array(p):
+    """Vektorizirani ecef_to_lla: p oblika (..., 3) -> (lat°, lon°, alt) nizovi.
+
+    Ista Bowringova formula kao ecef_to_lla (rezultati se poklapaju), za brze
+    provjere vidljivosti kroz teren za mnogo točaka odjednom.
+    """
+    p = np.asarray(p, dtype=float)
+    x, y, z = p[..., 0], p[..., 1], p[..., 2]
+    lon = np.arctan2(y, x)
+    r = np.maximum(np.sqrt(x**2 + y**2), 1e-9)
+    theta = np.arctan2(z * WGS84_A, r * WGS84_B)
+    lat = np.arctan2(z + _WGS84_EP2 * WGS84_B * np.sin(theta)**3,
+                     r - WGS84_E2 * WGS84_A * np.cos(theta)**3)
+    N = WGS84_A / np.sqrt(1.0 - WGS84_E2 * np.sin(lat)**2)
+    alt = r / np.cos(lat) - N
+    return np.degrees(lat), np.degrees(lon), alt
+
+
 def format_dms(degrees, is_lat=True):
     """
     Konvertuje decimalne stepene u Degrees, Minutes, Seconds format.

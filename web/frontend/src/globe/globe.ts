@@ -283,7 +283,7 @@ export class Globe {
 
   setMeta(meta: ConstellationMeta): void {
     this.meta = meta;
-    this._buildOrbits();
+    if (this.orbitMode !== "real") this._buildOrbits();   // prave orbite crtaju vlastite tragove
   }
 
   private _buildOrbits(): void {
@@ -328,12 +328,42 @@ export class Globe {
     this.orbitsDirty = true;
   }
 
-  private _updateOrbits(simTime: number): void {
-    if (!this.meta) return;
+  // Prave orbite: kad sesija prijeđe na prave satelite, povuci njihove tragove
+  // (jedan ophod u TEME okviru) i crtaj ih umjesto idealiziranih Walker kružnica.
+  private orbitMode = "walker";
+  private orbitEpoch = "";
+  private _syncOrbitMode(frame: StateFrame): void {
+    const o = frame.orbits;
+    const mode = o?.mode ?? "walker";
+    const epoch = o?.epoch_utc ?? "";
+    if (mode === this.orbitMode && epoch === this.orbitEpoch) return;
+    this.orbitMode = mode;
+    this.orbitEpoch = epoch;
+    if (mode !== "real") { this._buildOrbits(); return; }
+    void fetch("/api/orbits/tracks").then((r) => r.json()).then((d: { mode: string; tracks: Array<{ system: string; pts: number[][] }> }) => {
+      if (this.orbitMode !== "real" || d.mode !== "real") return;
+      this.orbitInertial = d.tracks.filter((t) => t.pts.length > 2).map((t) => ({
+        sys: t.system,
+        pts: t.pts.filter((p) => p.every(Number.isFinite)).map(([x, y, z]) => new Cesium.Cartesian3(x, y, z)),
+      }));
+      this.orbitCol.removeAll();
+      this.orbitLines = this.orbitInertial.map((o2) => this.orbitCol.add({
+        positions: o2.pts, width: 1,
+        material: Cesium.Material.fromType("Color", { color: (COL.orbitSys[o2.sys] ?? COL.orbit).withAlpha(0.18) }),
+      }));
+      this.orbitsDirty = true;
+      this.viewer.scene.requestRender();
+    }).catch(() => { /* tragovi kasnije */ });
+  }
+
+  private _updateOrbits(simTime: number, gmst?: number): void {
+    if (!this.meta && this.orbitMode !== "real") return;
     const visible = (sys: string) => this.show.orbits && !!this.systemsOn[sys];
     this.orbitLines.forEach((l, idx) => { l.show = visible(this.orbitInertial[idx].sys); });
     if (!this.show.orbits) return;
-    const theta = this.meta.omega_e * simTime; // ECEF = Rz(-theta) * inercijalno
+    // ECEF = Rz(-theta)·inercijalno; prave orbite: theta = GMST (pravo vrijeme),
+    // idealizirane: theta = ω·t od proizvoljne nule (isto kao fizika enginea).
+    const theta = gmst ?? (this.meta ? this.meta.omega_e * simTime : NaN);
     if (!Number.isFinite(theta)) return;
     // Rotacija sa Zemljom je spora; preračunaj točke tek kad se kut osjetno pomakne.
     if (!this.orbitsDirty && Math.abs(theta - this.lastOrbitTheta) < 0.002) return;
@@ -431,7 +461,8 @@ export class Globe {
 
     this._updateReceiver(frame);
     this._updateRays(frame);
-    this._updateOrbits(frame.sim_time);
+    this._syncOrbitMode(frame);
+    this._updateOrbits(frame.sim_time, frame.orbits?.mode === "real" ? frame.orbits.gmst_rad : undefined);
     this._updateAttack(frame);
     this._updateProtection(frame);
     this._updateSun(frame);
@@ -447,7 +478,18 @@ export class Globe {
   // Backend model: lokalno = tow + dužina/15, pa je podsunčani meridijan 15°·(12−tow_h)
   // i terminator se poklapa s lokalnim vremenom rovera. Pomak slidera => Sunce se
   // pomakne u sljedećem frameu. enableLighting čita Sunce iz clock.currentTime.
+  private lastSunUtc = "";
   private _updateSun(frame: StateFrame): void {
+    // Prave orbite: Sunce za PRAVI UTC trenutak (datum + doba dana).
+    const utc = frame.orbits?.mode === "real" ? frame.orbits.utc : undefined;
+    if (utc) {
+      if (utc.slice(0, 15) === this.lastSunUtc) return;          // osvježi na ~10 min
+      this.lastSunUtc = utc.slice(0, 15);
+      this.lastSunTowSec = NaN;
+      this.viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(utc);
+      return;
+    }
+    this.lastSunUtc = "";
     const tow = frame.tow_now ?? frame.iono_tow0;
     const towSec = ((tow % 86400) + 86400) % 86400;
     if (Math.abs(towSec - this.lastSunTowSec) < 1) return;   // isto doba dana -> ne diraj sat

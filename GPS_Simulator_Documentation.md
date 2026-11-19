@@ -372,6 +372,7 @@ paljenje/gašenje po sustavu i po satelitu, a telemetrija (stručni mod) prikazu
 | `set_sat {id,on}` | upali/ugasi jedan satelit |
 | `set_sat_param {id,param,value}` | **editor satelita**: kvar sata / visina orbite / inklinacija |
 | `rtk {on}` | živi carrier-phase RTK uključen/isključen |
+| `orbits {mode, epoch}` | izvor orbita: `walker` (idealizirane) ili `real` (CelesTrak/SGP4; epoch `now` ili ISO UTC) |
 | `set_base {lat,lon[,alt]}` / `set_base {auto:true}` | ručna RTK bazna stanica / povratak na automatsku |
 
 **Pogled iznutra** — `GET /api/inspect` (`web/backend/inspect_epoch.py`) vraća međuveličine
@@ -587,7 +588,9 @@ Prioritetno (po omjeru vrijednost/trud):
    `realdata.py` rješavaju poziciju iz pravih RINEX datoteka kroz isti EKF/RAIM
    (uzorak GEONET 0759: ~0.4 m vodoravno, medijan), kartica "Pravi podaci" u
    eksperimentima. Preostaje: `BroadcastConstellation` (prave orbite za zadani
-   datum) uključiti u živu simulaciju, RINEX 4, Galileo/GLONASS navigacija,
+   datum) uključiti u živu simulaciju — **zamijenjeno pravim orbitama** (`real_orbits.py`:
+   CelesTrak GP + SGP4, pravi UTC/GMST, Sunce i ionosfera u pravom vremenu, 146 satelita;
+   WS `orbits {mode, epoch}`, REST `/api/orbits/{status,refresh,tracks}`), RINEX 4, Galileo/GLONASS navigacija,
    ingest sirovih podataka izravno s prijemnika (npr. u-blox RAWX).
 5. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
    ~~write-up o Sagnac bugu~~ ([`docs/sagnac-bug.md`](docs/sagnac-bug.md))

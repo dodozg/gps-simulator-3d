@@ -17,6 +17,7 @@ import terrain
 from scenario import build_attack
 from spoofing import Jamming
 from rtk import LiveRTK
+import real_orbits
 from utils import WGS84_A, WGS84_B, WGS84_E2
 
 # Gornja granica koraka sim-vremena po epohi [s]. Jedna epoha košta ~60-130 ms CPU-a
@@ -74,6 +75,7 @@ class SimSession:
         # Sve GNSS konstelacije (GPS/Galileo/GLONASS/BeiDou); koje su aktivne u
         # rješenju kontrolira `systems_on` + `enabled` po satelitu (web toggle).
         self.constellation = MultiGNSSConstellation(rng=self.rng)
+        self.orbit_mode = "walker"            # "walker" (idealizirano) | "real" (CelesTrak/SGP4)
         self.systems_on = set(DEFAULT_SYSTEMS_ON)
         for s in self.constellation.satellites:
             s.is_spoofed = False              # kvarove definira sesija, ne default
@@ -163,7 +165,44 @@ class SimSession:
                 return
 
     def set_iono_tow0(self, tow):
+        if self.orbit_mode == "real":
+            return          # prave orbite: doba dana je PRAVO vrijeme (UTC), ne klizač
         self.receiver.iono_tow0 = float(tow) % 86400.0
+
+    def set_orbits(self, mode, epoch=None):
+        """Zamijeni konstelaciju: 'walker' (idealizirana) ili 'real' (pravi sateliti).
+
+        Prave orbite: CelesTrak GP elementi (cache / ugrađena snimka; svježe se
+        skidaju preko REST /api/orbits/refresh) propagirani SGP4 do zadane epohe
+        ('now' ili ISO datum). Sim-vrijeme teče dalje bez skoka — epoha se veže uz
+        TRENUTNI sim_time — a ionosfera dobiva pravo GPS doba dana. EKF i RTK kreću
+        ispočetka jer su se sateliti promijenili.
+        """
+        if mode == "real":
+            con = real_orbits.RealConstellation(epoch or "now", rng=self.rng, t0=self.sim_time)
+            self.receiver.iono_tow0 = (con.gps_tod(self.sim_time) - self.sim_time) % 86400.0
+        else:
+            mode = "walker"
+            con = MultiGNSSConstellation(rng=self.rng)
+        for s in con.satellites:
+            s.is_spoofed = False
+            s.enabled = s.system in self.systems_on
+        self.constellation = con
+        self.orbit_mode = mode
+        con.update_all(self.sim_time)
+        self.receiver.reset()
+        self.calc_pos = None
+        self.tracked_ids = set()
+        if self.rtk.enabled:
+            self._rtk_relocated()
+
+    def orbit_info(self):
+        con = self.constellation
+        if self.orbit_mode == "real":
+            info = con.info(self.sim_time)
+            info["gmst_rad"] = float(info["gmst_rad"])
+            return info
+        return {"mode": "walker"}
 
     def set_attack(self, spec):
         if not spec:

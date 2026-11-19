@@ -105,6 +105,13 @@ a protection-level circle around the estimate) and **RTK** (toggle in the panel;
 base is placed automatically 4 km from the rover or with Shift + double-click; FIX
 ≈1 cm with GPS+Galileo+BeiDou).
 
+**Real orbits** (panel → Orbits → Real): the actual GPS, Galileo, GLONASS and BeiDou satellites
+(146, including BeiDou GEO/IGSO) for "now" or a chosen date, from CelesTrak GP elements
+propagated with SGP4 (`real_orbits.py`). The simulation then runs in real UTC: Earth rotation
+(GMST), the Sun on the globe and the ionosphere match the actual moment, so the skyplot matches
+your phone. Fresh elements are downloaded only on "Refresh data" (12 h cache); offline, a
+built-in snapshot is used (`data/gnss_gp_snapshot.json`, data: CelesTrak).
+
 **Inside view** (button in the academy section) opens the math of one epoch: model and
 innovation of every pseudorange with an error budget (that only the simulator knows),
 the geometry matrix and DOPs, the Kalman step (predict → gain → update, each satellite's

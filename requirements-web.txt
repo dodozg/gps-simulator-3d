@@ -5,3 +5,4 @@
 fastapi>=0.110
 uvicorn[standard]>=0.27
 httpx>=0.27          # za TestClient (test_web_backend.py)
+sgp4>=2.23          # prave orbite (CelesTrak GP elementi, SGP4/SDP4 propagacija)

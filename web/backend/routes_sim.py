@@ -68,6 +68,8 @@ def _apply(session, msg):
             session.set_base(None, None)
         else:
             session.set_base(float(lat), float(lon), float(alt) if alt is not None else None)
+    elif t == "orbits":
+        session.set_orbits(str(msg.get("mode", "walker")), msg.get("epoch"))
     elif t == "reset":
         session.reset()
     elif t == "step":

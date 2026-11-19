@@ -2,7 +2,8 @@
 import { h, clear } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import type { Globe } from "../globe/globe";
-import type { StateFrame, SystemInfo } from "../lib/types";
+import type { StateFrame, SystemInfo, OrbitInfo } from "../lib/types";
+import { api } from "../lib/api";
 
 type Send = (msg: Record<string, unknown>) => void;
 
@@ -136,7 +137,29 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
   // Poništi: backend rebuilda sesiju na zadano. Kontrole moraju krenuti s njim, inače
   // panel pokazuje RAIM/kinematiku/napad/brzinu koje simulacija više ne koristi.
   // Isti put koriste i gumb i vođene lekcije (korak "reset").
+  // --- izvor orbita: idealizirane (Walker, za lekcije) ili prave (CelesTrak/SGP4) ---
+  // Ne pamti se u localStorage: prave orbite za "sada" nakon restarta bi bile drugi
+  // trenutak; stanje se čita iz frame-a (backend je izvor istine).
+  let orbitMode: "walker" | "real" = "walker";
+  let orbitEpochLocal = "";            // datetime-local vrijednost ("" = sada)
+  let orbitInfo: OrbitInfo | null = null;
+  let orbitStatusEl: HTMLElement | null = null;
+  let orbitNote = "";
+  function applyOrbits(): void {
+    const epoch = orbitEpochLocal ? new Date(orbitEpochLocal).toISOString() : "now";
+    send({ type: "orbits", mode: orbitMode, ...(orbitMode === "real" ? { epoch } : {}) });
+  }
+  function orbitStatusText(): string {
+    const o = orbitInfo;
+    if (!o || o.mode !== "real") return "";
+    const utc = (o.utc ?? "").replace("T", " ").replace("Z", " UTC");
+    const src = t("orbits_origin_" + (o.origin ?? "snapshot"));
+    const age = o.elements_age_days != null ? " · " + t("orbits_age").replace("{d}", o.elements_age_days.toFixed(1)) : "";
+    return `${utc} · ${src}${age}${orbitNote ? " · " + orbitNote : ""}`;
+  }
+
   function resetAll(): void {
+    orbitMode = "walker"; orbitEpochLocal = "";
     send({ type: "reset" });
     Object.assign(state, defaults());
     for (const k of Object.keys(systemsOn)) delete systemsOn[k];
@@ -185,6 +208,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     const todIn = h("input", "slider") as HTMLInputElement;
     todIn.type = "range"; todIn.min = "0"; todIn.max = "23"; todIn.step = "1";
     todIn.value = String(hh);
+    todIn.disabled = orbitMode === "real";     // prave orbite: doba dana je pravo vrijeme
     todInput = todIn;
     todIn.addEventListener("input", () => {
       state.tow = Number(todIn.value) * 3600;
@@ -214,6 +238,40 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
           send({ type: "set_system", system: name, on: v });
         }));
       }
+    }
+
+    // izvor orbita
+    container.appendChild(h("div", "panel-sub", t("orbits_src")));
+    container.appendChild(selectRow(t("orbits_mode"), orbitMode,
+      [["walker", t("orbits_walker")], ["real", t("orbits_real")]], (v) => {
+        orbitMode = v === "real" ? "real" : "walker"; applyOrbits(); render();
+      }));
+    if (orbitMode === "real") {
+      const er = row(t("orbits_epoch"));
+      const inp = h("input", "ctl-select") as HTMLInputElement;
+      inp.type = "datetime-local";
+      inp.value = orbitEpochLocal;
+      inp.addEventListener("change", () => { orbitEpochLocal = inp.value; applyOrbits(); });
+      er.appendChild(inp);
+      container.appendChild(er);
+      const bar2 = h("div", "btn-bar");
+      const now = h("button", "btn", t("orbits_now"));
+      now.addEventListener("click", () => { orbitEpochLocal = ""; inp.value = ""; applyOrbits(); });
+      const refresh = h("button", "btn", t("orbits_refresh"));
+      refresh.addEventListener("click", () => {
+        orbitNote = "…";
+        if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText();
+        api.orbitsRefresh()
+          .then(() => { orbitNote = t("orbits_refreshed"); applyOrbits(); })
+          .catch(() => { orbitNote = t("orbits_fail"); })
+          .finally(() => { if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText(); });
+      });
+      bar2.append(now, refresh);
+      container.appendChild(bar2);
+      orbitStatusEl = h("div", "hint", orbitStatusText());
+      container.appendChild(orbitStatusEl);
+    } else {
+      orbitStatusEl = null;
     }
 
     // simulacija (šalje backendu)
@@ -364,6 +422,12 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
           state.tow = hh * 3600;
           if (todLabel) todLabel.textContent = todText(hh);
         }
+      }
+      // Izvor orbita: backend je izvor istine (npr. Poništi vraća idealizirane).
+      if (f.orbits) {
+        orbitInfo = f.orbits;
+        if (f.orbits.mode !== orbitMode) { orbitMode = f.orbits.mode; render(); }
+        else if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText();
       }
       // Sustavi (konstelacije): re-render tek kad se on-stanje promijeni.
       if (f.systems) {
