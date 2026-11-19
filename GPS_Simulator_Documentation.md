@@ -315,6 +315,14 @@ paljenje/gašenje po sustavu i po satelitu, a telemetrija (stručni mod) prikazu
 | `rtk {on}` | živi carrier-phase RTK uključen/isključen |
 | `set_base {lat,lon[,alt]}` / `set_base {auto:true}` | ručna RTK bazna stanica / povratak na automatsku |
 
+**Pogled iznutra** — `GET /api/inspect` (`web/backend/inspect_epoch.py`) vraća međuveličine
+zadnjeg EKF koraka iz `Receiver.last_epoch` (pod lockom simulacijske petlje): po satelitu
+model pseudoudaljenosti, inovacija, σ, proračun greške mjerenja (sat prijemnika, Sagnac, ISB,
+kvar, tropo ostatak, multipath+šum) i greška efemerida duž LOS-a; ENU matrica geometrije, DOP-ovi
+i (GᵀG)⁻¹; stanje prije/predikcija/ažuriranje s 1σ, doprinos K_j·y_j svakog satelita; RAIM
+T, T_d, λ, krivulja χ², normalizirani reziduali i nagibi. `tests/test_inspect.py` provjerava da
+se brojke međusobno slažu (Σ doprinosa = korekcija, GDOP i HPL = prijemnikovi).
+
 ### REST `/api/*`
 
 `constellation` · `glossary` · `lessons` (meta/edu) — `rtk` · `spoofing` ·

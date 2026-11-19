@@ -16,6 +16,7 @@ import { mountDock } from "./ui/dock";
 import { mountExperiments } from "./experiments/experiments";
 import { mountLessons } from "./edu/lessons";
 import { mountGuide } from "./edu/guide";
+import { mountInside } from "./edu/inside";
 import { initInfo } from "./edu/info";
 import type { StateFrame } from "./lib/types";
 
@@ -148,8 +149,9 @@ const lessons = mountLessons({
 });
 
 const guide = mountGuide();
+const inside = mountInside((msg) => socket.send(msg));
 controls = mountControls(leftPanel, (msg) => socket.send(msg), globe,
-  () => experiments.open(), () => lessons.open(), () => guide.open());
+  () => experiments.open(), () => lessons.open(), () => guide.open(), () => inside.open());
 
 // "Fly to" pretraga (grad/koordinate) — plutajuća traka iznad globusa.
 mountFlyTo(ui, globe, (lat, lon) => socket.send({ type: "set_receiver", lat, lon }));

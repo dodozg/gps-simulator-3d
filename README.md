@@ -137,6 +137,11 @@ U živoj simulaciji su i **integritet** (statistički RAIM: status, HPL/VPL i kr
 zaštitne granice oko procjene) te **RTK** (prekidač u panelu; baza se postavlja
 sama 4 km od rovera ili Shift + dvoklikom na globus; FIX ~1 cm uz GPS+Galileo+BeiDou).
 
+**Pogled iznutra** (gumb u učilištu) otvara matematiku jedne epohe: model i inovacija
+svake pseudoudaljenosti s proračunom greške (koji zna samo simulator), matrica
+geometrije i DOP-ovi, Kalmanov korak (predikcija → pojačanje → ažuriranje, doprinos
+svakog satelita) i RAIM (T na krivulji χ², nagibi, HPL). Može se zamrznuti i ići korak po korak.
+
 ## Testovi
 
 Testovi su u `tests/` i pokreću se s `pytest` (konfiguracija u `pyproject.toml`).

@@ -88,6 +88,7 @@ class Receiver:
         self.nis = 0.0
         self.nis_dof = 0
         self.last_solution = {}   # {sat_id: {residual_m, rejected}} — za web UI (#12)
+        self.last_epoch = None    # snimka zadnjeg EKF koraka ("pogled iznutra")
 
     # --- Proxyji na mjerni model (nepromijenjeno javno sučelje) ---------------
     @property
@@ -154,6 +155,7 @@ class Receiver:
         self.ekf_last_time = 0.0
         self.last_solution = {}
         self.integrity = {"status": "unavailable"}
+        self.last_epoch = None
 
     def _raim_screen(self, innovations):
         """Iterativna robusna RAIM detekcija: vrati skup indeksa za odbacivanje.
@@ -270,6 +272,7 @@ class Receiver:
                     + [Q_ISB] * len(ISB_SYSTEMS)) * dt
 
         # Predviđanje stanja i kovarijance
+        x_before = self.x_ekf.copy()    # za "pogled iznutra" (stanje prije predikcije)
         x_pred = F @ self.x_ekf
         P_pred = F @ self.P_ekf @ F.T + Q
 
@@ -407,6 +410,20 @@ class Receiver:
 
         self.ekf_last_time = current_time
         self.calc_pos = self.x_ekf[:3]
+
+        # Snimka epohe za "pogled iznutra" (inspect.py -> /api/inspect): sve
+        # međuveličine jednog EKF koraka. Samo se sprema, ne utječe na rješenje.
+        self.last_epoch = {
+            "t": float(current_time), "dt": float(dt),
+            "x_before": x_before, "x_pred": x_pred, "P_pred": P_pred,
+            "x_upd": self.x_ekf.copy(), "P_upd": self.P_ekf.copy(),
+            "H": H, "R_diag": np.array(R_diag), "Y": Y, "S": S, "K": K,
+            "signals": list(received_signals),
+            "used": [i for i in range(len(received_signals)) if i not in rejected],
+            "rejected": sorted(rejected),
+            "innovations": [float(a[0]) for a in all_innovations],
+            "raim_sigmas": [float(v) for v in sigmas],
+        }
 
         # Izračunavanje GDOP-a (aproksimativno, koristeći H)
         try:

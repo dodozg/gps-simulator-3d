@@ -360,3 +360,32 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .ctl-row.rtk-base-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: -4px; }
 .ctl-row.rtk-base-row .ctl-label { margin-bottom: 0; font-size: 11px; }
 .rtk-base-btn { padding: 3px 8px; font-size: 11px; }
+
+/* Pogled iznutra (edu/inside.ts) */
+.inside-modal { width: min(1080px, 96vw); }
+.inside-bar { display: flex; gap: 8px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.inside-bar .btn { width: auto; padding: 6px 12px; }
+.inside-auto { color: var(--dim); font-size: 12px; display: flex; align-items: center; gap: 4px; }
+.inside-status { margin-left: auto; color: var(--dim); font-family: var(--mono); font-size: 12px; }
+.inside-intro { color: var(--text); font-size: 13px; line-height: 1.55; margin: 0 0 12px; }
+.inside-note { color: var(--dim); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+.inside-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0 14px; }
+.inside-table th { text-align: left; color: var(--dim); font-weight: 600; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+.inside-table td { padding: 3px 6px; border-bottom: 1px solid rgba(30,40,54,0.5); }
+.inside-table.mono td { font-family: var(--mono); }
+.inside-table.kv td:nth-child(2) { font-family: var(--mono); text-align: right; white-space: nowrap; }
+.inside-table.clickable tr:not(:first-child) { cursor: pointer; }
+.inside-table.clickable tr:not(:first-child):hover td { background: rgba(36,211,237,0.06); }
+.inside-sel { color: var(--cyan); font-weight: 700; }
+.inside-barwrap { position: relative; width: 120px; height: 10px; }
+.inside-axis { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--border); }
+.inside-bar1 { position: absolute; top: 1px; bottom: 1px; border-radius: 2px; }
+.inside-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 800px) { .inside-grid2 { grid-template-columns: 1fr; } }
+.inside-card { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.inside-card-title { color: var(--cyan); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 6px; }
+.inside-tiles { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.inside-tile { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; min-width: 70px; }
+.inside-tile-k { color: var(--dim); font-size: 11px; }
+.inside-tile-v { font-family: var(--mono); font-size: 15px; color: var(--text); }
+.inside-canvas { width: 100%; height: 180px; display: block; }

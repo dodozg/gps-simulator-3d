@@ -104,6 +104,11 @@ a protection-level circle around the estimate) and **RTK** (toggle in the panel;
 base is placed automatically 4 km from the rover or with Shift + double-click; FIX
 ≈1 cm with GPS+Galileo+BeiDou).
 
+**Inside view** (button in the academy section) opens the math of one epoch: model and
+innovation of every pseudorange with an error budget (that only the simulator knows),
+the geometry matrix and DOPs, the Kalman step (predict → gain → update, each satellite's
+contribution) and RAIM (T on the χ² curve, slopes, HPL). It can be frozen and stepped.
+
 ---
 
 ## How it works (one diagram)

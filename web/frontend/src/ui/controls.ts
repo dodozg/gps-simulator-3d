@@ -17,7 +17,7 @@ function loadSaved(): Record<string, unknown> {
 
 export function mountControls(container: HTMLElement, send: Send, globe: Globe,
                               onExperiments?: () => void, onLessons?: () => void,
-                              onGuide?: () => void) {
+                              onGuide?: () => void, onInside?: () => void) {
   const saved = loadSaved();
   const savedShow = (saved.show ?? {}) as Partial<{ orbits: boolean; rays: boolean; labels: boolean }>;
   // Zadano stanje = ono na koje se backend vraća pri Poništi (SimSession._build).
@@ -235,7 +235,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }));
 
     // eksperimenti (Faza 2)
-    if (onExperiments || onLessons || onGuide) {
+    if (onExperiments || onLessons || onGuide || onInside) {
       container.appendChild(h("div", "panel-sub", t("academy")));
       if (onGuide) {
         const g = h("button", "btn exp-open-btn", t("open_guide"));
@@ -246,6 +246,11 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
         const les = h("button", "btn exp-open-btn", t("open_lessons"));
         les.addEventListener("click", onLessons);
         container.appendChild(les);
+      }
+      if (onInside) {
+        const ins = h("button", "btn exp-open-btn", t("open_inside"));
+        ins.addEventListener("click", onInside);
+        container.appendChild(ins);
       }
       if (onExperiments) {
         const exp = h("button", "btn exp-open-btn", t("open_experiments"));
