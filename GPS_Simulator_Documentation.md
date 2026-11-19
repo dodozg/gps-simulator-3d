@@ -312,6 +312,8 @@ paljenje/gašenje po sustavu i po satelitu, a telemetrija (stručni mod) prikazu
 | `set_system {system,on}` | upali/ugasi cijelu konstelaciju |
 | `set_sat {id,on}` | upali/ugasi jedan satelit |
 | `set_sat_param {id,param,value}` | **editor satelita**: kvar sata / visina orbite / inklinacija |
+| `rtk {on}` | živi carrier-phase RTK uključen/isključen |
+| `set_base {lat,lon[,alt]}` / `set_base {auto:true}` | ručna RTK bazna stanica / povratak na automatsku |
 
 ### REST `/api/*`
 
@@ -502,9 +504,19 @@ Prioritetno (po omjeru vrijednost/trud):
    se cross-korelacija realno usredni (bez toga snapshot precjenjuje šum — vidi
    §5.1). Tek to daje STVARAN near-far/jamming efekt uz očuvanu nominalnu točnost.
    Time bi i jamming postao fizički (šum u signalu), ne post-hoc na mjerenjima.
-3. **RTK u živom sučelju** (carrier-phase, cm-razina).
-4. **Ingest pravog hardvera** (§8) — sirove pseudoudaljenosti + broadcast
-   efemeride → prava lokacija na karti.
+3. ~~**RTK u živom sučelju**~~ — **napravljeno** (`rtk.LiveRTK`): Kalman nad
+   dvostrukim razlikama koda i faze po sustavu (GPS/GAL/BDS), LAMBDA + ratio test,
+   automatska ili ručna baza (Shift + dvoklik). FIX ~1 cm nakon ~40–60 s s tri
+   sustava; samo GPS ~10 min (jednofrekvencijski L1). Preostaje: dvofrekvencijski
+   (wide-lane) model za brži fix, utjecaj spoofinga na RTK.
+4. **Pravi podaci** — **djelomično napravljeno**: `rinex.py` + `ephemeris.py` +
+   `realdata.py` rješavaju poziciju iz pravih RINEX datoteka kroz isti EKF/RAIM
+   (uzorak GEONET 0759: ~0.4 m vodoravno, medijan), kartica "Pravi podaci" u
+   eksperimentima. Preostaje: `BroadcastConstellation` (prave orbite za zadani
+   datum) uključiti u živu simulaciju, RINEX 4, Galileo/GLONASS navigacija,
+   ingest sirovih podataka izravno s prijemnika (npr. u-blox RAWX).
+6. ~~**Integritet (pravi RAIM)**~~ — **napravljeno** (§5.3): χ² test reziduala,
+   FDE, zaštitne granice HPL/VPL, krug HPL-a na globusu.
 5. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
    ~~write-up o Sagnac bugu~~ ([`docs/sagnac-bug.md`](docs/sagnac-bug.md))
    **napravljeni**, uz showcase figure u `docs/media/`; preostaju GIF-ovi žive

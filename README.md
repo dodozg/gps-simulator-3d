@@ -26,7 +26,7 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `web/`                | Web kontrolni centar + GPS učilište (FastAPI + CesiumJS) — 3D prikaz |
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
-| `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
+| `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing, LAMBDA) — offline i živo u webu |
 | `raim.py`             | Integritet: χ² test reziduala, isključivanje kvara (FDE), zaštitne granice HPL/VPL |
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
@@ -132,6 +132,10 @@ koristi izravno preko FastAPI backenda. Jednom (traži Node 20.19+ ili 22.12+) p
 **Windows** `build_web.bat` → `run_webapp.bat`; **macOS/Linux** `./build_web.sh`
 → `./run_webapp.sh` (ili kraće `./gps.sh web`). Detalji u
 [`web/README.md`](web/README.md).
+
+U živoj simulaciji su i **integritet** (statistički RAIM: status, HPL/VPL i krug
+zaštitne granice oko procjene) te **RTK** (prekidač u panelu; baza se postavlja
+sama 4 km od rovera ili Shift + dvoklikom na globus; FIX ~1 cm uz GPS+Galileo+BeiDou).
 
 ## Testovi
 

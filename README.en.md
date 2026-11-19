@@ -99,6 +99,11 @@ FastAPI backend. Build once (needs Node 20.19+ or 22.12+), then run:
 The browser opens automatically once the server is up. Details in
 [`web/README.md`](web/README.md).
 
+The live simulation also shows **integrity** (statistical RAIM: status, HPL/VPL and
+a protection-level circle around the estimate) and **RTK** (toggle in the panel; the
+base is placed automatically 4 km from the rover or with Shift + double-click; FIX
+≈1 cm with GPS+Galileo+BeiDou).
+
 ---
 
 ## How it works (one diagram)
