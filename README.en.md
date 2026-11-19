@@ -91,7 +91,7 @@ creates the venv and installs everything.
 
 Interactive 3D globe (CesiumJS), live simulation, click-to-place receiver,
 telemetry, glossary and guided lessons — the existing engine driven live over a
-FastAPI backend. Build once (needs Node 18+), then run:
+FastAPI backend. Build once (needs Node 20.19+ or 22.12+), then run:
 
 - **Windows:** `build_web.bat` → `run_webapp.bat`
 - **macOS/Linux:** `./build_web.sh` → `./run_webapp.sh` (or `./gps.sh web`)

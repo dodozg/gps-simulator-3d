@@ -10,7 +10,7 @@ cd /d "%~dp0"
 set "SRC=%~dp0web\frontend"
 set "BUILD=%LOCALAPPDATA%\gpsweb"
 
-where node >nul 2>&1 || ( echo [!] Node.js nije pronaden. Instaliraj Node 18+ i pokreni ponovno. & pause & exit /b 1 )
+where node >nul 2>&1 || ( echo [!] Node.js nije pronaden. Instaliraj Node 20.19+ ili 22.12+ i pokreni ponovno. & pause & exit /b 1 )
 
 echo [i] Build dir: %BUILD%
 if not exist "%BUILD%" mkdir "%BUILD%"

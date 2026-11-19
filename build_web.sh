@@ -2,7 +2,7 @@
 # Build web frontenda (CesiumJS + TS) na macOS / Linux.
 # Ekvivalent build_web.bat. Izvor se kopira u lokalni dir i tamo builda
 # (kao na Windowsu; drži node_modules izvan Google Drivea i općenito čisto).
-# Traži Node.js 18+.
+# Traži Node.js 20.19+ ili 22.12+ (zahtjev Vite 8).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -10,7 +10,7 @@ SRC="$(pwd)/web/frontend"
 BUILD="${GPSWEB_BUILD:-$HOME/.local/share/gpsweb}"
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "[!] Node.js nije pronađen. Instaliraj Node 18+ (npr. 'brew install node') i pokreni ponovno."
+  echo "[!] Node.js nije pronađen. Instaliraj Node 22+ (npr. 'brew install node') i pokreni ponovno."
   exit 1
 fi
 
