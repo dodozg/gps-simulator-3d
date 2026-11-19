@@ -435,6 +435,7 @@ export class Globe {
     this._updateAttack(frame);
     this._updateProtection(frame);
     this._updateSun(frame);
+    this._updateRtk(frame);
 
     // requestRenderMode: podaci su se promijenili -> zatraži jedan render.
     this.viewer.scene.requestRender();
@@ -554,6 +555,81 @@ export class Globe {
       });
     }
     this.hplRing.show = true;
+  }
+
+  // --- živi RTK: bazna stanica + linija baze (baza -> rover) ------------------
+  // Boja linije prati status: zelena = FIX, jantarna = FLOAT, siva = nema rješenja.
+  // Sve je u jednom samostalnom bloku (vlastita polja) radi lakšeg spajanja.
+  private rtkBase: Cesium.Entity | null = null;
+  private rtkLine: Cesium.Polyline | null = null;
+  private rtkLineStatus = "";
+
+  private _updateRtk(frame: StateFrame): void {
+    const r = frame.rtk;
+    const rx = frame.receiver;
+    const base = r && r.base ? c3(r.base.ecef) : null;
+    const rover = rx.placed && rx.truth ? c3(rx.truth.ecef) : null;
+    if (!base) {
+      if (this.rtkBase) this.rtkBase.show = false;
+      if (this.rtkLine) this.rtkLine.show = false;
+      return;
+    }
+    const colOf = (st: string): Cesium.Color =>
+      st === "fixed" ? COL.tracked : st === "float" ? COL.rover : COL.sat;
+    const status = r!.status;
+    if (!this.rtkBase) {
+      this.rtkBase = this.viewer.entities.add({
+        position: base,
+        point: { pixelSize: 11, color: Cesium.Color.fromCssColorString("#b07cff"),
+          outlineColor: Cesium.Color.WHITE, outlineWidth: 2,
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY },
+        label: { text: "RTK", font: "bold 11px sans-serif",
+          fillColor: Cesium.Color.fromCssColorString("#b07cff"),
+          pixelOffset: new Cesium.Cartesian2(0, -16), showBackground: true,
+          backgroundColor: Cesium.Color.fromCssColorString("#0d1117dd"),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY },
+      });
+    } else {
+      this.rtkBase.show = true;
+      (this.rtkBase.position as Cesium.ConstantPositionProperty).setValue(base);
+    }
+    if (rover) {
+      const pts = [base, rover];
+      if (!this.rtkLine) {
+        // Primitive (PolylineCollection, kao zrake): pozicije se mijenjaju 10 Hz, a
+        // Entity polilinija bi geometriju gradila asinkrono i nikad je ne bi stigla
+        // nacrtati prije sljedeće promjene.
+        this.rtkLine = this.polyCol.add({
+          positions: pts, width: 3,
+          material: Cesium.Material.fromType("Color", { color: colOf(status) }),
+        });
+        this.rtkLineStatus = status;
+      } else {
+        this.rtkLine.show = true;
+        this.rtkLine.positions = pts;
+        if (status !== this.rtkLineStatus) {
+          this.rtkLine.material = Cesium.Material.fromType("Color", { color: colOf(status) });
+          this.rtkLineStatus = status;
+        }
+      }
+    } else if (this.rtkLine) {
+      this.rtkLine.show = false;
+    }
+  }
+
+  // Shift + dvoklik na globus postavlja RTK baznu stanicu (običan dvoklik = rover).
+  onBasePlace(cb: (lat: number, lon: number) => void): void {
+    const s = this.viewer.scene;
+    this.viewer.screenSpaceEventHandler.setInputAction(
+      (m: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+        const cart = this.viewer.camera.pickEllipsoid(m.position, s.globe.ellipsoid);
+        if (!cart) return;
+        const carto = Cesium.Cartographic.fromCartesian(cart);
+        if (!carto) return;
+        cb(Cesium.Math.toDegrees(carto.latitude), Cesium.Math.toDegrees(carto.longitude));
+      },
+      Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK, Cesium.KeyboardEventModifier.SHIFT);
   }
 
   private _updateReceiver(frame: StateFrame): void {

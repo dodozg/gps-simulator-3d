@@ -58,6 +58,16 @@ def _apply(session, msg):
         session.set_sat_enabled(str(msg["id"]), bool(msg["on"]))
     elif t == "set_sat_param":
         session.set_sat_param(str(msg["id"]), str(msg["param"]), float(msg["value"]))
+    elif t == "rtk":
+        session.set_rtk(bool(msg["on"]))
+    elif t == "set_base":
+        # {"type":"set_base","lat":..,"lon":..[,"alt":..]} ručna baza;
+        # {"type":"set_base","auto":true} (ili bez lat/lon) -> automatska baza
+        lat, lon, alt = msg.get("lat"), msg.get("lon"), msg.get("alt")
+        if msg.get("auto") or lat is None or lon is None:
+            session.set_base(None, None)
+        else:
+            session.set_base(float(lat), float(lon), float(alt) if alt is not None else None)
     elif t == "reset":
         session.reset()
     elif t == "step":

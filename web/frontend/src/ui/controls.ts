@@ -28,6 +28,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     kinematic: false,
     raim: true,
     attack: "none",
+    rtk: false,       // živi RTK (backend ga pri Poništi isključi)
   });
   const state = {
     ...defaults(),
@@ -36,7 +37,11 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     kinematic: (saved.kinematic as boolean) ?? false,
     raim: (saved.raim as boolean) ?? true,
     attack: (saved.attack as string) ?? "none",
+    rtk: (saved.rtk as boolean) ?? false,
   };
+  // Ručno postavljena RTK baza (Shift + dvoklik); null = automatska baza.
+  let rtkBase: { lat: number; lon: number } | null =
+    (saved.rtkBase as { lat: number; lon: number } | null | undefined) ?? null;
   const show = {
     orbits: savedShow.orbits ?? true,
     rays: savedShow.rays ?? true,
@@ -60,6 +65,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       localStorage.setItem(LS_KEY, JSON.stringify({
         timeScale: state.timeScale, tow: state.tow, kinematic: state.kinematic,
         raim: state.raim, attack: state.attack, show, systemsOn,
+        rtk: state.rtk, rtkBase,
       }));
     } catch { /* localStorage nedostupan (privatni mod) — ignoriraj */ }
   }
@@ -134,6 +140,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     send({ type: "reset" });
     Object.assign(state, defaults());
     for (const k of Object.keys(systemsOn)) delete systemsOn[k];
+    rtkBase = null;        // backend je zaboravio i ručnu bazu
     persist();
     pushPersisted();       // doba dana ovisi o dužini rovera -> pošalji preračunato
     render();
@@ -217,6 +224,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     container.appendChild(toggle(t("raim"), state.raim, (v) => {
       state.raim = v; send({ type: "raim", on: v }); persist();
     }));
+    renderRtk();
 
     // živi napad (spoofing/jamming) — prozor se na backendu sidri na "sada"
     container.appendChild(selectRow(t("f_attack"), state.attack,
@@ -247,7 +255,37 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     }
 
     container.appendChild(h("div", "hint", t("place_hint")));
+    container.appendChild(h("div", "hint", t("rtk_base_hint")));
   }
+
+  // --- živi RTK: prekidač + baza ------------------------------------------
+  // Bazu korisnik postavlja Shift + dvoklikom na globus (običan dvoklik ostaje
+  // za rover); gumb "Automatska baza" vraća auto bazu ~4 km od rovera.
+  function sendRtkBase(): void {
+    if (rtkBase) send({ type: "set_base", lat: rtkBase.lat, lon: rtkBase.lon });
+    else send({ type: "set_base", auto: true });
+  }
+  function renderRtk(): void {
+    container.appendChild(toggle(t("rtk"), state.rtk, (v) => {
+      state.rtk = v; send({ type: "rtk", on: v }); persist(); render();
+    }));
+    if (!state.rtk) return;
+    const r = h("div", "ctl-row rtk-base-row");
+    r.appendChild(h("span", "ctl-label", rtkBase ? t("rtk_base_user") : t("rtk_base_auto")));
+    if (rtkBase) {
+      const b = h("button", "btn rtk-base-btn", t("rtk_base_reset"));
+      b.addEventListener("click", () => { rtkBase = null; sendRtkBase(); persist(); render(); });
+      r.appendChild(b);
+    }
+    container.appendChild(r);
+  }
+  globe.onBasePlace((lat, lon) => {
+    rtkBase = { lat, lon };
+    sendRtkBase();
+    if (!state.rtk) { state.rtk = true; send({ type: "rtk", on: true }); }   // baza => RTK
+    persist();
+    render();
+  });
 
   // Primijeni spremljene prikaz-postavke na globus odmah (globe je već stvoren).
   globe.setShow("orbits", show.orbits);
@@ -263,6 +301,8 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     send({ type: "kinematic", on: state.kinematic });
     send({ type: "raim", on: state.raim });
     if (state.attack !== "none") send({ type: "attack", spec: state.attack });
+    if (rtkBase) sendRtkBase();
+    send({ type: "rtk", on: state.rtk });
     if (systems) {
       for (const name of Object.keys(systems)) {
         if (name in systemsOn) send({ type: "set_system", system: name, on: systemsOn[name] });
@@ -331,13 +371,14 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     // Programsko podešavanje (vođene lekcije): ažurira stanje, pošalje backendu,
     // pa ponovno iscrta panel da UI odražava promjenu.
     set(patch: Partial<{ playing: boolean; timeScale: number; tow: number;
-                         kinematic: boolean; raim: boolean; attack: string }>): void {
+                         kinematic: boolean; raim: boolean; attack: string; rtk: boolean }>): void {
       if (patch.playing !== undefined) { state.playing = patch.playing; send({ type: patch.playing ? "play" : "pause" }); }
       if (patch.timeScale !== undefined) { state.timeScale = patch.timeScale; send({ type: "time_scale", value: patch.timeScale }); }
       if (patch.tow !== undefined) { state.tow = patch.tow; sendTow(); }
       if (patch.kinematic !== undefined) { state.kinematic = patch.kinematic; send({ type: "kinematic", on: patch.kinematic }); }
       if (patch.raim !== undefined) { state.raim = patch.raim; send({ type: "raim", on: patch.raim }); }
       if (patch.attack !== undefined) { state.attack = patch.attack; send({ type: "attack", spec: patch.attack === "none" ? null : patch.attack }); }
+      if (patch.rtk !== undefined) { state.rtk = patch.rtk; send({ type: "rtk", on: patch.rtk }); }
       persist();
       render();
     },

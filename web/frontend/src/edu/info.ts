@@ -46,6 +46,7 @@ const CONCEPTS: Record<string, { term?: string; explain?: string; def?: InlineDe
     en: "The receiver's height above the WGS-84 ellipsoid. 'true' is what you placed, 'est.' is the EKF result. The vertical component is usually 1.5-2x worse than horizontal because all satellites are ABOVE the receiver (none below for good vertical geometry).",
   } },
   clock: { explain: "clock" },
+  rtk: { term: "RTK", explain: "rtk" },
 };
 
 // Tumači žive vrijednosti — svaki čita trenutni frame i vrati ocjenu + tekst.
@@ -143,6 +144,25 @@ const EXPLAIN: Record<string, (f: StateFrame) => Ex | null> = {
     return { verdict: ok ? "good" : "bad", value: `${ig.hpl.toFixed(0)} m`,
       hr: `HPL je jamstvo: kvar na jednom satelitu koji RAIM NE bi uočio (vjerojatnost ${(ig.pmd ?? 1e-3).toExponential(0)}) ne može pomaknuti poziciju vodoravno više od toga. Ovisi o geometriji, ne o trenutnoj grešci. Granica uzbune HAL = ${hal}: ` + (ok ? "HPL je ispod nje, navigacija s integritetom je DOSTUPNA." : "HPL je iznad nje, integritet NIJE dostupan za ovu fazu leta."),
       en: `HPL is a guarantee: a single-satellite fault RAIM would NOT notice (probability ${(ig.pmd ?? 1e-3).toExponential(0)}) cannot move the position horizontally by more than this. It depends on geometry, not the current error. Alert limit HAL = ${hal}: ` + (ok ? "HPL is below it, navigation with integrity is AVAILABLE." : "HPL is above it, integrity is NOT available for this phase of flight.") };
+  },
+  rtk(f) {
+    const r = f.rtk;
+    if (!r) return null;
+    const verdict: Verdict = r.status === "fixed" ? "good" : r.status === "float" ? "ok" : "bad";
+    const err = r.error_m != null
+      ? (r.error_m < 1 ? `${(r.error_m * 100).toFixed(1)} cm` : `${r.error_m.toFixed(2)} m`) : "";
+    const km = r.baseline_m != null ? (r.baseline_m / 1000).toFixed(1) : "?";
+    const hr = r.status === "fixed"
+      ? `FIX: cjelobrojne neodređenosti faze (broj valnih duljina od ~19 cm) su razriješene (LAMBDA + ratio test), pa je položaj centimetarski. Baza je ${km} km daleko — rezidualna ionosfera dodaje ~1 mm po km.`
+      : r.status === "float"
+        ? `FLOAT: neodređenosti su još realni brojevi. Filtar skuplja epohe dok se geometrija satelita ne promijeni dovoljno da ih POUZDANO fiksira (inače bi krivi fiks dao grešku od desetaka cm). Više satelita (Galileo/BeiDou) i kraća baza (${km} km) = brži FIX.`
+        : "Nema RTK rješenja: rover i baza ne vide dovoljno ZAJEDNIČKIH satelita iznad 10° (trebaju barem 4 dvostruke razlike).";
+    const en = r.status === "fixed"
+      ? `FIX: the integer carrier-phase ambiguities (number of ~19 cm wavelengths) are resolved (LAMBDA + ratio test), so the position is centimetre-level. The base is ${km} km away — residual ionosphere adds ~1 mm per km.`
+      : r.status === "float"
+        ? `FLOAT: the ambiguities are still real numbers. The filter collects epochs until the satellite geometry changes enough to fix them RELIABLY (a wrong fix would give tens of cm of error). More satellites (Galileo/BeiDou) and a shorter baseline (${km} km) = faster FIX.`
+        : "No RTK solution: rover and base don't see enough COMMON satellites above 10° (at least 4 double differences are needed).";
+    return { verdict, value: r.status.toUpperCase() + (err ? ` · ${err}` : ""), hr, en };
   },
   clock(f) {
     const c = f.receiver.clock_bias_us;

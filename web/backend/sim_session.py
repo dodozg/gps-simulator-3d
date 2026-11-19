@@ -15,6 +15,9 @@ from receiver import Receiver
 from utils import lla_to_ecef, ecef_to_lla
 import terrain
 from scenario import build_attack
+from spoofing import Jamming
+from rtk import LiveRTK
+from utils import WGS84_A, WGS84_B, WGS84_E2
 
 # Gornja granica koraka sim-vremena po epohi [s]. Jedna epoha košta ~60-130 ms CPU-a
 # (FFT kanal po satelitu), pa se pri 10 Hz streamu ostvarivo ubrzanje ≈ MAX_SIM_DT /
@@ -23,6 +26,42 @@ from scenario import build_attack
 # ostvareno ubrzanje se mjeri i šalje u frameu (`time_scale_actual`).
 MAX_SIM_DT = 30.0
 DEFAULT_SYSTEMS_ON = ("GPS",)   # ostale konstelacije korisnik pali iz UI-ja
+
+# --- živi RTK (vidi rtk.LiveRTK) ---------------------------------------------
+# Automatska baza ("najbliža CORS stanica") stoji par km od rovera. Kad se rover u
+# kinematici previše udalji, prebacujemo se na novu bližu bazu (kao u mreži
+# referentnih stanica) — to znači NOVE neodređenosti, tj. ponovnu inicijalizaciju.
+# Korisnički postavljena baza se nikad sama ne miče (RTK slabi s duljinom baze).
+RTK_AUTO_BASE_OFFSET_M = 4000.0
+RTK_AUTO_BASE_SWITCH_M = 20000.0
+RTK_BASE_ANTENNA_M = 2.0           # antena baze iznad terena
+
+
+def _ecef_to_lla_vec(p):
+    """Vektorizirani ECEF -> (lat°, lon°, alt) (Bowring, kao utils.ecef_to_lla)."""
+    x, y, z = p[..., 0], p[..., 1], p[..., 2]
+    ep2 = (WGS84_A ** 2 - WGS84_B ** 2) / WGS84_B ** 2
+    lon = np.arctan2(y, x)
+    r = np.maximum(np.hypot(x, y), 1e-6)
+    th = np.arctan2(z * WGS84_A, r * WGS84_B)
+    lat = np.arctan2(z + ep2 * WGS84_B * np.sin(th) ** 3, r - WGS84_E2 * WGS84_A * np.cos(th) ** 3)
+    n = WGS84_A / np.sqrt(1.0 - WGS84_E2 * np.sin(lat) ** 2)
+    return np.degrees(lat), np.degrees(lon), r / np.cos(lat) - n
+
+
+def _los_clear(rover, sat_positions):
+    """Za svaki satelit: je li put rover->satelit slobodan od terena (do 60 km).
+
+    Isto uzorkovanje kao `measurement.check_los`, ali vektorizirano za sve
+    satelite odjednom (jedan poziv DEM-a), da RTK ostane jeftin."""
+    sp = np.asarray(sat_positions, dtype=float)
+    v = sp - rover
+    u = v / np.linalg.norm(v, axis=1, keepdims=True)
+    d = np.arange(2000.0, 60000.0, 2000.0)
+    pts = rover + u[:, None, :] * d[None, :, None]          # (n_sat, n_uzoraka, 3)
+    lat, lon, alt = _ecef_to_lla_vec(pts)
+    h = terrain.elevation_array(lat.ravel(), lon.ravel()).reshape(lat.shape)
+    return list(np.all(alt >= h, axis=1))
 
 
 class SimSession:
@@ -53,6 +92,8 @@ class SimSession:
         self.calc_pos = None
         self.gdop = None
         self.tracked_ids = set()
+        # živi carrier-phase RTK (isključen dok ga korisnik ne upali)
+        self.rtk = LiveRTK(seed=self.seed + 7)
 
     # --- kontrole ---------------------------------------------------------
     def set_receiver(self, lat, lon, alt=None):
@@ -65,6 +106,7 @@ class SimSession:
         self.receiver.reset()
         self.calc_pos = None
         self.tracked_ids = set()
+        self._rtk_relocated()
 
     def set_playing(self, on):
         self.playing = bool(on)
@@ -163,6 +205,86 @@ class SimSession:
     def reset(self):
         self._build()
 
+    # --- živi RTK ---------------------------------------------------------
+    def _auto_base_ecef(self):
+        """Automatska baza RTK_AUTO_BASE_OFFSET_M od rovera (u kinematici ISPRED njega)."""
+        lat, lon, _ = ecef_to_lla(*self.gt_pos)
+        la, lo = np.radians(lat), np.radians(lon)
+        east = np.array([-np.sin(lo), np.cos(lo), 0.0])
+        north = np.array([-np.sin(la) * np.cos(lo), -np.sin(la) * np.sin(lo), np.cos(la)])
+        if self.kinematic:
+            v = self.kinematic_velocity
+            ve, vn = float(np.dot(v, east)), float(np.dot(v, north))
+            az = np.arctan2(ve, vn) if (ve or vn) else np.radians(60.0)
+        else:
+            az = np.radians(60.0)              # ~SI-ISI od rovera
+        d = RTK_AUTO_BASE_OFFSET_M
+        dn, de = d * np.cos(az), d * np.sin(az)
+        blat = lat + np.degrees(dn / 6378137.0)
+        blon = lon + np.degrees(de / (6378137.0 * max(np.cos(la), 1e-6)))
+        return self._base_ecef(blat, blon, None)
+
+    @staticmethod
+    def _base_ecef(lat, lon, alt):
+        if alt is None:
+            alt = max(float(terrain.elevation(lat, lon)), 0.0) + RTK_BASE_ANTENNA_M
+        return np.array(lla_to_ecef(lat, lon, alt))
+
+    def _rtk_relocated(self):
+        """Rover (pre)mješten: auto baza ide za njim; RTK kreće ispočetka."""
+        if self.gt_pos is None:
+            return
+        if self.rtk.base is None or self.rtk.base_auto:
+            self.rtk.set_base(self._auto_base_ecef(), auto=True, t=self.sim_time)
+        else:
+            self.rtk.restart(self.sim_time)
+
+    def set_rtk(self, on):
+        on = bool(on)
+        if on and not self.rtk.enabled:
+            self.rtk.enabled = True
+            self._rtk_relocated()             # svjež start (TTF se mjeri od uključenja)
+        elif not on:
+            self.rtk.enabled = False
+
+    def set_base(self, lat=None, lon=None, alt=None):
+        """Postavi RTK bazu na (lat, lon[, alt]); lat=None -> automatska baza."""
+        if lat is None or lon is None:
+            if self.rtk.base_auto and self.rtk.base is not None:
+                return                         # već automatska -> ne resetiraj RTK
+            self.rtk.base_auto = True
+            self.rtk.base = None
+            self._rtk_relocated()
+            return
+        ecef = self._base_ecef(float(lat), float(lon), alt)
+        if (not self.rtk.base_auto and self.rtk.base is not None
+                and np.linalg.norm(ecef - self.rtk.base) < 1.0):
+            return                             # ista baza (npr. ponovno spajanje klijenta)
+        self.rtk.set_base(ecef, auto=False, t=self.sim_time)
+
+    def _rtk_jam_filter(self, sats):
+        """Ometanje (jamming) gasi i fazno praćenje: vrati sat_id koji ga prežive."""
+        a = self._attack_obj
+        if not isinstance(a, Jamming) or not a.is_active(self.sim_time):
+            return None
+        sigs = [{"sat_id": sid, "sat_pos": pos, "pseudorange": 0.0} for sid, pos in sats]
+        a.apply(sigs, self.sim_time, self.gt_pos, self.rtk.rng)
+        return {g["sat_id"] for g in sigs}
+
+    def _rtk_step(self, enabled_sats):
+        rtk = self.rtk
+        bl = rtk.baseline_m(self.gt_pos)
+        if rtk.base_auto and bl is not None and bl > RTK_AUTO_BASE_SWITCH_M:
+            rtk.set_base(self._auto_base_ecef(), auto=True, t=self.sim_time)
+            rtk.base_switches += 1
+
+        def jam_ok(ss):
+            keep = self._rtk_jam_filter(ss)
+            return {sid for sid, _ in ss} if keep is None else keep
+
+        rtk.step(self.sim_time, enabled_sats, self.gt_pos, self.kinematic,
+                 los_ok=lambda sp: _los_clear(self.gt_pos, sp), jam_ok=jam_ok)
+
     # --- korak simulacije -------------------------------------------------
     def advance(self, sim_dt):
         """Napreduj sim-vrijeme za `sim_dt` sekundi i odvrti jednu epohu."""
@@ -192,4 +314,6 @@ class SimSession:
 
         if self.gt_pos is not None:
             self.calc_pos, self.gdop = self.receiver.solve_position()
+            if self.rtk.enabled:
+                self._rtk_step(enabled.satellites)
         return self

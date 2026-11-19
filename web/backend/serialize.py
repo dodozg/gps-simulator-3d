@@ -60,6 +60,50 @@ def _dms(lla):
             "lon": format_dms(lon, False) if lon is not None else None}
 
 
+def _rtk_block(session):
+    """Živi carrier-phase RTK (rtk.LiveRTK) -> JSON; None kad je RTK isključen.
+
+    status: "none" (nema rješenja: premalo zajedničkih satelita / rover nije
+    postavljen), "float" (realne neodređenosti, dm-cm) ili "fixed" (cijeli brojevi
+    razriješeni, cm). Greške su prema PRAVOJ poziciji rovera.
+    """
+    rtk = getattr(session, "rtk", None)
+    if rtk is None or not rtk.enabled:
+        return None
+    r = rtk.report(session.gt_pos, session.sim_time)
+    base = None
+    if r["base_ecef"] is not None:
+        base = {"lla": _lla(r["base_ecef"]), "ecef": _ecef(r["base_ecef"]),
+                "auto": bool(r["base_auto"])}
+    pos = None
+    if r["pos_ecef"] is not None:
+        pos = {"lla": _lla(r["pos_ecef"]), "ecef": _ecef(r["pos_ecef"])}
+
+    def opt(v):
+        return _num(v) if v is not None else None
+
+    return {
+        "status": r["status"],
+        "base": base,
+        "base_switches": int(r["base_switches"]),
+        "baseline_m": opt(r["baseline_m"]),
+        "n_sats": int(r["n_sats"]),
+        "n_dd": int(r["n_dd"]),
+        "n_fixed": int(r["n_fixed"]),
+        "ratio": opt(r["ratio"]),
+        "position": pos,
+        "error_m": opt(r["error_m"]),
+        "error_h_m": opt(r["error_h_m"]),
+        "error_v_m": opt(r["error_v_m"]),
+        "float_error_m": opt(r["float_error_m"]),
+        "epochs": int(r["epochs"]),
+        "fixed_epochs": int(r["fixed_epochs"]),
+        "elapsed_s": _num(r["elapsed_s"]),
+        "time_to_fix_s": opt(r["time_to_fix_s"]),
+        "cost_ms": opt(r["cost_ms"]),
+    }
+
+
 def state_frame(session):
     rx = session.receiver
     placed = session.gt_pos is not None
@@ -139,7 +183,7 @@ def state_frame(session):
     for name, d in systems.items():
         d["on"] = name in systems_on
 
-    return {
+    frame = {
         "sim_time": float(session.sim_time),
         "playing": bool(session.playing),
         "time_scale": float(session.time_scale),
@@ -161,3 +205,8 @@ def state_frame(session):
         "satellites": sats,
         "systems": systems,
     }
+    # Živi RTK: blok postoji SAMO kad je uključen (ne mijenja ostale ključeve).
+    rtk = _rtk_block(session)
+    if rtk is not None:
+        frame["rtk"] = rtk
+    return frame

@@ -349,3 +349,14 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
   .dock { left: 8px; right: 8px; }
   .dock-body { grid-template-columns: 1fr 1fr; }
 }
+
+/* --- živi RTK (telemetrija + kontrole) --- */
+.rtk-section { margin-top: 10px; }
+.rtk-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rtk-badge { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--dim); color: var(--dim); }
+.rtk-badge.fixed { color: var(--green); border-color: var(--green); background: rgba(61,216,153,0.14); }
+.rtk-badge.float { color: var(--amber); border-color: var(--amber); background: rgba(250,191,41,0.12); }
+.rtk-badge.none { color: var(--red); border-color: rgba(247,107,107,0.6); background: rgba(247,107,107,0.10); }
+.ctl-row.rtk-base-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: -4px; }
+.ctl-row.rtk-base-row .ctl-label { margin-bottom: 0; font-size: 11px; }
+.rtk-base-btn { padding: 3px 8px; font-size: 11px; }
