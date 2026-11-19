@@ -36,6 +36,7 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `ephemeris.py`        | IS-GPS-200 broadcast efemeride → ECEF pozicija i sat satelita |
 | `realdata.py`         | SPP na pravim RINEX podacima kroz isti EKF/RAIM (CLI + `/api/realdata`) |
 | `broadcast_constellation.py` | Konstelacija iz prave nav datoteke (isto sučelje kao Walker-Delta) |
+| `sandbox.py`          | **Istraživački sandbox**: sweep × Monte Carlo × algoritmi iz JSON speca, plugini, CI, CSV/PNG |
 
 Cijeli engine radi bez GUI-ja, pa se testira i mjeri na CI-ju (3D prikaz je u `web/`).
 
@@ -108,6 +109,7 @@ python iono.py          # Klobuchar dnevna ionosfera -> iono.png
 python multignss.py     # GPS+GAL+GLO+BDS: dostupnost/PDOP/ISB -> multignss.png
 python scenario.py list                                  # bundlani JSON scenariji
 python scenario.py compare scenarios/jamming_naive_spoof.json   # RAIM on vs off
+python sandbox.py run sandbox/examples/raim_roc.json --workers 4 --plot   # istraživačka studija
 pytest                  # test suite
 ```
 
@@ -123,6 +125,45 @@ data, BSD-2; GEONET stanica 0759, 1 h) je u `tests/data/`:
 greška vs. koordinata stanice (horizontalno medijan ~0.4 m, 95% ~0.8 m).
 `BroadcastConstellation` daje STVARNE položaje satelita za odabrani datum (upute
 za spajanje u živu sesiju su u zaglavlju `broadcast_constellation.py`).
+
+## Istraživački sandbox
+
+`sandbox.py` vrti cijelu **studiju** iz jednog JSON speca: rešetku parametara
+(sweep) × Monte Carlo preko sjemena (šum **i** geometrija konstelacije) × više
+algoritama na **istim** mjerenjima. Za svaku točku sweepa daje srednju vrijednost,
+medijan, p95 i **95 % interval pouzdanosti** preko sjemena, sprema
+`results.json` (spec + git commit + metrike po runu i agregat) i `results.csv`, a
+`--plot` crta metriku vs parametar s CI vrpcom. Rezultat je identičan neovisno o
+broju procesa (`--workers`).
+
+```bash
+python sandbox.py list                                   # estimatori / napadi / metrike / primjeri
+python sandbox.py validate sandbox/examples/raim_roc.json
+python sandbox.py run sandbox/examples/spoof_offset.json --workers 4 --out results/spoof --plot
+```
+
+```python
+import sandbox
+res = sandbox.run({"world": {"duration_s": 120, "t0_random_s": 86164}, "seeds": 8,
+                   "attack": {"type": "sat_fault", "start": 30},
+                   "sweep": {"attack.bias_m": [0, 15, 30, 60], "raim.pfa": [1e-3, 1e-5]},
+                   "metrics": ["raim_pd", "mi_events", "h_err_p95"]}, workers=4)
+res.table("raim_pd")          # numpy niz srednjih vrijednosti po točki sweepa
+```
+
+**Plugini** bez diranja enginea: `@register_estimator("ime")` (`factory(world)` →
+objekt s `solve(signals, t) -> (pos_ecef | None, info)`), `@register_attack("ime")`
+(`apply(signals, t, rx_pos, rng)` + `is_active(t)`), `@register_metric("ime")`
+(`fn(trace) -> float`). Ugrađeni su `ekf` (pravi `receiver.Receiver` s RAIM-om),
+`wls` (snapshot WLS + snapshot RAIM s FDE-om), svi napadi iz `spoofing.py` + `sat_fault`
+(kvar sata jednog satelita) i ~40 metrika — točnost, dostupnost, dostupnost
+integriteta (HPL ≤ HAL), P_D, lažni alarmi, vrijeme do detekcije, **misleading
+information** (greška > HPL bez alarma), HMI, NIS/dof, vrijeme solvera.
+Primjeri studija (ROC RAIM-a, spoof vs MI, jamming, multi-GNSS vs maska, EKF vs
+WLS) su u [`sandbox/examples/`](sandbox/examples/README.md); isto je dostupno u
+webu (Eksperimenti → **Sandbox**: uređivanje speca, pozadinski job, graf s CI, CSV).
+
+![Koordinirani spoof: stopa misleading informationa vs pomak cilja](docs/media/sandbox_spoof_mi.png)
 
 ## Web kontrolni centar + GPS učilište
 

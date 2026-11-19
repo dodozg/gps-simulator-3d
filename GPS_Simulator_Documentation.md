@@ -318,7 +318,87 @@ paljenje/gašenje po sustavu i po satelitu, a telemetrija (stručni mod) prikazu
 ### REST `/api/*`
 
 `constellation` · `glossary` · `lessons` (meta/edu) — `rtk` · `spoofing` ·
-`multignss` · `iono` · `benchmark` (eksperimenti) — `scenario/*` (scenariji).
+`multignss` · `iono` · `benchmark` (eksperimenti) — `scenario/*` (scenariji) —
+`sandbox/*` (istraživački sandbox: `examples`, `validate`, `run` → job,
+`jobs/{id}`, `jobs/{id}/csv`, `jobs/{id}/cancel`).
+
+### Istraživački sandbox (`sandbox.py`, `/api/sandbox`)
+
+Scenarij (`scenario.py`) odgovara na "što se dogodi ovdje, s ovim sjemenom";
+sandbox odgovara na istraživačko pitanje: **kako se metrika mijenja s parametrom,
+koliko je to stabilno i je li razlika između algoritama stvarna**. Jedan JSON
+spec opisuje svijet (lokacija ili lista lokacija, trajanje, korak, sustavi,
+maska, `max_sats`, ionosfera, kinematika, teren, `ideal`), sjemena, **sweep**
+(rešetka ili `zip` nad `attack.*`, `raim.{enabled,pfa,pmd,hal,val,sigma_scale}`,
+poljima svijeta i `estimator`), estimatore, napad i metrike.
+
+**Izvođenje.** Svaki run = (točka sweepa, lokacija, sjeme) je čista funkcija:
+vlastiti `np.random.Generator(seed)`, svi estimatori dobivaju **iste** (kopirane)
+pseudoudaljenosti iste epohe (uparena usporedba; mjerni model vodi procjena prvog
+estimatora, kao `Receiver.receive_signals`). `t0_random_s` pomiče početak runa po
+sjemenu (zaseban generator, tok šuma se ne mijenja) — Monte Carlo i **geometrije**,
+ne samo šuma; bez toga je HPL/GDOP identičan za sva sjemena. Maska iznad 5° i
+filtriranje sustava rade se pogledom na konstelaciju prije mjernog modela;
+`raim.RAIM_PFA/PMD/HAL/VAL`, `receiver.RAIM_SIGMA_SCALE` i `measurement.MAX_SATS`
+postavljaju se po runu i vraćaju (`engine_settings`); budući da `raim.run_raim` ima
+zadane argumente vezane pri definiciji, za trajanje runa se omota da čita
+trenutne konstante — `receiver.py` ostaje netaknut. Paralelizam je
+`multiprocessing` (spawn, picklabilan top-level worker, plugini se učitavaju u
+svakom workeru); rezultati se slažu po indeksu runa pa su **identični za bilo koji
+broj workera** (test). Iznimka su metrike vremena (`runtime_ms`), označene kao
+nedeterminističke. S isključenim RAIM-om i maskom 5° sandbox reproducira
+`scenario.run_scenario` bit-za-bit (test).
+
+**Agregacija.** Po točki sweepa × estimatoru: n, srednja vrijednost, medijan,
+p95, std, min/max i 95 % CI srednje vrijednosti (Studentov t; tablica kvantila,
+bez scipy-ja), odrezan na dopušteni raspon metrike (udjeli ∈ [0, 1]). Izlaz:
+`results.json` (spec, git commit + dirty, verzije, metrike po runu i agregat),
+`results.csv` (agregat), `runs.csv`, opcionalno tragovi po epohama i PNG
+(metrika vs parametar s CI vrpcom; `python sandbox.py plot results.json`).
+
+**Plugini.** `@register_estimator` (`factory(world)` → `solve(signals, t)` →
+`(pos | None, info)`; `info` smije sadržavati `hpl`, `vpl`, `status`, `excluded`,
+`alarm`, `nis`/`nis_dof`, `gdop`), `@register_attack` (`apply`, `is_active`,
+opcionalno `bind(ctx)`, `faulty_ids(t)`, `target_ecef`), `@register_metric`
+(`fn(trace)`; trag su numpy nizovi po epohi: fix, greška H/V/3D u ENU, HPL/VPL,
+detekcija, isključenja, prisutnost pokvarenog satelita, aktivnost napada, NIS,
+GDOP, vrijeme solvera). Ugrađeni `wls` je snapshot Gauss-Newton s istim modelom
+mjerenja kao EKF (Sagnac, jedan sat po sustavu — upija ISB) i snapshot RAIM-om s
+FDE-om; u zero-noise modu pada na µm (test, GPS i četiri sustava).
+
+**Primjeri i rezultati** (`sandbox/examples/`, Zagreb, bez terena, `t0_random_s` =
+1 zvjezdani dan; ± = poluširina 95 % CI):
+
+- **(a) RAIM ROC** (`raim_roc.json`, `sat_fault` na nasumičnom satelitu, EKF):
+  {{ROC}}
+- **(b) Koordinirani spoof vs MI** (`spoof_offset.json`, 10 sjemena): konačna
+  greška = pomak cilja (50 → 50.5 ± 1.9 m, 800 → 799 ± 1 m), RAIM **0 detekcija**
+  u svim točkama, a stopa *misleading informationa* (greška > HPL bez alarma)
+  raste s 3 % (50 m) preko 20 % (100 m) i 52 % (200 m) do 83 % (800 m; HPL
+  medijan ~116 m). Iznad HAL-a (556 m) pojavljuju se i HMI događaji (76 epoha po
+  runu pri 800 m). Kvantificirano temeljno ograničenje RAIM-a.
+- **(c) Jamming J/N** (`jamming_jn.json`, 6 sjemena, ometač od t = 30 s): fix
+  preživi do 9 dB; pri 12 dB GPS ima fix u 67 % epoha napada, četiri sustava 73 %;
+  pri 14 dB 17 % vs 50 %; od 16 dB nema fixa. Neočekivano: uz `max_sats = 10` i
+  ISB po sustavu, četiri sustava pri 9 dB imaju **lošiji** integritet (HPL ≤ 556 m
+  u 29 % epoha vs ~100 % za GPS) i veću grešku (p95 ~85–90 m pri 12–14 dB) —
+  preživjeli sateliti se raspodijele po sustavima pa redundancija po satu pada.
+- **(d) Multi-GNSS vs maska** (`multignss_mask.json`, 8 sjemena, HAL = 100 m,
+  `max_sats = 16`): GPS sam nikad ne zadovoljava HAL 100 m (HPL medijan 150–400 m;
+  dostupnost integriteta 0–13 %) i gubi fix od maske 25° naviše; GPS+GAL drži
+  integritet do 20°, a pri 30° pada na 51 %; četiri sustava imaju HPL 23–56 m i
+  100 % dostupnost integriteta do 35° (75 % pri 40°), p95 horizontalne greške
+  4.3–8 m.
+- **(e) EKF vs WLS** (`ekf_vs_wls.json`, 5 lokacija × 10 sjemena, uparena
+  usporedba): EKF ima nižu p95 horizontalnu grešku u **50/50** uparenih runova —
+  5.8–9.6 m vs 8.6–14.6 m (razlika 2.8–5.0 m po lokaciji); NIS/dof EKF-a
+  0.82–1.13, WLS-a 0.83–1.45; vrijeme solvera ~2–3 ms/epohi za oba. Detekcija
+  kvara je za oba **identična** (EKF-ov RAIM je snapshot test nad inovacijama, a
+  statistika ne ovisi o točki linearizacije) — EKF dobiva samo na točnosti.
+
+![Koordinirani spoof: stopa misleading informationa vs pomak](docs/media/sandbox_spoof_mi.png)
+![Multi-GNSS: dostupnost integriteta (HPL ≤ 100 m) vs maska](docs/media/sandbox_multignss_integrity.png)
+![EKF vs WLS: p95 horizontalne greške po lokaciji](docs/media/sandbox_ekf_vs_wls.png)
 
 ### Funkcionalnosti sučelja
 
