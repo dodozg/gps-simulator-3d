@@ -1,5 +1,7 @@
 # GPS Simulator 3D
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24406780.svg)](https://doi.org/10.5281/zenodo.24406780)
+
 <table><tr>
 <td width="190"><a href="https://github.com/dodozg/gps-simulator-3d/releases/latest/download/Satelitska_navigacija_u_simulatoru.pdf"><img src="docs/udzbenik/naslovnica.png" width="180" alt="Naslovnica udžbenika"></a></td>
 <td>
@@ -229,6 +231,14 @@ Svi izvori šuma primaju eksplicitni `np.random.Generator` koji konstelacija i
 prijemnik dijele (`np.random.default_rng(seed)`), pa su rezultati reproducibilni
 bez oslanjanja na globalno stanje. CI (`.github/workflows/ci.yml`) vrti suite na
 Pythonu 3.11–3.13.
+
+## Citiranje
+
+Zoričić, D. i Claude (Anthropic) (2026). *GPS Simulator 3D i udžbenik „Satelitska navigacija u simulatoru”*.
+Zenodo. https://doi.org/10.5281/zenodo.24406780
+
+DOI iznad uvijek vodi na najnovije izdanje; svako izdanje ima i vlastiti DOI na Zenodu.
+GitHub nudi i gumb „Cite this repository” (iz `CITATION.cff`).
 
 ## Licenca
 
