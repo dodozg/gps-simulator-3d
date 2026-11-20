@@ -1,0 +1,3604 @@
+{
+ "spec": {
+  "name": "jamming_jn",
+  "description": "Ometanje: dostupnost fixa i integriteta za napada vs J/N, GPS sam vs četiri sustava. Ometač se uključi u t=30 s (rampa 1 s) i drži puni J/N.",
+  "world": {
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120,
+   "duration_s": 120,
+   "constellation": "multi",
+   "terrain": false,
+   "t0_random_s": 86164
+  },
+  "seeds": 6,
+  "seed_base": 1000,
+  "sweep": {
+   "attack.js_db": [
+    0,
+    6,
+    9,
+    12,
+    14,
+    16,
+    18
+   ],
+   "systems": [
+    [
+     "GPS"
+    ],
+    [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   ]
+  },
+  "sweep_mode": "grid",
+  "estimators": [
+   "ekf"
+  ],
+  "attack": {
+   "type": "jamming",
+   "js_db": 0,
+   "start": 30,
+   "end": 31
+  },
+  "raim": {},
+  "metrics": [
+   "win_availability",
+   "n_sats_mean",
+   "h_err_p95",
+   "integrity_availability",
+   "fix_loss_count",
+   "hpl_median",
+   "gdop_median"
+  ],
+  "warmup_s": 20,
+  "save_traces": false,
+  "plot": [
+   {
+    "metric": "win_availability",
+    "x": "attack.js_db"
+   },
+   {
+    "metric": "h_err_p95",
+    "x": "attack.js_db"
+   }
+  ],
+  "plugins": [],
+  "version": 1
+ },
+ "points": [
+  {
+   "index": 0,
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 1,
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 2,
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 3,
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 4,
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 5,
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 6,
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 7,
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 8,
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 9,
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 10,
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 11,
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 12,
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 13,
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  }
+ ],
+ "locations": [
+  {
+   "name": "default",
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120.0
+  }
+ ],
+ "runs": [
+  {
+   "idx": 0,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 4.301513240082258,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 37.14013465826329,
+    "gdop_median": 1.9134976602751461
+   }
+  },
+  {
+   "idx": 1,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 5.620746371433124,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 48.13932329458249,
+    "gdop_median": 2.2079578606532038
+   }
+  },
+  {
+   "idx": 2,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 5.852077167575428,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 41.76774188640618,
+    "gdop_median": 1.9434745697635352
+   }
+  },
+  {
+   "idx": 3,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.025,
+    "h_err_p95": 5.687302098725469,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 46.636813854279865,
+    "gdop_median": 1.9753933748804204
+   }
+  },
+  {
+   "idx": 4,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 3.7472319110591945,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 32.450314699886285,
+    "gdop_median": 1.908297372981977
+   }
+  },
+  {
+   "idx": 5,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 6.858949533416138,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 43.02054934351639,
+    "gdop_median": 2.0775671190261273
+   }
+  },
+  {
+   "idx": 6,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 6.160726333686071,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 111.06146094904399,
+    "gdop_median": 1.331644269387616
+   }
+  },
+  {
+   "idx": 7,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 5.496701373656699,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 49.33962390171206,
+    "gdop_median": 1.432632100291814
+   }
+  },
+  {
+   "idx": 8,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 5.793438981731128,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 147.4562806144719,
+    "gdop_median": 1.3198251993274925
+   }
+  },
+  {
+   "idx": 9,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 5.564134990235612,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 82.27379251832599,
+    "gdop_median": 1.3534168262568498
+   }
+  },
+  {
+   "idx": 10,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 5.449204966505763,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 90.26736342774117,
+    "gdop_median": 1.2531677525272338
+   }
+  },
+  {
+   "idx": 11,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 6.884533099663906,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 228.64391863414198,
+    "gdop_median": 1.3299193333614852
+   }
+  },
+  {
+   "idx": 12,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 7.578963356556973,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 75.37044511979417,
+    "gdop_median": 1.9134975821524154
+   }
+  },
+  {
+   "idx": 13,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 8.811806142191356,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 93.61155923958358,
+    "gdop_median": 2.2079577608755674
+   }
+  },
+  {
+   "idx": 14,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 8.381957084086904,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 73.42401769630744,
+    "gdop_median": 1.943474752930074
+   }
+  },
+  {
+   "idx": 15,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.025,
+    "h_err_p95": 8.903773201759144,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 90.79991807359076,
+    "gdop_median": 1.9753930676462172
+   }
+  },
+  {
+   "idx": 16,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 6.68345204246348,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 63.76097067761336,
+    "gdop_median": 1.908297558189439
+   }
+  },
+  {
+   "idx": 17,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 10.87110458364785,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 82.83951749029275,
+    "gdop_median": 2.0775673512697654
+   }
+  },
+  {
+   "idx": 18,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 9.237036758916465,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 206.65127444001348,
+    "gdop_median": 1.3316443126610489
+   }
+  },
+  {
+   "idx": 19,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 7.573336234455973,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 95.50542653425735,
+    "gdop_median": 1.4326319411789579
+   }
+  },
+  {
+   "idx": 20,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 9.157384440244124,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 265.1102366403681,
+    "gdop_median": 1.3198251968586132
+   }
+  },
+  {
+   "idx": 21,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 8.954523101993932,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 147.7497589283414,
+    "gdop_median": 1.3534168262568498
+   }
+  },
+  {
+   "idx": 22,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 8.363398017457436,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 162.31600090579468,
+    "gdop_median": 1.2531678350935112
+   }
+  },
+  {
+   "idx": 23,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.520929565313804,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 424.8496269753281,
+    "gdop_median": 1.3299192016999632
+   }
+  },
+  {
+   "idx": 24,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.258333333333334,
+    "h_err_p95": 9.503963498729119,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 102.89663826782495,
+    "gdop_median": 2.2255022858148394
+   }
+  },
+  {
+   "idx": 25,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 10.478411924337045,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 123.3214644353599,
+    "gdop_median": 2.207957729541933
+   }
+  },
+  {
+   "idx": 26,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 10.419938411997277,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 95.61457807501758,
+    "gdop_median": 1.9434748092441585
+   }
+  },
+  {
+   "idx": 27,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 6.283333333333333,
+    "h_err_p95": 12.43061916172254,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 240.56813932040507,
+    "gdop_median": 2.23629288207844
+   }
+  },
+  {
+   "idx": 28,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.258333333333334,
+    "h_err_p95": 9.564314177605858,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 82.23209403800556,
+    "gdop_median": 2.291190287006515
+   }
+  },
+  {
+   "idx": 29,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 8.0,
+    "h_err_p95": 13.6206533388692,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 109.5147788139439,
+    "gdop_median": 2.0775674783123748
+   }
+  },
+  {
+   "idx": 30,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.970633368845647,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 113.5279491072134,
+    "gdop_median": 1.439411338265665
+   }
+  },
+  {
+   "idx": 31,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 9.288879535817493,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 126.30352821164254,
+    "gdop_median": 1.4326318469767045
+   }
+  },
+  {
+   "idx": 32,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 11.079076555368001,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 126.5439046424282,
+    "gdop_median": 1.3449324471508421
+   }
+  },
+  {
+   "idx": 33,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.450939690732994,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 218.7528498531482,
+    "gdop_median": 1.3706902076815486
+   }
+  },
+  {
+   "idx": 34,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 8.478772154667174,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 144.3578374878973,
+    "gdop_median": 1.4135451827578915
+   }
+  },
+  {
+   "idx": 35,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.787262045461244,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 192.09671505050807,
+    "gdop_median": 1.3387695132520054
+   }
+  },
+  {
+   "idx": 36,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 6.516666666666667,
+    "h_err_p95": 15.543534030507272,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 136.78910541612666,
+    "gdop_median": 2.6919579309620074
+   }
+  },
+  {
+   "idx": 37,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.0,
+    "h_err_p95": 13.317308792994949,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 168.328234257895,
+    "gdop_median": 2.2079576790870155
+   }
+  },
+  {
+   "idx": 38,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 6.258333333333334,
+    "h_err_p95": 13.311402872279226,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 172.3657057600214,
+    "gdop_median": 3.1140559545004916
+   }
+  },
+  {
+   "idx": 39,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.541666666666667,
+    "h_err_p95": 17.26795161761324,
+    "integrity_availability": 0.6666666666666666,
+    "fix_loss_count": 0.0,
+    "hpl_median": 547.0300314692699,
+    "gdop_median": 3.6036873855452343
+   }
+  },
+  {
+   "idx": 40,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 7.258333333333334,
+    "h_err_p95": 12.688651603472403,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 112.47324837416762,
+    "gdop_median": 2.291190629201208
+   }
+  },
+  {
+   "idx": 41,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 6.258333333333334,
+    "h_err_p95": 13.907472789418714,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 275.9564477609762,
+    "gdop_median": 3.0374880795876082
+   }
+  },
+  {
+   "idx": 42,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.337959459280862,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 152.25206321134482,
+    "gdop_median": 1.4942415131051159
+   }
+  },
+  {
+   "idx": 43,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.332235453389364,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 160.74811416300247,
+    "gdop_median": 1.5760881227959382
+   }
+  },
+  {
+   "idx": 44,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 11.875857402561152,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 184.91000490565568,
+    "gdop_median": 1.6538095914825695
+   }
+  },
+  {
+   "idx": 45,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 12.524029883969328,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 193.93726683776703,
+    "gdop_median": 1.4446563770188792
+   }
+  },
+  {
+   "idx": 46,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 10.688119635695662,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 165.81397067931928,
+    "gdop_median": 1.5679503037901465
+   }
+  },
+  {
+   "idx": 47,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 11.681380187592875,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 136.65340199863545,
+    "gdop_median": 1.4914852479068519
+   }
+  },
+  {
+   "idx": 48,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.775,
+    "h_err_p95": 19.39502916817162,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 653.304811550456,
+    "gdop_median": 3.385332874807685
+   }
+  },
+  {
+   "idx": 49,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.516666666666667,
+    "h_err_p95": 18.67225842618073,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 794.946757372411,
+    "gdop_median": 3.3110007545872504
+   }
+  },
+  {
+   "idx": 50,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.516666666666667,
+    "h_err_p95": 16.900400934465278,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 533.4291389880514,
+    "gdop_median": 3.5997799110799704
+   }
+  },
+  {
+   "idx": 51,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 4.8,
+    "h_err_p95": 44.7439663181042,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 46.48747458827668,
+    "gdop_median": 17.308572790647787
+   }
+  },
+  {
+   "idx": 52,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 6.516666666666667,
+    "h_err_p95": 14.889130679773409,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 152.18674980726723,
+    "gdop_median": 2.695409571975276
+   }
+  },
+  {
+   "idx": 53,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.775,
+    "h_err_p95": 19.12840414668506,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 459.68078669004205,
+    "gdop_median": 3.880881580493534
+   }
+  },
+  {
+   "idx": 54,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 11.193517620279152,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 267.075917621177,
+    "gdop_median": 1.8881852904153855
+   }
+  },
+  {
+   "idx": 55,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 12.383036195962049,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 109.92637122065972,
+    "gdop_median": 2.046054042668863
+   }
+  },
+  {
+   "idx": 56,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 15.017335293529213,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 278.0058059410581,
+    "gdop_median": 2.036512155519424
+   }
+  },
+  {
+   "idx": 57,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 13.364499304424593,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 187.89869028258659,
+    "gdop_median": 2.693001585022483
+   }
+  },
+  {
+   "idx": 58,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 13.36304026654885,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 125.84225738716356,
+    "gdop_median": 1.9778622357569653
+   }
+  },
+  {
+   "idx": 59,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 16.14215035681841,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 128.28029665739763,
+    "gdop_median": 2.010827482214152
+   }
+  },
+  {
+   "idx": 60,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.45,
+    "h_err_p95": 22.7383720046546,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 822.5283416875919,
+    "gdop_median": 3.399953462104956
+   }
+  },
+  {
+   "idx": 61,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 4.033333333333333,
+    "h_err_p95": 4.165688085739207,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 47.42644320666215,
+    "gdop_median": 2.2146865055116436
+   }
+  },
+  {
+   "idx": 62,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 4.775,
+    "h_err_p95": 27.296977530176562,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 40.0351125858695,
+    "gdop_median": 7.4775775219161495
+   }
+  },
+  {
+   "idx": 63,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 4.8,
+    "h_err_p95": 53.378221261302784,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 46.48747458827668,
+    "gdop_median": 17.308568545916103
+   }
+  },
+  {
+   "idx": 64,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.033333333333333,
+    "h_err_p95": 31.759441841516075,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 31.19278809830936,
+    "gdop_median": 17.380143201782758
+   }
+  },
+  {
+   "idx": 65,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.033333333333333,
+    "h_err_p95": 18.781790639979516,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 42.00920682395732,
+    "gdop_median": 6.461990060719347
+   }
+  },
+  {
+   "idx": 66,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 20.897288453707297,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 201.15801918961185,
+    "gdop_median": 2.718284935870471
+   }
+  },
+  {
+   "idx": 67,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 16.562392480974697,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 177.733092941754,
+    "gdop_median": 2.2423016207972823
+   }
+  },
+  {
+   "idx": 68,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 21.972216050467075,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 286.5561204126568,
+    "gdop_median": 3.7606500133696867
+   }
+  },
+  {
+   "idx": 69,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 15.879269237400008,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 821.91884718475,
+    "gdop_median": 3.667650338172465
+   }
+  },
+  {
+   "idx": 70,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 12.517118672022677,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 442.9790493474434,
+    "gdop_median": 4.27163650215245
+   }
+  },
+  {
+   "idx": 71,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "h_err_p95": 16.057345096152698,
+    "integrity_availability": 1.0,
+    "fix_loss_count": 0.0,
+    "hpl_median": 330.9669411858085,
+    "gdop_median": 3.4789274470897498
+   }
+  },
+  {
+   "idx": 72,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 2.808333333333333,
+    "h_err_p95": 4.512236631965232,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 37.74204315771097,
+    "gdop_median": 1.9042425815962443
+   }
+  },
+  {
+   "idx": 73,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 3.2916666666666665,
+    "h_err_p95": 4.165688085739207,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 47.42644320666215,
+    "gdop_median": 2.2146865055116436
+   }
+  },
+  {
+   "idx": 74,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 2.55,
+    "h_err_p95": 6.514986253025052,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 40.0351125858695,
+    "gdop_median": 1.9346363289761674
+   }
+  },
+  {
+   "idx": 75,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 2.575,
+    "h_err_p95": 4.252471810337149,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 46.48747458827668,
+    "gdop_median": 1.9717034833467821
+   }
+  },
+  {
+   "idx": 76,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 2.808333333333333,
+    "h_err_p95": 4.173532371788214,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 31.19278809830936,
+    "gdop_median": 1.9174868423099478
+   }
+  },
+  {
+   "idx": 77,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 2.808333333333333,
+    "h_err_p95": 4.662761655174238,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 42.00920682395732,
+    "gdop_median": 2.0748246818421894
+   }
+  },
+  {
+   "idx": 78,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 4.808333333333334,
+    "h_err_p95": 4.890625703353361,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 110.37153501735469,
+    "gdop_median": 1.331441599070344
+   }
+  },
+  {
+   "idx": 79,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.55,
+    "h_err_p95": 47.21958894000378,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 53.105553859734,
+    "gdop_median": 49.742930140825905
+   }
+  },
+  {
+   "idx": 80,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 4.808333333333334,
+    "h_err_p95": 5.092787982035475,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 150.52595804742822,
+    "gdop_median": 1.3182830049448033
+   }
+  },
+  {
+   "idx": 81,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 4.808333333333334,
+    "h_err_p95": 6.864417817164895,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 83.8851903514331,
+    "gdop_median": 1.3536693633250052
+   }
+  },
+  {
+   "idx": 82,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 1.0,
+    "n_sats_mean": 5.55,
+    "h_err_p95": 28.218026626997847,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 0.0,
+    "hpl_median": 90.35001737438694,
+    "gdop_median": 15.744499367303991
+   }
+  },
+  {
+   "idx": 83,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": 0.0,
+    "n_sats_mean": 4.808333333333334,
+    "h_err_p95": 6.829284232010574,
+    "integrity_availability": 0.25833333333333336,
+    "fix_loss_count": 1.0,
+    "hpl_median": 223.76154452343928,
+    "gdop_median": 1.329716908332763
+   }
+  }
+ ],
+ "aggregate": [
+  {
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 7.504166666666666,
+     "median": 7.5125,
+     "p95": 8.0,
+     "std": 0.543234909285722,
+     "min": 7.0,
+     "max": 8.0,
+     "ci_lo": 6.933983853740628,
+     "ci_hi": 8.074349479592705
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 5.344636720381935,
+     "median": 5.654024235079296,
+     "p95": 6.60723144195596,
+     "std": 1.1299649484905583,
+     "min": 3.7472319110591945,
+     "max": 6.858949533416138,
+     "ci_lo": 4.158618329764661,
+     "ci_hi": 6.530655110999209
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 41.525812956155754,
+     "median": 42.39414561496129,
+     "p95": 47.763695934506835,
+     "std": 5.894954764614398,
+     "min": 32.450314699886285,
+     "max": 48.13932329458249,
+     "ci_lo": 35.338430974060564,
+     "ci_hi": 47.71319493825094
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.0043646595967353,
+     "median": 1.9594339723219778,
+     "p95": 2.1753601752464347,
+     "std": 0.11733836975531248,
+     "min": 1.908297372981977,
+     "max": 2.2079578606532038,
+     "ci_lo": 1.8812055610417298,
+     "ci_hi": 2.1275237581517406
+    }
+   }
+  },
+  {
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 0,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 5.89145662424653,
+     "median": 5.67878698598337,
+     "p95": 6.703581408169447,
+     "std": 0.5526069506308446,
+     "min": 5.449204966505763,
+     "max": 6.884533099663906,
+     "ci_lo": 5.311436857167365,
+     "ci_hi": 6.4714763913256945
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 118.17374000757285,
+     "median": 100.66441218839259,
+     "p95": 208.34700912922446,
+     "std": 63.11484720287035,
+     "min": 49.33962390171206,
+     "max": 228.64391863414198,
+     "ci_lo": 51.92799530230782,
+     "ci_hi": 184.41948471283786
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 1.3367675801920818,
+     "median": 1.3307818013745507,
+     "p95": 1.412828281783073,
+     "std": 0.057993664932787604,
+     "min": 1.2531677525272338,
+     "max": 1.432632100291814,
+     "ci_lo": 1.2758970609414955,
+     "ci_hi": 1.397638099442668
+    }
+   }
+  },
+  {
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 7.504166666666666,
+     "median": 7.5125,
+     "p95": 8.0,
+     "std": 0.543234909285722,
+     "min": 7.0,
+     "max": 8.0,
+     "ci_lo": 6.933983853740628,
+     "ci_hi": 8.074349479592705
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 8.538509401784284,
+     "median": 8.59688161313913,
+     "p95": 10.379271738175674,
+     "std": 1.4167275025071264,
+     "min": 6.68345204246348,
+     "max": 10.87110458364785,
+     "ci_lo": 7.051503212157533,
+     "ci_hi": 10.025515591411034
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 79.96773804953035,
+     "median": 79.10498130504345,
+     "p95": 92.90864894808539,
+     "std": 11.299130806275356,
+     "min": 63.76097067761336,
+     "max": 93.61155923958358,
+     "ci_lo": 68.10809855174399,
+     "ci_hi": 91.82737754731671
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.004364678843913,
+     "median": 1.9594339102881455,
+     "p95": 2.175360158474117,
+     "std": 0.11733834204265978,
+     "min": 1.908297558189439,
+     "max": 2.2079577608755674,
+     "ci_lo": 1.881205609376284,
+     "ci_hi": 2.127523748311542
+    }
+   }
+  },
+  {
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 6,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 8.967768019730288,
+     "median": 9.055953771119029,
+     "p95": 10.199956363714469,
+     "std": 0.9829190565643959,
+     "min": 7.573336234455973,
+     "max": 10.520929565313804,
+     "ci_lo": 7.936089931723388,
+     "ci_hi": 9.999446107737189
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 217.0303874040172,
+     "median": 184.48363767290408,
+     "p95": 384.91477939158807,
+     "std": 116.76473775139979,
+     "min": 95.50542653425735,
+     "max": 424.8496269753281,
+     "ci_lo": 94.47337664562517,
+     "ci_hi": 339.5873981624093
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 1.3367675522914908,
+     "median": 1.330781757180506,
+     "p95": 1.412828162448431,
+     "std": 0.057993591014305436,
+     "min": 1.2531678350935112,
+     "max": 1.4326319411789579,
+     "ci_lo": 1.2758971106262131,
+     "ci_hi": 1.3976379939567685
+    }
+   }
+  },
+  {
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 7.133333333333333,
+     "median": 7.129166666666666,
+     "p95": 7.814583333333333,
+     "std": 0.5550525500647064,
+     "min": 6.283333333333333,
+     "max": 8.0,
+     "ci_lo": 6.5507466495471345,
+     "ci_hi": 7.715920017119531
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 11.00298341887684,
+     "median": 10.449175168167162,
+     "p95": 13.323144794582536,
+     "std": 1.6626657068691353,
+     "min": 9.503963498729119,
+     "max": 13.6206533388692,
+     "ci_lo": 9.257838927067905,
+     "ci_hi": 12.748127910685774
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 125.69128215842618,
+     "median": 106.20570854088443,
+     "p95": 211.25647059914377,
+     "std": 57.925629143954346,
+     "min": 82.23209403800556,
+     "max": 240.56813932040507,
+     "ci_lo": 64.89217370415199,
+     "ci_hi": 186.49039061270037
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.163664245333043,
+     "median": 2.216730007678386,
+     "p95": 2.277465935774496,
+     "std": 0.12901140045045828,
+     "min": 1.9434748092441585,
+     "max": 2.291190287006515,
+     "ci_lo": 2.02825305958084,
+     "ci_hi": 2.299075431085246
+    }
+   }
+  },
+  {
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 9,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 10.17592722514876,
+     "median": 10.619100868097119,
+     "p95": 11.051965758737413,
+     "std": 1.0548732267592682,
+     "min": 8.478772154667174,
+     "max": 11.079076555368001,
+     "ci_lo": 9.068725582852213,
+     "ci_hi": 11.283128867445306
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 153.59713072547297,
+     "median": 135.45087106516274,
+     "p95": 212.08881615248816,
+     "std": 42.1786850506634,
+     "min": 113.5279491072134,
+     "max": 218.7528498531482,
+     "ci_lo": 109.32611485992315,
+     "ci_hi": 197.86814659102276
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 1.3899967560141093,
+     "median": 1.39211769521972,
+     "p95": 1.437716465443425,
+     "std": 0.044366305830981195,
+     "min": 1.3387695132520054,
+     "max": 1.439411338265665,
+     "ci_lo": 1.3434295994756835,
+     "ci_hi": 1.4365639125525351
+    }
+   }
+  },
+  {
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 6.472222222222222,
+     "median": 6.3875,
+     "p95": 7.1937500000000005,
+     "std": 0.6092496903447593,
+     "min": 5.541666666666667,
+     "max": 7.258333333333334,
+     "ci_lo": 5.832749875587036,
+     "ci_hi": 7.111694568857408
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 14.339386951047636,
+     "median": 13.612390791206831,
+     "p95": 16.83684722083675,
+     "std": 1.7343202272560465,
+     "min": 12.688651603472403,
+     "max": 17.26795161761324,
+     "ci_lo": 12.5190334192917,
+     "ci_hi": 16.15974048280357
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.9444444444444443,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.13608276348795434,
+     "min": 0.6666666666666666,
+     "max": 1.0,
+     "ci_lo": 0.8016111111111109,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 235.49046217307614,
+     "median": 170.34697000895818,
+     "p95": 479.2616355421965,
+     "std": 162.5208243112896,
+     "min": 112.47324837416762,
+     "max": 547.0300314692699,
+     "ci_lo": 64.9075721914414,
+     "ci_hi": 406.07335215471085
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.8243896098139274,
+     "median": 2.864723005274808,
+     "p95": 3.4812795277840487,
+     "std": 0.5326256096046099,
+     "min": 2.2079576790870155,
+     "max": 3.6036873855452343,
+     "ci_lo": 2.265342385252977,
+     "ci_hi": 3.3834368343748777
+    }
+   }
+  },
+  {
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 12,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 11.23993033708154,
+     "median": 11.184749911644268,
+     "p95": 12.361986763617285,
+     "std": 0.9154397157529127,
+     "min": 10.332235453389364,
+     "max": 12.524029883969328,
+     "ci_lo": 10.279078994006914,
+     "ci_hi": 12.200781680156167
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 165.7191369659541,
+     "median": 163.28104242116086,
+     "p95": 191.6804513547392,
+     "std": 21.04970950671158,
+     "min": 136.65340199863545,
+     "max": 193.93726683776703,
+     "ci_lo": 143.6252281013821,
+     "ci_hi": 187.8130458305261
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 1.5380385260165836,
+     "median": 1.5310959084476312,
+     "p95": 1.6343792243109116,
+     "std": 0.07556591514424323,
+     "min": 1.4446563770188792,
+     "max": 1.6538095914825695,
+     "ci_lo": 1.4587240612762238,
+     "ci_hi": 1.6173529907569435
+    }
+   }
+  },
+  {
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 5.6499999999999995,
+     "median": 5.645833333333334,
+     "p95": 6.33125,
+     "std": 0.5550525500647063,
+     "min": 4.8,
+     "max": 6.516666666666667,
+     "ci_lo": 5.067413316213801,
+     "ci_hi": 6.232586683786198
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 22.288198278896715,
+     "median": 18.900331286432895,
+     "p95": 38.40673203062106,
+     "std": 11.13073067926292,
+     "min": 14.889130679773409,
+     "max": 44.7439663181042,
+     "ci_lo": 10.605312624568798,
+     "ci_hi": 33.971083933224634
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.6291666666666667,
+     "median": 0.6291666666666667,
+     "p95": 1.0,
+     "std": 0.40622756348299816,
+     "min": 0.25833333333333336,
+     "max": 1.0,
+     "ci_lo": 0.202787634547063,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 440.00595316608405,
+     "median": 496.5549628390467,
+     "p95": 759.5362709169221,
+     "std": 289.2372918578543,
+     "min": 46.48747458827668,
+     "max": 794.946757372411,
+     "ci_lo": 136.42065359197295,
+     "ci_hi": 743.5912527401952
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 5.6968295805985845,
+     "median": 3.4925563929438277,
+     "p95": 13.951649988109224,
+     "std": 5.702132638017297,
+     "min": 2.695409571975276,
+     "max": 17.308572790647787,
+     "ci_lo": 0.0,
+     "ci_hi": 11.681824233274764
+    }
+   }
+  },
+  {
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 14,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 13.577263172927042,
+     "median": 13.36376978548672,
+     "p95": 15.86094659099611,
+     "std": 1.7805636651500334,
+     "min": 11.193517620279152,
+     "max": 16.14215035681841,
+     "ci_lo": 11.708372234890584,
+     "ci_hi": 15.4461541109635
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 182.8382231850071,
+     "median": 158.0894934699921,
+     "p95": 275.27333386108785,
+     "std": 74.45765497232493,
+     "min": 109.92637122065972,
+     "max": 278.0058059410581,
+     "ci_lo": 104.6869953638452,
+     "ci_hi": 260.989451006169
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.1087404652662123,
+     "median": 2.023669818866788,
+     "p95": 2.531264699434078,
+     "std": 0.2918452400601695,
+     "min": 1.8881852904153855,
+     "max": 2.693001585022483,
+     "ci_lo": 1.8024178466860072,
+     "ci_hi": 2.4150630838464173
+    }
+   }
+  },
+  {
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 0.8333333333333334,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.408248290463863,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.4048333333333333,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 4.854166666666667,
+     "median": 4.916666666666666,
+     "p95": 5.345833333333333,
+     "std": 0.46950772091628057,
+     "min": 4.033333333333333,
+     "max": 5.45,
+     "ci_lo": 4.361368379173447,
+     "ci_hi": 5.346964954159887
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 26.353415227228123,
+     "median": 25.01767476741558,
+     "p95": 47.97352640635611,
+     "std": 16.267445078129256,
+     "min": 4.165688085739207,
+     "max": 53.378221261302784,
+     "ci_lo": 9.279001497146858,
+     "ci_hi": 43.42782895730939
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.25833333333333336,
+     "median": 0.25833333333333336,
+     "p95": 0.25833333333333336,
+     "std": 0.0,
+     "min": 0.25833333333333336,
+     "max": 0.25833333333333336,
+     "ci_lo": 0.25833333333333336,
+     "ci_hi": 0.25833333333333336
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.16666666666666666,
+     "median": 0.0,
+     "p95": 0.75,
+     "std": 0.408248290463863,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.5951666666666667
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 171.61322783177783,
+     "median": 44.248340706117006,
+     "p95": 628.7528670673595,
+     "std": 318.934852160816,
+     "min": 31.19278809830936,
+     "max": 822.5283416875919,
+     "ci_lo": 0.0,
+     "ci_hi": 506.3692754214168
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 9.040486549658493,
+     "median": 6.969783791317749,
+     "p95": 17.362249537816094,
+     "std": 6.714306241140497,
+     "min": 2.2146865055116436,
+     "max": 17.380143201782758,
+     "ci_lo": 1.9931080510010082,
+     "ci_hi": 16.087865048315976
+    }
+   }
+  },
+  {
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 16,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 10.0,
+     "median": 10.0,
+     "p95": 10.0,
+     "std": 0.0,
+     "min": 10.0,
+     "max": 10.0,
+     "ci_lo": 10.0,
+     "ci_hi": 10.0
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 17.314271665120742,
+     "median": 16.309868788563698,
+     "p95": 21.70348415127713,
+     "std": 3.514300804380768,
+     "min": 12.517118672022677,
+     "max": 21.972216050467075,
+     "ci_lo": 13.625639208225113,
+     "ci_hi": 21.00290412201637
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.8763888888888888,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.30278414876069837,
+     "min": 0.25833333333333336,
+     "max": 1.0,
+     "ci_lo": 0.558584722222222,
+     "ci_hi": 1.0
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 376.8853450436707,
+     "median": 308.7615307992327,
+     "p95": 727.1838977254233,
+     "std": 238.00536841883482,
+     "min": 177.733092941754,
+     "max": 821.91884718475,
+     "ci_lo": 127.0733978788897,
+     "ci_hi": 626.6972922084517
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 3.356575142908684,
+     "median": 3.5732888926311075,
+     "p95": 4.14388987995676,
+     "std": 0.7431516031127665,
+     "min": 2.2423016207972823,
+     "max": 4.27163650215245,
+     "ci_lo": 2.5765584977146534,
+     "ci_hi": 4.136591788102714
+    }
+   }
+  },
+  {
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 2.806944444444444,
+     "median": 2.808333333333333,
+     "p95": 3.1708333333333334,
+     "std": 0.26637570932522825,
+     "min": 2.55,
+     "max": 3.2916666666666665,
+     "ci_lo": 2.527354807176964,
+     "ci_hi": 3.0865340817119242
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 4.713612801338182,
+     "median": 4.382354221151191,
+     "p95": 6.0519301035623485,
+     "std": 0.904725802774331,
+     "min": 4.165688085739207,
+     "max": 6.514986253025052,
+     "ci_lo": 3.764006849410462,
+     "ci_hi": 5.663218753265902
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.25833333333333336,
+     "median": 0.25833333333333336,
+     "p95": 0.25833333333333336,
+     "std": 0.0,
+     "min": 0.25833333333333336,
+     "max": 0.25833333333333336,
+     "ci_lo": 0.25833333333333336,
+     "ci_hi": 0.25833333333333336
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 40.815511410130995,
+     "median": 41.022159704913406,
+     "p95": 47.19170105206578,
+     "std": 5.999208741376403,
+     "min": 31.19278809830936,
+     "max": 47.42644320666215,
+     "ci_lo": 34.518703791515044,
+     "ci_hi": 47.112319028746946
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 2.0029300705971624,
+     "median": 1.9531699061614747,
+     "p95": 2.17972104959428,
+     "std": 0.12057240438434716,
+     "min": 1.9042425815962443,
+     "max": 2.2146865055116436,
+     "ci_lo": 1.8763765087439352,
+     "ci_hi": 2.12948363245039
+    }
+   }
+  },
+  {
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.js_db": 18,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "win_availability": {
+     "n": 6,
+     "mean": 0.3333333333333333,
+     "median": 0.0,
+     "p95": 1.0,
+     "std": 0.5163977794943223,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.8753477242861936
+    },
+    "n_sats_mean": {
+     "n": 6,
+     "mean": 5.055555555555556,
+     "median": 4.808333333333334,
+     "p95": 5.55,
+     "std": 0.3829950197916221,
+     "min": 4.808333333333334,
+     "max": 5.55,
+     "ci_lo": 4.653561548932185,
+     "ci_hi": 5.457549562178928
+    },
+    "h_err_p95": {
+     "n": 6,
+     "mean": 16.51912188359432,
+     "median": 6.8468510245877345,
+     "p95": 42.4691983617523,
+     "std": 17.505840990052906,
+     "min": 4.890625703353361,
+     "max": 47.21958894000378,
+     "ci_lo": 0.0,
+     "ci_hi": 34.89336383256743
+    },
+    "integrity_availability": {
+     "n": 6,
+     "mean": 0.25833333333333336,
+     "median": 0.25833333333333336,
+     "p95": 0.25833333333333336,
+     "std": 0.0,
+     "min": 0.25833333333333336,
+     "max": 0.25833333333333336,
+     "ci_lo": 0.25833333333333336,
+     "ci_hi": 0.25833333333333336
+    },
+    "fix_loss_count": {
+     "n": 6,
+     "mean": 0.6666666666666666,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.5163977794943223,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.12465227571380633,
+     "ci_hi": 1.2086810576195268
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 118.66663319562936,
+     "median": 100.36077619587081,
+     "p95": 205.4526479044365,
+     "std": 60.72660083090341,
+     "min": 53.105553859734,
+     "max": 223.76154452343928,
+     "ci_lo": 54.927607059167315,
+     "ci_hi": 182.4056593320914
+    },
+    "gdop_median": {
+     "n": 6,
+     "mean": 11.803423397300469,
+     "median": 1.3425554811976745,
+     "p95": 41.24332244744542,
+     "std": 19.45988032111633,
+     "min": 1.3182830049448033,
+     "max": 49.742930140825905,
+     "ci_lo": 0.0,
+     "ci_hi": 32.22863744565288
+    }
+   }
+  }
+ ],
+ "meta": {
+  "created": "2026-11-20T10:17:09",
+  "elapsed_s": 68.16104006767273,
+  "workers": 6,
+  "runs_done": 84,
+  "runs_total": 84,
+  "interrupted": false,
+  "cancelled": false,
+  "git": {
+   "commit": "cd2fabfdb10c94a741cb25a8cd7318653bac0996",
+   "dirty": true
+  },
+  "numpy": "2.5.5",
+  "python": "3.14.5",
+  "spec_version": 1,
+  "nondeterministic_metrics": []
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "max_sats",
+  "description": "Udžbenik, pogl. 7: koliko satelita uzeti u rješenje? Četiri sustava, prijemnik bira do max_sats geometrijski najkorisnijih (pohlepno po GDOP-u).",
+  "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 120, "constellation": "multi",
+            "systems": ["GPS", "GAL", "GLO", "BDS"], "terrain": false, "t0_random_s": 86164},
+  "seeds": 8,
+  "sweep": {"max_sats": [4, 5, 6, 8, 10, 12, 16, 20]},
+  "estimators": ["ekf"],
+  "metrics": ["h_err_p95", "v_err_p95", "err3d_median", "gdop_median", "n_sats_mean"],
+  "warmup_s": 20
+}

@@ -1,0 +1,87 @@
+{
+ "lambda_cm": 19.03,
+ "faza_mm": 2.0,
+ "kod_m": 0.3,
+ "atmo_ppm": 1.0,
+ "ratio_min": 3.0,
+ "p_boot": 0.999,
+ "maska": 10.0,
+ "tijek": {
+  "tri": {
+   "ttf": 46.0,
+   "udio_fix": 94.9,
+   "fix_med_cm": 0.72,
+   "float_kraj_cm": 0.7,
+   "float_60s_m": 0.01
+  },
+  "gps": {
+   "ttf": 133.0,
+   "udio_fix": 85.2,
+   "fix_med_cm": 1.72,
+   "float_kraj_cm": 1.8,
+   "float_60s_m": 0.18
+  }
+ },
+ "baze": [
+  {
+   "km": 1,
+   "ttf_med": 2.0,
+   "ttf_sve": [
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ],
+   "udio_fix": 99.7,
+   "fix_err_cm": 0.22
+  },
+  {
+   "km": 5,
+   "ttf_med": 26.0,
+   "ttf_sve": [
+    27.0,
+    47.0,
+    25.0,
+    25.0
+   ],
+   "udio_fix": 94.8,
+   "fix_err_cm": 1.14
+  },
+  {
+   "km": 10,
+   "ttf_med": 157.0,
+   "ttf_sve": [
+    157.0,
+    157.0,
+    157.0,
+    157.0
+   ],
+   "udio_fix": 73.8,
+   "fix_err_cm": 3.02
+  },
+  {
+   "km": 20,
+   "ttf_med": null,
+   "ttf_sve": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "udio_fix": 0.0,
+   "fix_err_cm": null
+  },
+  {
+   "km": 40,
+   "ttf_med": null,
+   "ttf_sve": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "udio_fix": 0.0,
+   "fix_err_cm": null
+  }
+ ]
+}

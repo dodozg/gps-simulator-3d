@@ -32,7 +32,7 @@ def test_inter_system_bias_is_recovered():
 def test_multignss_keeps_fix_where_gps_alone_fails():
     # Visoka maska (urbani kanjon): GPS sam vidi < 4 satelita -> nema fixa,
     # ali sva četiri sustava zajedno i dalje rješavaju.
-    data = run_compare(45.815, 15.982, 120.0, mask_deg=30.0, seed=1234)
+    data = run_compare(45.815, 15.982, 120.0, mask_deg=35.0, seed=1234)   # GPS vidi 3
     _, gps = data["gps"]
     _, alls = data["all"]
     assert gps is None                                    # GPS-only pao

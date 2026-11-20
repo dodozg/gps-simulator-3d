@@ -208,6 +208,14 @@ Full architecture, block diagrams and model derivations:
 
 ---
 
+## Textbook (Croatian)
+
+[`docs/udzbenik/`](docs/udzbenik/README.md) contains *Satelitska navigacija u simulatoru*, an
+~85-page Croatian GNSS textbook for engineering students with 67 exercises run in this
+simulator (guided in the web app, pen-and-paper/Python, and sandbox research studies) and
+worked solutions. Every number and figure is computed by the simulator with fixed seeds,
+so the book is reproducible: `python docs/udzbenik/build.py --slike` (needs `typst`, `matplotlib`).
+
 ## Tests & reproducibility
 
 `pytest` (config in `pyproject.toml`). Every noise source takes an explicit

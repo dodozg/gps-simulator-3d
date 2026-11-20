@@ -192,6 +192,21 @@ svake pseudoudaljenosti s proračunom greške (koji zna samo simulator), matrica
 geometrije i DOP-ovi, Kalmanov korak (predikcija → pojačanje → ažuriranje, doprinos
 svakog satelita) i RAIM (T na krivulji χ², nagibi, HPL). Može se zamrznuti i ići korak po korak.
 
+## Udžbenik
+
+**Satelitska navigacija u simulatoru** — udžbenik na hrvatskom (PDF, ~85 str.) za studente
+tehnike: od signala i orbita preko najmanjih kvadrata, DOP-a i Kalmanovog filtra do
+RAIM-a, RTK-a, ometanja/lažiranja i pravih RINEX podataka, sa 67 vježbi u ovom
+simulatoru (vođene u aplikaciji, računske, istraživačke u sandboxu) i rješenjima.
+Sve brojke i grafovi u knjizi izračunati su ovim simulatorom (fiksna sjemena), pa se
+knjiga reproducira: [`docs/udzbenik/`](docs/udzbenik/README.md).
+
+```bash
+pip install typst matplotlib
+python docs/udzbenik/build.py            # PDF iz postojećih slika
+python docs/udzbenik/build.py --slike    # najprije ponovno izračunaj sve slike i brojke
+```
+
 ## Testovi
 
 Testovi su u `tests/` i pokreću se s `pytest` (konfiguracija u `pyproject.toml`).

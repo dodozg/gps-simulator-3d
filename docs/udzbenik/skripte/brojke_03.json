@@ -1,0 +1,51 @@
+{
+ "sjever_udio_posto": {
+  "Zagreb": 1.7,
+  "Quito": 22.8,
+  "Longyearbyen": 14.7
+ },
+ "GPS": {
+  "a_km": 26571.0,
+  "T_h": 11.973,
+  "T_min": 718.4,
+  "ophoda_po_zv_danu": 1.999,
+  "lan_dot_deg_dan": -0.0387,
+  "w_dot_deg_dan": 0.0218,
+  "v_kms": 3.87
+ },
+ "GAL": {
+  "a_km": 29593.0,
+  "T_h": 14.073,
+  "T_min": 844.4,
+  "ophoda_po_zv_danu": 1.701,
+  "lan_dot_deg_dan": -0.0259,
+  "w_dot_deg_dan": 0.013,
+  "v_kms": 3.67
+ },
+ "GLO": {
+  "a_km": 25471.0,
+  "T_h": 11.238,
+  "T_min": 674.3,
+  "ophoda_po_zv_danu": 2.13,
+  "lan_dot_deg_dan": -0.0333,
+  "w_dot_deg_dan": -0.0037,
+  "v_kms": 3.96
+ },
+ "BDS": {
+  "a_km": 27871.0,
+  "T_h": 12.863,
+  "T_min": 771.8,
+  "ophoda_po_zv_danu": 1.861,
+  "lan_dot_deg_dan": -0.0328,
+  "w_dot_deg_dan": 0.0184,
+  "v_kms": 3.78
+ },
+ "kepler_koraci": [
+  1.0,
+  1.0127251966,
+  1.0127241636,
+  1.0127241636,
+  1.0127241636
+ ],
+ "geo_visina_km_sfera": 35793.0
+}

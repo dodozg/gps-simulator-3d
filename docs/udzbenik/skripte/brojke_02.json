@@ -1,0 +1,44 @@
+{
+ "zagreb_ecef_m": [
+  4281049.265,
+  1226115.738,
+  4551025.713
+ ],
+ "zagreb_N_m": 6389143.5,
+ "zagreb_r_km": 6367.3,
+ "v_rot_mps": 325.0,
+ "pomak_75ms_m": 24.4,
+ "zagreb_lla_natrag": [
+  45.815,
+  15.982,
+  120.0
+ ],
+ "sagnac_min_m": -27.4,
+ "sagnac_max_m": 26.6,
+ "s_sagnacom_sred_enu_m": [
+  -0.33,
+  0.16,
+  0.32
+ ],
+ "bez_sagnaca_sred_enu_m": [
+  24.37,
+  0.28,
+  0.27
+ ],
+ "bez_sagnaca_pomak_h_m": 24.4,
+ "rel_drift_s_po_s": 4.46e-10,
+ "rel_us_po_danu": 38.5,
+ "rel_km_po_danu": 11.6,
+ "ekscentricitet_walker": 0.015,
+ "rel_ekscentr_amp_ns": 34.4,
+ "rel_ekscentr_amp_m": 10.3,
+ "vjezba_sat": "SAT_0_0",
+ "vjezba_az_deg": 129.86,
+ "vjezba_el_deg": 70.64,
+ "vjezba_enu_km": [
+  5109.2,
+  -4266.5,
+  18941.0
+ ],
+ "geocentricna_sirina_deg": 45.6226
+}

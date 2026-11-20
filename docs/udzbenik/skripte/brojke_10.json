@@ -1,0 +1,224 @@
+{
+ "pfa": 1e-05,
+ "pmd": 0.001,
+ "hal": 556.0,
+ "prag": {
+  "1": 19.51,
+  "2": 23.03,
+  "3": 25.9,
+  "4": 28.47,
+  "5": 30.86,
+  "6": 33.11,
+  "7": 35.26,
+  "8": 37.33
+ },
+ "lambda": {
+  "1": 56.4,
+  "2": 61.0,
+  "3": 64.4,
+  "4": 67.2,
+  "5": 69.8,
+  "6": 72.0,
+  "7": 74.1,
+  "8": 76.1
+ },
+ "kal": {
+  "epoha": 5310,
+  "dof": 4,
+  "n_dof": 3642,
+  "sred_T": 3.62,
+  "omjer_p50": 0.099,
+  "omjer_p99": 0.429,
+  "omjer_max": 0.91,
+  "alarmi_ili_iskljucenja": 0,
+  "hpl_med": 36.2,
+  "hpl_p95": 53.2
+ },
+ "rampa": {
+  "sat": "SAT_0_0",
+  "prvo_iskljucenje_s": 141,
+  "kvar_pri_iskljucenju_m": 10.5,
+  "eh_prije_iskljucenja": 4.2,
+  "omjer_max_prije": 0.98,
+  "omjer_pri_iskljucenju": 0.15,
+  "bez_eh_kraj": 56.0,
+  "raim_eh_kraj": 3.4,
+  "kvar_kraj_m": 149.5
+ },
+ "roc": {
+  "0.01": [
+   {
+    "x": 0,
+    "raim_pd": 0.024,
+    "h_err_p95": 5.748,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.009
+   },
+   {
+    "x": 5,
+    "raim_pd": 0.057,
+    "h_err_p95": 6.748,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.021
+   },
+   {
+    "x": 10,
+    "raim_pd": 0.178,
+    "h_err_p95": 8.883,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.079
+   },
+   {
+    "x": 15,
+    "raim_pd": 0.383,
+    "h_err_p95": 11.259,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.238
+   },
+   {
+    "x": 20,
+    "raim_pd": 0.552,
+    "h_err_p95": 13.394,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.398
+   },
+   {
+    "x": 30,
+    "raim_pd": 0.793,
+    "h_err_p95": 15.458,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.647
+   },
+   {
+    "x": 45,
+    "raim_pd": 0.974,
+    "h_err_p95": 18.261,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.881
+   },
+   {
+    "x": 60,
+    "raim_pd": 0.998,
+    "h_err_p95": 16.417,
+    "false_alarm_rate": 0.01,
+    "correct_exclusion_rate": 0.942
+   }
+  ],
+  "0.0001": [
+   {
+    "x": 0,
+    "raim_pd": 0.001,
+    "h_err_p95": 5.633,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.0
+   },
+   {
+    "x": 5,
+    "raim_pd": 0.006,
+    "h_err_p95": 6.679,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.002
+   },
+   {
+    "x": 10,
+    "raim_pd": 0.03,
+    "h_err_p95": 8.441,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.013
+   },
+   {
+    "x": 15,
+    "raim_pd": 0.118,
+    "h_err_p95": 10.605,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.068
+   },
+   {
+    "x": 20,
+    "raim_pd": 0.29,
+    "h_err_p95": 13.619,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.209
+   },
+   {
+    "x": 30,
+    "raim_pd": 0.579,
+    "h_err_p95": 16.279,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.481
+   },
+   {
+    "x": 45,
+    "raim_pd": 0.85,
+    "h_err_p95": 18.737,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.763
+   },
+   {
+    "x": 60,
+    "raim_pd": 0.981,
+    "h_err_p95": 16.39,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.926
+   }
+  ],
+  "1e-07": [
+   {
+    "x": 0,
+    "raim_pd": 0.0,
+    "h_err_p95": 5.636,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.0
+   },
+   {
+    "x": 5,
+    "raim_pd": 0.0,
+    "h_err_p95": 6.632,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.0
+   },
+   {
+    "x": 10,
+    "raim_pd": 0.003,
+    "h_err_p95": 8.461,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.001
+   },
+   {
+    "x": 15,
+    "raim_pd": 0.016,
+    "h_err_p95": 10.519,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.007
+   },
+   {
+    "x": 20,
+    "raim_pd": 0.073,
+    "h_err_p95": 12.721,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.046
+   },
+   {
+    "x": 30,
+    "raim_pd": 0.368,
+    "h_err_p95": 17.276,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.302
+   },
+   {
+    "x": 45,
+    "raim_pd": 0.678,
+    "h_err_p95": 20.004,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.603
+   },
+   {
+    "x": 60,
+    "raim_pd": 0.88,
+    "h_err_p95": 17.952,
+    "false_alarm_rate": 0.0,
+    "correct_exclusion_rate": 0.826
+   }
+  ]
+ }
+}

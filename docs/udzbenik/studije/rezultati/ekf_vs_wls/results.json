@@ -1,0 +1,2800 @@
+{
+ "spec": {
+  "name": "ekf_vs_wls",
+  "description": "EKF vs snapshot WLS na ISTIM mjerenjima (uparena usporedba), pet lokacija × deset sjemena: točnost, konzistentnost (NIS/dof) i vrijeme solvera.",
+  "world": {
+   "duration_s": 180,
+   "systems": [
+    "GPS"
+   ],
+   "terrain": false,
+   "t0_random_s": 86164,
+   "locations": [
+    {
+     "name": "Zagreb",
+     "lat": 45.815,
+     "lon": 15.982,
+     "alt": 120
+    },
+    {
+     "name": "London",
+     "lat": 51.507,
+     "lon": -0.128,
+     "alt": 50
+    },
+    {
+     "name": "Tokio",
+     "lat": 35.68,
+     "lon": 139.77,
+     "alt": 40
+    },
+    {
+     "name": "Quito",
+     "lat": -0.18,
+     "lon": -78.47,
+     "alt": 2850
+    },
+    {
+     "name": "Anchorage",
+     "lat": 61.22,
+     "lon": -149.9,
+     "alt": 30
+    }
+   ]
+  },
+  "seeds": 10,
+  "seed_base": 1000,
+  "sweep": {},
+  "sweep_mode": "grid",
+  "estimators": [
+   "ekf",
+   "wls"
+  ],
+  "attack": null,
+  "raim": {},
+  "metrics": [
+   "h_err_median",
+   "h_err_p95",
+   "v_err_p95",
+   "err3d_rms",
+   "nis_mean",
+   "availability",
+   "runtime_ms"
+  ],
+  "warmup_s": 30,
+  "save_traces": false,
+  "plot": [
+   {
+    "metric": "h_err_p95",
+    "x": "location"
+   },
+   {
+    "metric": "err3d_rms",
+    "x": "location"
+   }
+  ],
+  "plugins": [],
+  "version": 1
+ },
+ "points": [
+  {
+   "index": 0,
+   "params": {}
+  }
+ ],
+ "locations": [
+  {
+   "name": "Zagreb",
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120.0
+  },
+  {
+   "name": "London",
+   "lat": 51.507,
+   "lon": -0.128,
+   "alt": 50.0
+  },
+  {
+   "name": "Tokio",
+   "lat": 35.68,
+   "lon": 139.77,
+   "alt": 40.0
+  },
+  {
+   "name": "Quito",
+   "lat": -0.18,
+   "lon": -78.47,
+   "alt": 2850.0
+  },
+  {
+   "name": "Anchorage",
+   "lat": 61.22,
+   "lon": -149.9,
+   "alt": 30.0
+  }
+ ],
+ "runs": [
+  {
+   "idx": 0,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.683669764784841,
+    "h_err_p95": 5.09306286553641,
+    "v_err_p95": 9.187428814885067,
+    "err3d_rms": 5.770924090333955,
+    "nis_mean": 0.7475327128531968,
+    "availability": 1.0,
+    "runtime_ms": 2.5657416647946873
+   }
+  },
+  {
+   "idx": 0,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1000,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.337530308408539,
+    "h_err_p95": 6.758762911713384,
+    "v_err_p95": 13.094473498894548,
+    "err3d_rms": 7.840809409675838,
+    "nis_mean": 0.8655085889573751,
+    "availability": 1.0,
+    "runtime_ms": 2.029093334082669
+   }
+  },
+  {
+   "idx": 1,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.8834456909916097,
+    "h_err_p95": 5.59666123150992,
+    "v_err_p95": 5.568753310981104,
+    "err3d_rms": 4.721641532122174,
+    "nis_mean": 0.9948283671480954,
+    "availability": 1.0,
+    "runtime_ms": 2.530310555529367
+   }
+  },
+  {
+   "idx": 1,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1001,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.8929422656039874,
+    "h_err_p95": 8.05495332937356,
+    "v_err_p95": 10.228275024589301,
+    "err3d_rms": 7.005722764158854,
+    "nis_mean": 1.4815149972214745,
+    "availability": 1.0,
+    "runtime_ms": 1.9760538890194668
+   }
+  },
+  {
+   "idx": 2,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.753257218628786,
+    "h_err_p95": 5.2623072020634885,
+    "v_err_p95": 5.527077635239952,
+    "err3d_rms": 4.2764827541921635,
+    "nis_mean": 0.7000064323536346,
+    "availability": 1.0,
+    "runtime_ms": 2.516182779800147
+   }
+  },
+  {
+   "idx": 2,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1002,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.5984393513436252,
+    "h_err_p95": 7.026876809115565,
+    "v_err_p95": 9.43286309742076,
+    "err3d_rms": 6.509187567423286,
+    "nis_mean": 0.9581029550794854,
+    "availability": 1.0,
+    "runtime_ms": 1.944368889639413
+   }
+  },
+  {
+   "idx": 3,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9905880435693923,
+    "h_err_p95": 6.0061578676953475,
+    "v_err_p95": 6.823639145745167,
+    "err3d_rms": 5.062500731890104,
+    "nis_mean": 0.71827079371669,
+    "availability": 1.0,
+    "runtime_ms": 2.8026122208555333
+   }
+  },
+  {
+   "idx": 3,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1003,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.455518183683099,
+    "h_err_p95": 8.94743441369966,
+    "v_err_p95": 11.82397179439039,
+    "err3d_rms": 8.337702815983896,
+    "nis_mean": 0.8840718662197814,
+    "availability": 1.0,
+    "runtime_ms": 1.7630805562172707
+   }
+  },
+  {
+   "idx": 4,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.098203129539419,
+    "h_err_p95": 4.7391518409666835,
+    "v_err_p95": 5.1982532526097796,
+    "err3d_rms": 3.981415662457021,
+    "nis_mean": 0.6799494446040591,
+    "availability": 1.0,
+    "runtime_ms": 3.0489988878899665
+   }
+  },
+  {
+   "idx": 4,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1004,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3129921093605654,
+    "h_err_p95": 7.179390438828793,
+    "v_err_p95": 8.83495361656474,
+    "err3d_rms": 6.134990697482103,
+    "nis_mean": 0.8049249446504344,
+    "availability": 1.0,
+    "runtime_ms": 1.9721622216618724
+   }
+  },
+  {
+   "idx": 5,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.191419442657782,
+    "h_err_p95": 7.058296320895193,
+    "v_err_p95": 6.050220732349249,
+    "err3d_rms": 5.626619971414945,
+    "nis_mean": 0.8078266451626965,
+    "availability": 1.0,
+    "runtime_ms": 2.841682222626534
+   }
+  },
+  {
+   "idx": 5,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1005,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.657512422074204,
+    "h_err_p95": 8.659587564948396,
+    "v_err_p95": 11.092531649706032,
+    "err3d_rms": 7.950804201396295,
+    "nis_mean": 1.078664238366385,
+    "availability": 1.0,
+    "runtime_ms": 2.1312133337940193
+   }
+  },
+  {
+   "idx": 6,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.4207512461665717,
+    "h_err_p95": 5.338192814093498,
+    "v_err_p95": 6.908434566196322,
+    "err3d_rms": 4.7918373292748,
+    "nis_mean": 0.6709362978143559,
+    "availability": 1.0,
+    "runtime_ms": 2.3700722219978667
+   }
+  },
+  {
+   "idx": 6,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1006,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3639731946726807,
+    "h_err_p95": 6.964017330395505,
+    "v_err_p95": 10.940941663264134,
+    "err3d_rms": 6.953242604669575,
+    "nis_mean": 0.8191431365904935,
+    "availability": 1.0,
+    "runtime_ms": 2.0801400000992647
+   }
+  },
+  {
+   "idx": 7,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3964904302030394,
+    "h_err_p95": 8.284527248522462,
+    "v_err_p95": 11.762015243099276,
+    "err3d_rms": 8.089394595440961,
+    "nis_mean": 0.7803272693711067,
+    "availability": 1.0,
+    "runtime_ms": 1.9833972210310293
+   }
+  },
+  {
+   "idx": 7,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1007,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.6137541652564495,
+    "h_err_p95": 10.57631925089248,
+    "v_err_p95": 15.874393828581194,
+    "err3d_rms": 10.280265322165782,
+    "nis_mean": 1.1241828527260846,
+    "availability": 1.0,
+    "runtime_ms": 2.092224999634911
+   }
+  },
+  {
+   "idx": 8,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.370238448976413,
+    "h_err_p95": 5.273022950028115,
+    "v_err_p95": 4.906456227777078,
+    "err3d_rms": 3.8167003195067313,
+    "nis_mean": 0.7021216672191781,
+    "availability": 1.0,
+    "runtime_ms": 2.3918466661901525
+   }
+  },
+  {
+   "idx": 8,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1008,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.0391108362811714,
+    "h_err_p95": 7.162022086160945,
+    "v_err_p95": 7.790393781338272,
+    "err3d_rms": 5.64840406427591,
+    "nis_mean": 0.8880296852120418,
+    "availability": 1.0,
+    "runtime_ms": 2.221224999650278
+   }
+  },
+  {
+   "idx": 9,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.3436435311600645,
+    "h_err_p95": 5.15850056211585,
+    "v_err_p95": 9.705135990242052,
+    "err3d_rms": 6.207012914115406,
+    "nis_mean": 1.0452033558552127,
+    "availability": 1.0,
+    "runtime_ms": 2.6900205552616776
+   }
+  },
+  {
+   "idx": 9,
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "seed": 1009,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.5073271016423853,
+    "h_err_p95": 7.233969914464868,
+    "v_err_p95": 16.157006049805425,
+    "err3d_rms": 9.160830413931734,
+    "nis_mean": 1.8555628599454697,
+    "availability": 1.0,
+    "runtime_ms": 1.994713335039301
+   }
+  },
+  {
+   "idx": 10,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.2932389703100657,
+    "h_err_p95": 6.286223363674071,
+    "v_err_p95": 7.591375650056197,
+    "err3d_rms": 5.512121854964307,
+    "nis_mean": 0.7308135092226513,
+    "availability": 1.0,
+    "runtime_ms": 1.931242778017703
+   }
+  },
+  {
+   "idx": 10,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1000,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.075652856747534,
+    "h_err_p95": 8.126373488781253,
+    "v_err_p95": 11.355107678711413,
+    "err3d_rms": 7.667134659719401,
+    "nis_mean": 0.8826136503832811,
+    "availability": 1.0,
+    "runtime_ms": 2.022431111739327
+   }
+  },
+  {
+   "idx": 11,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.2675932877544307,
+    "h_err_p95": 4.6520926988283815,
+    "v_err_p95": 7.269076928547729,
+    "err3d_rms": 4.671206143002447,
+    "nis_mean": 0.8007777315973302,
+    "availability": 1.0,
+    "runtime_ms": 2.1491322234699815
+   }
+  },
+  {
+   "idx": 11,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1001,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.075565994139982,
+    "h_err_p95": 6.689757688852337,
+    "v_err_p95": 10.75015566804021,
+    "err3d_rms": 6.74423774445004,
+    "nis_mean": 0.9957179345109156,
+    "availability": 1.0,
+    "runtime_ms": 2.126336665403667
+   }
+  },
+  {
+   "idx": 12,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.0650250514574857,
+    "h_err_p95": 6.077213085988012,
+    "v_err_p95": 5.671569107090736,
+    "err3d_rms": 4.597454371370418,
+    "nis_mean": 0.7778048097140311,
+    "availability": 1.0,
+    "runtime_ms": 1.971982222069831
+   }
+  },
+  {
+   "idx": 12,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1002,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.039789205345216,
+    "h_err_p95": 7.668141522385442,
+    "v_err_p95": 9.129623652550727,
+    "err3d_rms": 6.97789640738839,
+    "nis_mean": 1.0367103141364442,
+    "availability": 1.0,
+    "runtime_ms": 1.8009244430383355
+   }
+  },
+  {
+   "idx": 13,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.8996146325995653,
+    "h_err_p95": 5.606520909196845,
+    "v_err_p95": 6.722787065566006,
+    "err3d_rms": 4.71842397896376,
+    "nis_mean": 0.6780708123562115,
+    "availability": 1.0,
+    "runtime_ms": 2.3171916667100354
+   }
+  },
+  {
+   "idx": 13,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1003,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.8427645048041557,
+    "h_err_p95": 8.379471856696865,
+    "v_err_p95": 10.801919785215473,
+    "err3d_rms": 7.039058613708974,
+    "nis_mean": 0.8085231884294048,
+    "availability": 1.0,
+    "runtime_ms": 2.149562776483233
+   }
+  },
+  {
+   "idx": 14,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 1.8461741553160633,
+    "h_err_p95": 4.814872327737293,
+    "v_err_p95": 6.939247269075257,
+    "err3d_rms": 4.274209236565539,
+    "nis_mean": 0.7260555661825484,
+    "availability": 1.0,
+    "runtime_ms": 1.7970327793995642
+   }
+  },
+  {
+   "idx": 14,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1004,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.04886060166451,
+    "h_err_p95": 7.388042491642559,
+    "v_err_p95": 12.767751798152332,
+    "err3d_rms": 7.098958232407098,
+    "nis_mean": 0.909352175769565,
+    "availability": 1.0,
+    "runtime_ms": 1.9084827773945612
+   }
+  },
+  {
+   "idx": 15,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.267149798821352,
+    "h_err_p95": 7.570315630365624,
+    "v_err_p95": 7.223964240272568,
+    "err3d_rms": 6.06997774290356,
+    "nis_mean": 0.7850225935991713,
+    "availability": 1.0,
+    "runtime_ms": 1.9227116684002492
+   }
+  },
+  {
+   "idx": 15,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1005,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.6071837125999835,
+    "h_err_p95": 8.665860816183692,
+    "v_err_p95": 11.12808027799936,
+    "err3d_rms": 7.8945533914607005,
+    "nis_mean": 1.018942124793903,
+    "availability": 1.0,
+    "runtime_ms": 1.9385749993186132
+   }
+  },
+  {
+   "idx": 16,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.6139521368507133,
+    "h_err_p95": 5.816539061694632,
+    "v_err_p95": 7.875865666986439,
+    "err3d_rms": 5.03400386405412,
+    "nis_mean": 0.7199192744229844,
+    "availability": 1.0,
+    "runtime_ms": 1.853218887602755
+   }
+  },
+  {
+   "idx": 16,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1006,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.4769530554698402,
+    "h_err_p95": 6.920809847997796,
+    "v_err_p95": 12.505128274068273,
+    "err3d_rms": 7.595888464038417,
+    "nis_mean": 0.8752999747540527,
+    "availability": 1.0,
+    "runtime_ms": 1.9470172226040934
+   }
+  },
+  {
+   "idx": 17,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.0389529444636234,
+    "h_err_p95": 6.148771795471061,
+    "v_err_p95": 9.15975243643496,
+    "err3d_rms": 6.148292046371523,
+    "nis_mean": 0.7894097173687151,
+    "availability": 1.0,
+    "runtime_ms": 2.2574438880029546
+   }
+  },
+  {
+   "idx": 17,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1007,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.024050344770232,
+    "h_err_p95": 7.998414410646382,
+    "v_err_p95": 12.410480763368795,
+    "err3d_rms": 8.054823088665218,
+    "nis_mean": 1.0959126110395336,
+    "availability": 1.0,
+    "runtime_ms": 1.9303516673971899
+   }
+  },
+  {
+   "idx": 18,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.3295977499678377,
+    "h_err_p95": 5.4996587560832335,
+    "v_err_p95": 6.022893505482855,
+    "err3d_rms": 4.337964515772622,
+    "nis_mean": 0.6751142834640734,
+    "availability": 1.0,
+    "runtime_ms": 1.8420644460194227
+   }
+  },
+  {
+   "idx": 18,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1008,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.7307015789730036,
+    "h_err_p95": 6.682901372562382,
+    "v_err_p95": 10.59375455716403,
+    "err3d_rms": 6.59092095851622,
+    "nis_mean": 0.8574749554141855,
+    "availability": 1.0,
+    "runtime_ms": 1.7494061093505784
+   }
+  },
+  {
+   "idx": 19,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.2967872976829526,
+    "h_err_p95": 4.425703252036842,
+    "v_err_p95": 6.4826056049132035,
+    "err3d_rms": 4.446487345343347,
+    "nis_mean": 0.8078290413730753,
+    "availability": 1.0,
+    "runtime_ms": 1.741086668658277
+   }
+  },
+  {
+   "idx": 19,
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "seed": 1009,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.14983733750681,
+    "h_err_p95": 6.582374160496587,
+    "v_err_p95": 10.004323561955538,
+    "err3d_rms": 6.546268839718187,
+    "nis_mean": 1.0552262215136368,
+    "availability": 1.0,
+    "runtime_ms": 1.8329205562218298
+   }
+  },
+  {
+   "idx": 20,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9856700790516006,
+    "h_err_p95": 6.407532592747921,
+    "v_err_p95": 5.7320043488669805,
+    "err3d_rms": 4.785631078792775,
+    "nis_mean": 0.7505482640284572,
+    "availability": 1.0,
+    "runtime_ms": 1.7420966661625747
+   }
+  },
+  {
+   "idx": 20,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1000,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.175703883288905,
+    "h_err_p95": 8.595545902745473,
+    "v_err_p95": 11.762151580448412,
+    "err3d_rms": 7.627688526792841,
+    "nis_mean": 0.9786589968305763,
+    "availability": 1.0,
+    "runtime_ms": 1.8555966671556234
+   }
+  },
+  {
+   "idx": 21,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.5941535714481825,
+    "h_err_p95": 5.225774649380775,
+    "v_err_p95": 8.025513029832478,
+    "err3d_rms": 5.160776643396445,
+    "nis_mean": 0.7218353573369295,
+    "availability": 1.0,
+    "runtime_ms": 1.7613383335022568
+   }
+  },
+  {
+   "idx": 21,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1001,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.5531762826557625,
+    "h_err_p95": 7.338001720889222,
+    "v_err_p95": 13.263259582326594,
+    "err3d_rms": 8.013149060752827,
+    "nis_mean": 0.8921659943253659,
+    "availability": 1.0,
+    "runtime_ms": 1.7630533345962045
+   }
+  },
+  {
+   "idx": 22,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.47707759952182,
+    "h_err_p95": 6.532585964520288,
+    "v_err_p95": 11.555299347303249,
+    "err3d_rms": 6.932733539853065,
+    "nis_mean": 0.8290973175844663,
+    "availability": 1.0,
+    "runtime_ms": 2.088360556000326
+   }
+  },
+  {
+   "idx": 22,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1002,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.29751250762023,
+    "h_err_p95": 10.34930699404066,
+    "v_err_p95": 17.078024373645476,
+    "err3d_rms": 10.573919246762571,
+    "nis_mean": 1.125120597763836,
+    "availability": 1.0,
+    "runtime_ms": 1.6996894434366066
+   }
+  },
+  {
+   "idx": 23,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.7263866728326147,
+    "h_err_p95": 5.456484741459334,
+    "v_err_p95": 10.39137353566164,
+    "err3d_rms": 6.417203694616305,
+    "nis_mean": 0.8852846351773631,
+    "availability": 1.0,
+    "runtime_ms": 1.6976844453084696
+   }
+  },
+  {
+   "idx": 23,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1003,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.737551210770841,
+    "h_err_p95": 8.07213618952523,
+    "v_err_p95": 15.634252247208162,
+    "err3d_rms": 9.22888386637193,
+    "nis_mean": 1.1172650059660831,
+    "availability": 1.0,
+    "runtime_ms": 1.761110000208848
+   }
+  },
+  {
+   "idx": 24,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.2195608788429544,
+    "h_err_p95": 4.494771719325122,
+    "v_err_p95": 6.7886703239114015,
+    "err3d_rms": 4.467904870209822,
+    "nis_mean": 0.7321001600282795,
+    "availability": 1.0,
+    "runtime_ms": 2.2911338882598407
+   }
+  },
+  {
+   "idx": 24,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1004,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.155068270384444,
+    "h_err_p95": 6.517219165666159,
+    "v_err_p95": 11.476109090572317,
+    "err3d_rms": 7.054729929924267,
+    "nis_mean": 0.8643856452415254,
+    "availability": 1.0,
+    "runtime_ms": 1.9106811109749187
+   }
+  },
+  {
+   "idx": 25,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.062399794508041,
+    "h_err_p95": 7.395602367247058,
+    "v_err_p95": 9.308854217374046,
+    "err3d_rms": 7.228921161012046,
+    "nis_mean": 0.6670819175181688,
+    "availability": 1.0,
+    "runtime_ms": 1.7563672214035049
+   }
+  },
+  {
+   "idx": 25,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1005,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 5.049370665024978,
+    "h_err_p95": 9.200574720255773,
+    "v_err_p95": 13.362277974282668,
+    "err3d_rms": 9.184864496271818,
+    "nis_mean": 0.8091307289173133,
+    "availability": 1.0,
+    "runtime_ms": 1.6992977783148593
+   }
+  },
+  {
+   "idx": 26,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.53970638030533,
+    "h_err_p95": 4.876206403481323,
+    "v_err_p95": 7.553619896517288,
+    "err3d_rms": 4.907392372637019,
+    "nis_mean": 0.6988133327716559,
+    "availability": 1.0,
+    "runtime_ms": 2.360856667089845
+   }
+  },
+  {
+   "idx": 26,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1006,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.490833019989074,
+    "h_err_p95": 6.594481833379864,
+    "v_err_p95": 11.007431251772232,
+    "err3d_rms": 7.3257775190125765,
+    "nis_mean": 0.7920809649372668,
+    "availability": 1.0,
+    "runtime_ms": 1.979456110469376
+   }
+  },
+  {
+   "idx": 27,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.2416167087759766,
+    "h_err_p95": 5.126052830061481,
+    "v_err_p95": 11.277444985499978,
+    "err3d_rms": 6.734867484764405,
+    "nis_mean": 0.6967428357604588,
+    "availability": 1.0,
+    "runtime_ms": 1.8424016672522865
+   }
+  },
+  {
+   "idx": 27,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1007,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9413193233360593,
+    "h_err_p95": 7.226491362350527,
+    "v_err_p95": 15.112135219778489,
+    "err3d_rms": 8.827566038862367,
+    "nis_mean": 0.9565652306250896,
+    "availability": 1.0,
+    "runtime_ms": 1.7115827785649649
+   }
+  },
+  {
+   "idx": 28,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.3312630207697875,
+    "h_err_p95": 4.942694483268181,
+    "v_err_p95": 9.076082332385534,
+    "err3d_rms": 5.222463098383682,
+    "nis_mean": 0.6689205159540967,
+    "availability": 1.0,
+    "runtime_ms": 1.8625566679272902
+   }
+  },
+  {
+   "idx": 28,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1008,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.1340810139884017,
+    "h_err_p95": 6.372561029620794,
+    "v_err_p95": 14.273174263518563,
+    "err3d_rms": 7.933255901054864,
+    "nis_mean": 0.8141287560139692,
+    "availability": 1.0,
+    "runtime_ms": 1.8182466679718345
+   }
+  },
+  {
+   "idx": 29,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.28477156843391,
+    "h_err_p95": 4.685579900393219,
+    "v_err_p95": 5.164143704065697,
+    "err3d_rms": 3.8970909941899525,
+    "nis_mean": 0.7983108902365232,
+    "availability": 1.0,
+    "runtime_ms": 2.1354683332093476
+   }
+  },
+  {
+   "idx": 29,
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "seed": 1009,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3489617244912715,
+    "h_err_p95": 6.316567138413902,
+    "v_err_p95": 8.867150978686624,
+    "err3d_rms": 6.010327298107599,
+    "nis_mean": 1.0070555196841775,
+    "availability": 1.0,
+    "runtime_ms": 2.0634316658187246
+   }
+  },
+  {
+   "idx": 30,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.169426724781802,
+    "h_err_p95": 4.86898853919154,
+    "v_err_p95": 7.256986945277841,
+    "err3d_rms": 4.531775801798649,
+    "nis_mean": 0.8450952840527531,
+    "availability": 1.0,
+    "runtime_ms": 2.0182094454260855
+   }
+  },
+  {
+   "idx": 30,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1000,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9632158732231724,
+    "h_err_p95": 6.29667869311336,
+    "v_err_p95": 12.609641162926065,
+    "err3d_rms": 7.402715358191256,
+    "nis_mean": 1.0884492552734684,
+    "availability": 1.0,
+    "runtime_ms": 2.096058333538369
+   }
+  },
+  {
+   "idx": 31,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.347081952969023,
+    "h_err_p95": 4.4364113737025015,
+    "v_err_p95": 7.716699192013386,
+    "err3d_rms": 4.730579416140642,
+    "nis_mean": 0.8660868591414563,
+    "availability": 1.0,
+    "runtime_ms": 1.7895861110042055
+   }
+  },
+  {
+   "idx": 31,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1001,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.0968064769520307,
+    "h_err_p95": 6.098272772931476,
+    "v_err_p95": 11.240703344436422,
+    "err3d_rms": 7.115114885712118,
+    "nis_mean": 1.0969407067019703,
+    "availability": 1.0,
+    "runtime_ms": 1.951576111605391
+   }
+  },
+  {
+   "idx": 32,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.4281148576030644,
+    "h_err_p95": 5.63112503579371,
+    "v_err_p95": 9.49628993657367,
+    "err3d_rms": 6.475724805774216,
+    "nis_mean": 0.7228323823994856,
+    "availability": 1.0,
+    "runtime_ms": 1.8437900004856702
+   }
+  },
+  {
+   "idx": 32,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1002,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.058753497670884,
+    "h_err_p95": 7.152253814403552,
+    "v_err_p95": 13.731228975955647,
+    "err3d_rms": 8.549445046932071,
+    "nis_mean": 0.8880387600275484,
+    "availability": 1.0,
+    "runtime_ms": 2.3472783327128535
+   }
+  },
+  {
+   "idx": 33,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.83150908230573,
+    "h_err_p95": 6.090832844996872,
+    "v_err_p95": 7.5226695989025245,
+    "err3d_rms": 5.116735295839499,
+    "nis_mean": 0.9389386507950813,
+    "availability": 1.0,
+    "runtime_ms": 2.0902455574186107
+   }
+  },
+  {
+   "idx": 33,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1003,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.8539089637717554,
+    "h_err_p95": 7.810626427831636,
+    "v_err_p95": 12.158705798111654,
+    "err3d_rms": 8.155311180310457,
+    "nis_mean": 1.0907225777617633,
+    "availability": 1.0,
+    "runtime_ms": 2.008498888365769
+   }
+  },
+  {
+   "idx": 34,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.007477299086793,
+    "h_err_p95": 4.234076787197185,
+    "v_err_p95": 6.7598388045150575,
+    "err3d_rms": 4.245700936327518,
+    "nis_mean": 0.7566819436490141,
+    "availability": 1.0,
+    "runtime_ms": 1.840163886825192
+   }
+  },
+  {
+   "idx": 34,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1004,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9624253716971247,
+    "h_err_p95": 6.152336235993732,
+    "v_err_p95": 11.465315919979565,
+    "err3d_rms": 6.78556435852235,
+    "nis_mean": 0.9654642633273155,
+    "availability": 1.0,
+    "runtime_ms": 1.8127405556798395
+   }
+  },
+  {
+   "idx": 35,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.099074661349645,
+    "h_err_p95": 4.495156100510206,
+    "v_err_p95": 7.934046036017468,
+    "err3d_rms": 4.492385539527176,
+    "nis_mean": 0.7695143007254256,
+    "availability": 1.0,
+    "runtime_ms": 1.852072221421016
+   }
+  },
+  {
+   "idx": 35,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1005,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.838420188562501,
+    "h_err_p95": 5.79500472389755,
+    "v_err_p95": 12.931073615687477,
+    "err3d_rms": 6.96944889287838,
+    "nis_mean": 0.9920202350974011,
+    "availability": 1.0,
+    "runtime_ms": 1.9356688892003149
+   }
+  },
+  {
+   "idx": 36,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.197541802036031,
+    "h_err_p95": 4.007328867471542,
+    "v_err_p95": 8.347112719704858,
+    "err3d_rms": 5.051195407124429,
+    "nis_mean": 0.7827771842571262,
+    "availability": 1.0,
+    "runtime_ms": 1.9919816672983064
+   }
+  },
+  {
+   "idx": 36,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1006,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.9465407011977547,
+    "h_err_p95": 5.102189456246118,
+    "v_err_p95": 12.132239683933859,
+    "err3d_rms": 7.060011618400393,
+    "nis_mean": 1.0600805344931188,
+    "availability": 1.0,
+    "runtime_ms": 1.8866355558404595
+   }
+  },
+  {
+   "idx": 37,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.8794849172959607,
+    "h_err_p95": 5.504505490869321,
+    "v_err_p95": 7.28857743096546,
+    "err3d_rms": 5.075145688126931,
+    "nis_mean": 0.8042984695512346,
+    "availability": 1.0,
+    "runtime_ms": 1.9858577768900434
+   }
+  },
+  {
+   "idx": 37,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1007,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.318119014733564,
+    "h_err_p95": 7.244967969920679,
+    "v_err_p95": 11.330052490304842,
+    "err3d_rms": 7.243337889620481,
+    "nis_mean": 1.0839926642267437,
+    "availability": 1.0,
+    "runtime_ms": 1.9137599992164824
+   }
+  },
+  {
+   "idx": 38,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.1688702450042774,
+    "h_err_p95": 4.517207834321996,
+    "v_err_p95": 10.334855763356282,
+    "err3d_rms": 6.181479807290905,
+    "nis_mean": 0.7055978820329464,
+    "availability": 1.0,
+    "runtime_ms": 1.812637222206427
+   }
+  },
+  {
+   "idx": 38,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1008,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.7177569527860768,
+    "h_err_p95": 5.776433571352867,
+    "v_err_p95": 12.761878692138856,
+    "err3d_rms": 7.6810587961299035,
+    "nis_mean": 0.8976265914037772,
+    "availability": 1.0,
+    "runtime_ms": 1.952246112018151
+   }
+  },
+  {
+   "idx": 39,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.462149686045043,
+    "h_err_p95": 5.046401759434014,
+    "v_err_p95": 6.1605746548588725,
+    "err3d_rms": 4.45576390560652,
+    "nis_mean": 0.8632594557038786,
+    "availability": 1.0,
+    "runtime_ms": 2.0888700010901733
+   }
+  },
+  {
+   "idx": 39,
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "seed": 1009,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3581100580598933,
+    "h_err_p95": 6.182654682955571,
+    "v_err_p95": 10.047544696794198,
+    "err3d_rms": 6.708049994133778,
+    "nis_mean": 1.053691664863089,
+    "availability": 1.0,
+    "runtime_ms": 1.9797499998175125
+   }
+  },
+  {
+   "idx": 40,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.4306909392693443,
+    "h_err_p95": 5.3012508434846195,
+    "v_err_p95": 7.844171251087238,
+    "err3d_rms": 4.830831524962058,
+    "nis_mean": 0.8116273646208962,
+    "availability": 1.0,
+    "runtime_ms": 1.8994644455637575
+   }
+  },
+  {
+   "idx": 40,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1000,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.1719293455922317,
+    "h_err_p95": 6.7256325888893755,
+    "v_err_p95": 12.332973060208106,
+    "err3d_rms": 7.467394428846124,
+    "nis_mean": 1.065893827055127,
+    "availability": 1.0,
+    "runtime_ms": 1.8729833328203918
+   }
+  },
+  {
+   "idx": 41,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.058959064114551,
+    "h_err_p95": 3.9552108527575354,
+    "v_err_p95": 6.490952280584554,
+    "err3d_rms": 4.26512208632215,
+    "nis_mean": 0.6761284869981574,
+    "availability": 1.0,
+    "runtime_ms": 2.341587221437496
+   }
+  },
+  {
+   "idx": 41,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1001,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.010711372011233,
+    "h_err_p95": 6.491379918006025,
+    "v_err_p95": 10.346765331556401,
+    "err3d_rms": 6.166384826073098,
+    "nis_mean": 0.762064455530468,
+    "availability": 1.0,
+    "runtime_ms": 1.90049722215109
+   }
+  },
+  {
+   "idx": 42,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.2110541546742777,
+    "h_err_p95": 4.509497901769284,
+    "v_err_p95": 7.210825320494283,
+    "err3d_rms": 4.64239107554634,
+    "nis_mean": 0.6425004356762042,
+    "availability": 1.0,
+    "runtime_ms": 2.203971111965883
+   }
+  },
+  {
+   "idx": 42,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1002,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.0527466631393985,
+    "h_err_p95": 5.9304347731263025,
+    "v_err_p95": 11.069666910874018,
+    "err3d_rms": 6.777276461197871,
+    "nis_mean": 0.7157850498909037,
+    "availability": 1.0,
+    "runtime_ms": 1.8447522214652659
+   }
+  },
+  {
+   "idx": 43,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.58706026198582,
+    "h_err_p95": 6.146119073732729,
+    "v_err_p95": 7.556338722120301,
+    "err3d_rms": 5.274156725645422,
+    "nis_mean": 0.7378814642297936,
+    "availability": 1.0,
+    "runtime_ms": 2.320984998045282
+   }
+  },
+  {
+   "idx": 43,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1003,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.8104622336619096,
+    "h_err_p95": 7.370361073447915,
+    "v_err_p95": 10.668870263845982,
+    "err3d_rms": 7.2771665066332085,
+    "nis_mean": 0.8543113225000724,
+    "availability": 1.0,
+    "runtime_ms": 1.8892561111392248
+   }
+  },
+  {
+   "idx": 44,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.5164688860109568,
+    "h_err_p95": 4.870345247400533,
+    "v_err_p95": 6.631606064928338,
+    "err3d_rms": 4.314317441346406,
+    "nis_mean": 0.7392524070152376,
+    "availability": 1.0,
+    "runtime_ms": 2.1870700007032915
+   }
+  },
+  {
+   "idx": 44,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1004,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.3515039165996434,
+    "h_err_p95": 6.584251341463141,
+    "v_err_p95": 10.715466721712255,
+    "err3d_rms": 6.461655420565857,
+    "nis_mean": 0.8614391777986903,
+    "availability": 1.0,
+    "runtime_ms": 1.9590349997290306
+   }
+  },
+  {
+   "idx": 45,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.4475396571009345,
+    "h_err_p95": 5.771521030459605,
+    "v_err_p95": 8.715277526820612,
+    "err3d_rms": 5.890599626942941,
+    "nis_mean": 0.7559518389802912,
+    "availability": 1.0,
+    "runtime_ms": 1.7262116672807477
+   }
+  },
+  {
+   "idx": 45,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1005,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 4.424518957245983,
+    "h_err_p95": 7.400086015808165,
+    "v_err_p95": 13.70725169856131,
+    "err3d_rms": 8.54352998862732,
+    "nis_mean": 0.9785025875423257,
+    "availability": 1.0,
+    "runtime_ms": 1.7093411108362488
+   }
+  },
+  {
+   "idx": 46,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.4159077446751,
+    "h_err_p95": 4.761782305252894,
+    "v_err_p95": 5.609970094922854,
+    "err3d_rms": 3.9791076622809682,
+    "nis_mean": 0.7727049491100944,
+    "availability": 1.0,
+    "runtime_ms": 1.8626572236017738
+   }
+  },
+  {
+   "idx": 46,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1006,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.1649223239493933,
+    "h_err_p95": 6.245475247690972,
+    "v_err_p95": 9.309577123529294,
+    "err3d_rms": 6.280590364994294,
+    "nis_mean": 0.9359467267337347,
+    "availability": 1.0,
+    "runtime_ms": 1.7624377785573921
+   }
+  },
+  {
+   "idx": 47,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 1.9676061190376302,
+    "h_err_p95": 4.37425233037445,
+    "v_err_p95": 7.357284192185276,
+    "err3d_rms": 4.583362899148333,
+    "nis_mean": 0.8170333293952511,
+    "availability": 1.0,
+    "runtime_ms": 1.7962705554156049
+   }
+  },
+  {
+   "idx": 47,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1007,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.840465260304322,
+    "h_err_p95": 6.270890874373484,
+    "v_err_p95": 11.064080267689716,
+    "err3d_rms": 6.677454616413692,
+    "nis_mean": 1.0868054369363027,
+    "availability": 1.0,
+    "runtime_ms": 1.6612888894289628
+   }
+  },
+  {
+   "idx": 48,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.657976451380434,
+    "h_err_p95": 4.981086209257617,
+    "v_err_p95": 8.872437417347532,
+    "err3d_rms": 5.738166128036463,
+    "nis_mean": 0.6713517386519459,
+    "availability": 1.0,
+    "runtime_ms": 1.2557005556623657
+   }
+  },
+  {
+   "idx": 48,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1008,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.295510794016371,
+    "h_err_p95": 6.7971160469832705,
+    "v_err_p95": 11.583614556012929,
+    "err3d_rms": 7.54154578938593,
+    "nis_mean": 0.8296303124574862,
+    "availability": 1.0,
+    "runtime_ms": 1.2406066661545387
+   }
+  },
+  {
+   "idx": 49,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": 2.4666928456279047,
+    "h_err_p95": 4.613104421147206,
+    "v_err_p95": 7.262603127643719,
+    "err3d_rms": 4.635213193090423,
+    "nis_mean": 0.773818209970949,
+    "availability": 1.0,
+    "runtime_ms": 1.1482427768189356
+   }
+  },
+  {
+   "idx": 49,
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "seed": 1009,
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": 3.133220226756543,
+    "h_err_p95": 6.942471362027317,
+    "v_err_p95": 10.97100351712063,
+    "err3d_rms": 6.6815857567653785,
+    "nis_mean": 0.9666613722371172,
+    "availability": 1.0,
+    "runtime_ms": 1.1226427763985056
+   }
+  }
+ ],
+ "aggregate": [
+  {
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 2.8131706946677917,
+     "median": 2.7184634917068133,
+     "p95": 3.8337013870531473,
+     "std": 0.6126829437214392,
+     "min": 2.098203129539419,
+     "max": 4.191419442657782,
+     "ci_lo": 2.3749141695832416,
+     "ci_hi": 3.2514272197523417
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 5.780988090342697,
+     "median": 5.305607882060807,
+     "p95": 7.73272333109019,
+     "std": 1.087973813228719,
+     "min": 4.7391518409666835,
+     "max": 8.284527248522462,
+     "ci_lo": 5.00275258100658,
+     "ci_hi": 6.5592235996788135
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 7.163741491912505,
+     "median": 6.436929939047208,
+     "p95": 10.836419579313523,
+     "std": 2.2925006783444464,
+     "min": 4.906456227777078,
+     "max": 11.762015243099276,
+     "ci_lo": 5.523899235259109,
+     "ci_hi": 8.803583748565902
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 5.234452990074826,
+     "median": 4.927169030582452,
+     "p95": 7.242322838844459,
+     "std": 1.2703649739958136,
+     "min": 3.8167003195067313,
+     "max": 8.089394595440961,
+     "ci_lo": 4.32575176899814,
+     "ci_hi": 6.143154211151511
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.7847002986098225,
+     "median": 0.7329017532849433,
+     "p95": 1.02253461093701,
+     "std": 0.13177049851012004,
+     "min": 0.6709362978143559,
+     "max": 1.0452033558552127,
+     "ci_lo": 0.6904439113911174,
+     "ci_hi": 0.8789566858285276
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 2.574086499597696,
+     "median": 2.548026110162027,
+     "p95": 2.955706388521422,
+     "std": 0.2966291688938421,
+     "min": 1.9833972210310293,
+     "max": 3.0489988878899665,
+     "ci_lo": 2.3619055173615746,
+     "ci_hi": 2.7862674818338173
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 0,
+   "location": "Zagreb",
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 3.777909993832671,
+     "median": 3.5528832264930053,
+     "p95": 4.6378212065062145,
+     "std": 0.5941751314748256,
+     "min": 3.0391108362811714,
+     "max": 4.657512422074204,
+     "ci_lo": 3.352892240228931,
+     "ci_hi": 4.202927747436411
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 7.856333404959315,
+     "median": 7.206680176646831,
+     "p95": 9.84332107415571,
+     "std": 1.215183344343486,
+     "min": 6.758762911713384,
+     "max": 10.57631925089248,
+     "ci_lo": 6.9871040012520504,
+     "ci_hi": 8.72556280866658
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 11.52698040045548,
+     "median": 11.016736656485083,
+     "p95": 16.02983055025452,
+     "std": 2.8026895286978317,
+     "min": 7.790393781338272,
+     "max": 16.157006049805425,
+     "ci_lo": 9.52219638235097,
+     "ci_hi": 13.531764418559991
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 7.582195986116328,
+     "median": 7.423266086917346,
+     "p95": 9.77651961346046,
+     "std": 1.4243288255911046,
+     "min": 5.64840406427591,
+     "max": 10.280265322165782,
+     "ci_lo": 6.563363312417609,
+     "ci_hi": 8.601028659815046
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 1.0759706124969024,
+     "median": 0.9230663201457636,
+     "p95": 1.6872413217196716,
+     "std": 0.34064025850340873,
+     "min": 0.8049249446504344,
+     "max": 1.8555628599454697,
+     "ci_lo": 0.8323081806870142,
+     "ci_hi": 1.3196330443067905
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 2.0204275558838467,
+     "median": 2.011903334560985,
+     "p95": 2.1807197500149615,
+     "std": 0.12398961943374125,
+     "min": 1.7630805562172707,
+     "max": 2.221224999650278,
+     "ci_lo": 1.9317368875431706,
+     "ci_hi": 2.1091182242245226
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 2.7918086025224094,
+     "median": 2.7567833847251393,
+     "p95": 3.8288899259912723,
+     "std": 0.68595090882865,
+     "min": 1.8461741553160633,
+     "max": 4.267149798821352,
+     "ci_lo": 2.301142973974223,
+     "ci_hi": 3.2824742310705957
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 5.689791088107599,
+     "median": 5.711529985445738,
+     "p95": 6.992474110354424,
+     "std": 0.9280942974356757,
+     "min": 4.425703252036842,
+     "max": 7.570315630365624,
+     "ci_lo": 5.025918548626763,
+     "ci_hi": 6.3536636275884355
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 7.095913747442594,
+     "median": 7.081605754673912,
+     "p95": 8.582003390183123,
+     "std": 0.9932922207346249,
+     "min": 5.671569107090736,
+     "max": 9.15975243643496,
+     "ci_lo": 6.385404663562184,
+     "ci_hi": 7.806422831323005
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 4.981014109931165,
+     "median": 4.694815060983103,
+     "p95": 6.11305060981094,
+     "std": 0.6947517801051487,
+     "min": 4.274209236565539,
+     "max": 6.148292046371523,
+     "ci_lo": 4.484053154733395,
+     "ci_hi": 5.477975065128934
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.7490817339300793,
+     "median": 0.7543091594683412,
+     "p95": 0.80465595197399,
+     "std": 0.049547895147465035,
+     "min": 0.6751142834640734,
+     "max": 0.8078290413730753,
+     "ci_lo": 0.7136397674527908,
+     "ci_hi": 0.7845237004073677
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.9783107228350771,
+     "median": 1.9269772232089761,
+     "p95": 2.2903051662918488,
+     "std": 0.197380134975607,
+     "min": 1.741086668658277,
+     "max": 2.3171916667100354,
+     "ci_lo": 1.837123289821668,
+     "ci_hi": 2.119498155848486
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 1,
+   "location": "London",
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 3.707135919202126,
+     "median": 3.7867330418885796,
+     "p95": 4.367994827466381,
+     "std": 0.5133449136100579,
+     "min": 3.04886060166451,
+     "max": 4.6071837125999835,
+     "ci_lo": 3.3399366029586175,
+     "ci_hi": 4.074335235445634
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 7.5102147656245295,
+     "median": 7.528092007014001,
+     "p95": 8.53698578441462,
+     "std": 0.7684664877907745,
+     "min": 6.582374160496587,
+     "max": 8.665860816183692,
+     "ci_lo": 6.96052514877723,
+     "ci_hi": 8.05990438247183
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 11.144632601722614,
+     "median": 10.965000031607417,
+     "p95": 12.649571212314505,
+     "std": 1.1580398296396635,
+     "min": 9.129623652550727,
+     "max": 12.767751798152332,
+     "ci_lo": 10.31627836590088,
+     "ci_hi": 11.97298683754435
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 7.220974040007263,
+     "median": 7.069008423058036,
+     "p95": 7.982701724923185,
+     "std": 0.5451985169525205,
+     "min": 6.546268839718187,
+     "max": 8.054823088665218,
+     "ci_lo": 6.830989611732569,
+     "ci_hi": 7.610958468281957
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.9535773150744923,
+     "median": 0.9525350551402403,
+     "p95": 1.07760373575288,
+     "std": 0.09828910428851173,
+     "min": 0.8085231884294048,
+     "max": 1.0959126110395336,
+     "ci_lo": 0.8832704104338747,
+     "ci_hi": 1.02388421971511
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.9406008328951425,
+     "median": 1.9344633333579015,
+     "p95": 2.139111026497428,
+     "std": 0.13068236938034053,
+     "min": 1.7494061093505784,
+     "max": 2.149562776483233,
+     "ci_lo": 1.8471227922848217,
+     "ci_hi": 2.0340788735054636
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 2.746260627449022,
+     "median": 2.5669299758767563,
+     "p95": 3.799004806764241,
+     "std": 0.6061813170073668,
+     "min": 2.2195608788429544,
+     "max": 4.062399794508041,
+     "ci_lo": 2.312654762808517,
+     "ci_hi": 3.179866492089527
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 5.514328565188471,
+     "median": 5.175913739721128,
+     "p95": 7.007244986020011,
+     "std": 0.9470131953460454,
+     "min": 4.494771719325122,
+     "max": 7.395602367247058,
+     "ci_lo": 4.836923201688957,
+     "ci_hi": 6.191733928687985
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 8.48730057214183,
+     "median": 8.550797681109007,
+     "p95": 11.430264884491777,
+     "std": 2.22236139279539,
+     "min": 5.164143704065697,
+     "max": 11.555299347303249,
+     "ci_lo": 6.897629451916574,
+     "ci_hi": 10.076971692367087
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 5.575498493785552,
+     "median": 5.191619870890063,
+     "p95": 7.0956367314905044,
+     "std": 1.1565848907108527,
+     "min": 3.8970909941899525,
+     "max": 7.228921161012046,
+     "ci_lo": 4.748184986264948,
+     "ci_hi": 6.402812001306155
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.7448735226396399,
+     "median": 0.7269677586826044,
+     "p95": 0.8600003422605594,
+     "std": 0.07199467273463564,
+     "min": 0.6670819175181688,
+     "max": 0.8852846351773631,
+     "ci_lo": 0.693375214386381,
+     "ci_hi": 0.7963718308928989
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.953826444611574,
+     "median": 1.8524791675897885,
+     "p95": 2.329481416616343,
+     "std": 0.24444240633980593,
+     "min": 1.6976844453084696,
+     "max": 2.360856667089845,
+     "ci_lo": 1.7789750297262665,
+     "ci_hi": 2.128677859496882
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 2,
+   "location": "Tokio",
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 3.688357790154997,
+     "median": 3.522004651322418,
+     "p95": 4.71103449419284,
+     "std": 0.6485469583003378,
+     "min": 2.9413193233360593,
+     "max": 5.049370665024978,
+     "ci_lo": 3.2244474769798877,
+     "ci_hi": 4.152268103330106
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 7.65828860568876,
+     "median": 7.282246541619875,
+     "p95": 9.832377470837459,
+     "std": 1.3681299584334599,
+     "min": 6.316567138413902,
+     "max": 10.34930699404066,
+     "ci_lo": 6.679655386677972,
+     "ci_hi": 8.636921824699549
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 13.183596656223955,
+     "median": 13.31276877830463,
+     "p95": 16.428326916748684,
+     "std": 2.45900640877257,
+     "min": 8.867150978686624,
+     "max": 17.078024373645476,
+     "ci_lo": 11.424651650633464,
+     "ci_hi": 14.942541661814445
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 8.178016188391366,
+     "median": 7.973202480903845,
+     "p95": 9.968653325586782,
+     "std": 1.3062771554359243,
+     "min": 6.010327298107599,
+     "max": 10.573919246762571,
+     "ci_lo": 7.243626725121171,
+     "ci_hi": 9.112405651661561
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.9356557440305204,
+     "median": 0.9243656124752277,
+     "p95": 1.1215855814548472,
+     "std": 0.12230433804137578,
+     "min": 0.7920809649372668,
+     "max": 1.125120597763836,
+     "ci_lo": 0.8481705696151716,
+     "ci_hi": 1.0231409184458693
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.826214555751196,
+     "median": 1.7906500012840194,
+     "p95": 2.0256426659115174,
+     "std": 0.1253001666447939,
+     "min": 1.6992977783148593,
+     "max": 2.0634316658187246,
+     "ci_lo": 1.736586443545694,
+     "ci_hi": 1.915842667956698
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 2.3590731228477373,
+     "median": 2.272311877502527,
+     "p95": 2.857895791550357,
+     "std": 0.2979585319159308,
+     "min": 2.007477299086793,
+     "max": 2.8794849172959607,
+     "ci_lo": 2.1459412376615554,
+     "ci_hi": 2.572205008033919
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 4.883203463348888,
+     "median": 4.693098186756768,
+     "p95": 5.883964330855449,
+     "std": 0.6752189633577483,
+     "min": 4.007328867471542,
+     "max": 6.090832844996872,
+     "ci_lo": 4.400214472738272,
+     "ci_hi": 5.3661924539595045
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 7.881765108218542,
+     "median": 7.619684395457956,
+     "p95": 9.957501141304105,
+     "std": 1.2455813814859964,
+     "min": 6.1605746548588725,
+     "max": 10.334855763356282,
+     "ci_lo": 6.990791769472791,
+     "ci_hi": 8.772738446964294
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 5.0356486603556485,
+     "median": 4.890887411632535,
+     "p95": 6.3433145564567255,
+     "std": 0.7451695359803702,
+     "min": 4.245700936327518,
+     "max": 6.475724805774216,
+     "ci_lo": 4.502623521033175,
+     "ci_hi": 5.568673799678122
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.8055082412308401,
+     "median": 0.7935378269041804,
+     "p95": 0.90615534455095,
+     "std": 0.07256483152847683,
+     "min": 0.7055978820329464,
+     "max": 0.9389386507950813,
+     "ci_lo": 0.753602094283366,
+     "ci_hi": 0.8574143881783142
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.9313413890065732,
+     "median": 1.9189649991555298,
+     "p95": 2.089626557070814,
+     "std": 0.11581045769891828,
+     "min": 1.7895861110042055,
+     "max": 2.0902455574186107,
+     "ci_lo": 1.848501333999827,
+     "ci_hi": 2.0141814440133192
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 3,
+   "location": "Quito",
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 3.1114057098654753,
+     "median": 3.010984685447028,
+     "p95": 3.6307994562014168,
+     "std": 0.326378474858497,
+     "min": 2.7177569527860768,
+     "max": 3.8539089637717554,
+     "ci_lo": 2.8779448346776175,
+     "ci_hi": 3.344866585053333
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 6.361141834864655,
+     "median": 6.167495459474651,
+     "p95": 7.556080121771704,
+     "std": 0.8099438623737131,
+     "min": 5.102189456246118,
+     "max": 7.810626427831636,
+     "ci_lo": 5.7817831530619355,
+     "ci_hi": 6.940500516667374
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 12.040838438026858,
+     "median": 12.145472741022758,
+     "p95": 13.37115906383497,
+     "std": 1.0522726870701147,
+     "min": 10.047544696794198,
+     "max": 13.731228975955647,
+     "ci_lo": 11.28814020152037,
+     "ci_hi": 12.793536674533346
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 7.367005802083119,
+     "median": 7.179226387666299,
+     "p95": 8.372084806952344,
+     "std": 0.5984079816835328,
+     "min": 6.708049994133778,
+     "max": 8.549445046932071,
+     "ci_lo": 6.938960260220082,
+     "ci_hi": 7.795051343946156
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 1.0217027253176194,
+     "median": 1.056886099678104,
+     "p95": 1.0941425486788772,
+     "std": 0.08066428066153553,
+     "min": 0.8880387600275484,
+     "max": 1.0969407067019703,
+     "ci_lo": 0.9640029840347246,
+     "ci_hi": 1.0794024666005142
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.9884212777995145,
+     "median": 1.951911111811771,
+     "p95": 2.2342293330843352,
+     "std": 0.14647328249739994,
+     "min": 1.8127405556798395,
+     "max": 2.3472783327128535,
+     "ci_lo": 1.8836478832357124,
+     "ci_hi": 2.0931946723633166
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "estimator": "ekf",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 2.5759956123876955,
+     "median": 2.4486918924486245,
+     "p95": 3.5242759897876215,
+     "std": 0.5396954429556923,
+     "min": 1.9676061190376302,
+     "max": 3.58706026198582,
+     "ci_lo": 2.189947572602102,
+     "ci_hi": 2.962043652173289
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 4.928417021563648,
+     "median": 4.816063776326714,
+     "p95": 5.977549954259823,
+     "std": 0.6579163435744986,
+     "min": 3.9552108527575354,
+     "max": 6.146119073732729,
+     "ci_lo": 4.457804719579301,
+     "ci_hi": 5.399029323547995
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 7.35514659981347,
+     "median": 7.309943659914497,
+     "p95": 8.801715466610418,
+     "std": 0.9875408401481471,
+     "min": 5.609970094922854,
+     "max": 8.872437417347532,
+     "ci_lo": 6.648751519915216,
+     "ci_hi": 8.061541679711725
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 4.81532683633215,
+     "median": 4.638802134318381,
+     "p95": 5.8220045524350255,
+     "std": 0.6313796492233458,
+     "min": 3.9791076622809682,
+     "max": 5.890599626942941,
+     "ci_lo": 4.363696423059976,
+     "ci_hi": 5.2669572496043235
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.7398250224648821,
+     "median": 0.7476021229977644,
+     "p95": 0.8146006452467914,
+     "std": 0.05947494272504468,
+     "min": 0.6425004356762042,
+     "max": 0.8170333293952511,
+     "ci_lo": 0.6972821673137986,
+     "ci_hi": 0.7823678776159657
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.874216055649514,
+     "median": 1.8810608345827657,
+     "p95": 2.3323162209109998,
+     "std": 0.41673396732160534,
+     "min": 1.1482427768189356,
+     "max": 2.341587221437496,
+     "ci_lo": 1.576123245535149,
+     "ci_hi": 2.172308865763879
+    }
+   }
+  },
+  {
+   "point": 0,
+   "group": 4,
+   "location": "Anchorage",
+   "estimator": "wls",
+   "params": {},
+   "metrics": {
+    "h_err_median": {
+     "n": 10,
+     "mean": 3.3255991093277024,
+     "median": 3.1684258347708125,
+     "p95": 4.14819343163315,
+     "std": 0.4642427649556203,
+     "min": 2.840465260304322,
+     "max": 4.424518957245983,
+     "ci_lo": 2.993522913882645,
+     "ci_hi": 3.6576753047727597
+    },
+    "h_err_p95": {
+     "n": 10,
+     "mean": 6.675809924181597,
+     "median": 6.654941965176258,
+     "p95": 7.3867097917460525,
+     "std": 0.4763765829883094,
+     "min": 5.9304347731263025,
+     "max": 7.400086015808165,
+     "ci_lo": 6.335054321252606,
+     "ci_hi": 7.016565527110588
+    },
+    "v_err_p95": {
+     "n": 10,
+     "mean": 11.176926945111067,
+     "median": 11.017541892405173,
+     "p95": 13.088826311302366,
+     "std": 1.1840727796089832,
+     "min": 9.309577123529294,
+     "max": 13.70725169856131,
+     "ci_lo": 10.329951152563835,
+     "ci_hi": 12.023902737658299
+    },
+    "err3d_rms": {
+     "n": 10,
+     "mean": 6.987458415950277,
+     "median": 6.7294311089816246,
+     "p95": 8.092637098968693,
+     "std": 0.7247046046382377,
+     "min": 6.166384826073098,
+     "max": 8.54352998862732,
+     "ci_lo": 6.469071989502067,
+     "ci_hi": 7.505844842398487
+    },
+    "nis_mean": {
+     "n": 10,
+     "mean": 0.9057040268682227,
+     "median": 0.8986929522662125,
+     "p95": 1.0773952124897737,
+     "std": 0.12269106791641743,
+     "min": 0.7157850498909037,
+     "max": 1.0868054369363027,
+     "ci_lo": 0.8179422217861987,
+     "ci_hi": 0.9934658319502467
+    },
+    "availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "runtime_ms": {
+     "n": 10,
+     "mean": 1.6962841108680653,
+     "median": 1.803595000011329,
+     "p95": 1.9326929998189573,
+     "std": 0.28746446832836575,
+     "min": 1.1226427763985056,
+     "max": 1.9590349997290306,
+     "ci_lo": 1.4906587049939524,
+     "ci_hi": 1.9019095167421782
+    }
+   }
+  }
+ ],
+ "meta": {
+  "created": "2026-11-20T10:12:13",
+  "elapsed_s": 38.416971921920776,
+  "workers": 6,
+  "runs_done": 50,
+  "runs_total": 50,
+  "interrupted": false,
+  "cancelled": false,
+  "git": {
+   "commit": "cd2fabfdb10c94a741cb25a8cd7318653bac0996",
+   "dirty": true
+  },
+  "numpy": "2.5.5",
+  "python": "3.14.5",
+  "spec_version": 1,
+  "nondeterministic_metrics": [
+   "runtime_ms"
+  ]
+ }
+}
