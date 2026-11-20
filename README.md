@@ -1,5 +1,20 @@
 # GPS Simulator 3D
 
+<table><tr>
+<td width="190"><a href="https://github.com/dodozg/gps-simulator-3d/releases/latest/download/Satelitska_navigacija_u_simulatoru.pdf"><img src="docs/udzbenik/naslovnica.png" width="180" alt="Naslovnica udžbenika"></a></td>
+<td>
+
+### 📘 Udžbenik: *Satelitska navigacija u simulatoru*
+
+Besplatan udžbenik na hrvatskom (83 str., 67 vježbi s rješenjima) za studente tehnike i inženjere:
+od signala i orbita do Kalmanovog filtra, RAIM-a, RTK-a i napada na GNSS, uz vježbe u ovom simulatoru.
+
+**[⬇ Preuzmi PDF](https://github.com/dodozg/gps-simulator-3d/releases/latest/download/Satelitska_navigacija_u_simulatoru.pdf)** ·
+[izdanje bez rješenja (za zadaće)](https://github.com/dodozg/gps-simulator-3d/releases/latest/download/Satelitska_navigacija_u_simulatoru_bez_rjesenja.pdf) ·
+[izvori i izgradnja](docs/udzbenik/README.md) · licenca CC BY 4.0
+
+</td></tr></table>
+
 *[🇬🇧 English version](README.en.md) · [Tehnička dokumentacija](GPS_Simulator_Documentation.md) · [Priča o Sagnac bugu](docs/sagnac-bug.md)*
 
 Simulator satelitske navigacije u Pythonu: Walker-Delta konstelacija, eliptične
@@ -194,7 +209,7 @@ svakog satelita) i RAIM (T na krivulji χ², nagibi, HPL). Može se zamrznuti i 
 
 ## Udžbenik
 
-**Satelitska navigacija u simulatoru** — udžbenik na hrvatskom (PDF, ~85 str.) za studente
+**Satelitska navigacija u simulatoru** — udžbenik na hrvatskom (PDF, 83 str.) za studente
 tehnike: od signala i orbita preko najmanjih kvadrata, DOP-a i Kalmanovog filtra do
 RAIM-a, RTK-a, ometanja/lažiranja i pravih RINEX podataka, sa 67 vježbi u ovom
 simulatoru (vođene u aplikaciji, računske, istraživačke u sandboxu) i rješenjima.
@@ -214,3 +229,8 @@ Svi izvori šuma primaju eksplicitni `np.random.Generator` koji konstelacija i
 prijemnik dijele (`np.random.default_rng(seed)`), pa su rezultati reproducibilni
 bez oslanjanja na globalno stanje. CI (`.github/workflows/ci.yml`) vrti suite na
 Pythonu 3.11–3.13.
+
+## Licenca
+
+Kod: [MIT](LICENSE). Udžbenik (`docs/udzbenik/`): [CC BY 4.0](docs/udzbenik/LICENSE), slobodno ga dijeli,
+tiskaj i prilagođavaj uz navođenje autora. Fontovi: SIL OFL 1.1. Testni RINEX/SP3 podaci: BSD-2 (RTKLIB).
