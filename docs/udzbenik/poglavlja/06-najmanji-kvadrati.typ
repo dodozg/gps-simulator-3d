@@ -1,4 +1,5 @@
 #import "../predlozak.typ": *
+#let B = json("../skripte/brojke_06.json")
 
 = Određivanje položaja metodom najmanjih kvadrata <pog:ls>
 
@@ -13,7 +14,7 @@ $ rho_i = norm(bold(s)_i - bold(x)) + c dot delta t + epsilon_i , quad i = 1, do
 Član $epsilon_i$ skuplja sve što nakon korekcija preostane: šum koda, multipath, ostatak troposfere i pogrešku efemerida (pogl. @pog:pogreske). Nepoznanice su četiri, $(x, y, z, b)$ uz pokratu $b = c dot delta t$, pa trebamo *barem četiri satelita*. To je razlog zbog kojeg se u GPS-u stalno ponavlja broj četiri: tri satelita ne bi bila dovoljna, jer sat prijemnika nije atomski.
 
 #napomena(naslov: "Koliko je velik b?")[
-  U simulatoru sat prijemnika ima namjerni drift od $10^(-6)$ s/s. Pomak $b$ zato raste za oko *301 m svake sekunde*, što je izmjereno iz rješenja u 600 uzastopnih epoha. Nakon deset minuta $b$ iznosi oko 180 km. To nije problem, jer je $b$ samo još jedna nepoznanica koja se procjenjuje u svakoj epohi. Problem bi nastao kad bismo ga pokušali zanemariti.
+  U simulatoru sat prijemnika ima namjerni drift od $10^(-6)$ s/s. Pomak $b$ zato raste za oko *#br(B.drift_sata_m_po_s, d: 0) m svake sekunde*, što je izmjereno iz rješenja u 600 uzastopnih epoha. Nakon deset minuta $b$ iznosi oko #br(B.drift_sata_m_po_s * 0.6, d: 0) km. To nije problem, jer je $b$ samo još jedna nepoznanica koja se procjenjuje u svakoj epohi. Problem bi nastao kad bismo ga pokušali zanemariti.
 ]
 
 U simulatoru @eq:pr ima još jedan, poznati član: Sagnacovu korekciju, koja opisuje rotaciju Zemlje tijekom oko 70 ms leta signala (pogl. @pog:koordinate). Prijemnik je računa iz procjene položaja i dodaje modelu, pa je u izvodima koji slijede izostavljamo radi preglednosti.
@@ -42,11 +43,11 @@ $ bold(G)^T bold(G) delta bold(x) = bold(G)^T bold(y) quad => quad
 
 Budući da je model lineariziran, jedan korak nije dovoljan. Popravljeno rješenje $hat(bold(x))_1 = hat(bold(x))_0 + delta hat(bold(x))$ postaje nova točka linearizacije i postupak se ponavlja dok popravak ne postane zanemariv. To je *Gauss-Newtonova metoda*. Simulator staje kad je $norm(delta bold(x)) < 1$ m (funkcija #kod("Receiver.solve_position")).
 
-Zanimljivo je koliko je ta iteracija robusna. Prijemnik u simulatoru kreće od *središta Zemlje*, $hat(bold(x))_0 = (0, 0, 0)$, $hat(b)_0 = 0$, i unatoč tome konvergira u nekoliko koraka (@fig:gn). U primjeru s 9 satelita iznad Zagreba udaljenost od prave pozicije pada redom $6 space 367 "km" -> 1 space 151 "km" -> 29","9 "km" -> 25 "m" -> 5","8 "m"$, nakon čega se više ne mijenja. Preostalih 5,8 m nije pogreška metode nego pogreška samih mjerenja $epsilon_i$.
+Zanimljivo je koliko je ta iteracija robusna. Prijemnik u simulatoru kreće od *središta Zemlje*, $hat(bold(x))_0 = (0, 0, 0)$, $hat(b)_0 = 0$, i unatoč tome konvergira u nekoliko koraka (@fig:gn). U primjeru sa #B.gn_n_sat satelita iznad Zagreba udaljenost od prave pozicije pada redom #br(B.gn_greske_m.at(0) / 1000, d: 0) km → #br(B.gn_greske_m.at(1) / 1000, d: 0) km → #br(B.gn_greske_m.at(2) / 1000, d: 1) km → #br(B.gn_greske_m.at(3), d: 0) m → #br(B.gn_greske_m.at(4), d: 1) m, nakon čega se više ne mijenja. Preostalih #br(B.gn_greske_m.at(4), d: 1) m nije pogreška metode nego pogreška samih mjerenja $epsilon_i$.
 
 #figure(
   image("../slike/06-gauss-newton.svg", width: 88%),
-  caption: [Konvergencija Gauss-Newtonove iteracije iz središta Zemlje (Zagreb, jedna epoha, 9 satelita, sjeme 6). Log-skala: pogreška se u blizini rješenja gotovo kvadrira u svakom koraku, sve do razine šuma mjerenja.],
+  caption: [Konvergencija Gauss-Newtonove iteracije iz središta Zemlje (Zagreb, jedna epoha, #B.gn_n_sat satelita, sjeme 6). Log-skala: pogreška se u blizini rješenja gotovo kvadrira u svakom koraku, sve do razine šuma mjerenja.],
 ) <fig:gn>
 
 Zašto metoda radi čak i iz tako loše početne točke? Sateliti su oko 20 000 km od Zemlje, pa su smjerovi $bold(e)_i$ prema njima iz središta Zemlje i s površine slični: linearizacija je dobra već u prvom koraku. Za prijemnik na Zemlji s druge strane planeta ne bi bilo tako.
@@ -74,7 +75,7 @@ $ sigma_i^2 = sigma_("kod")("C/N0"_i)^2 + ((0","8 "m") / (sin "el"_i))^2 . $ <eq
 
 Prvi član je termalni šum petlje koda (DLL) iono-free kombinacije, izračunat iz izmjerenog C/N0. Pravi prijemnici ga daju kao procjenu točnosti mjerenja. Drugi član opisuje sve što C/N0 ne vidi: pogrešku efemerida, multipath i ostatak troposfere, koji rastu prema horizontu.
 
-@fig:wls uspoređuje obični i težinski LS na istim mjerenjima kroz 600 epoha. Dobitak je vidljiv, ali skroman: horizontalna pogreška p95 pada s 9,7 m na 8,9 m (medijan s 4,18 m na 3,91 m). Razlog je dvojak. Sateliti u rješenju razlikuju se po $sigma_i$ najviše nekoliko puta, pa težine ne mijenjaju sliku iz temelja. Osim toga, dio pogreške (sporo promjenjiva pogreška efemerida, multipath) nije ni neovisan ni bijeli, pa pretpostavke Gauss-Markovljevog teorema vrijede samo približno. Težine postaju važne kad se kvaliteta mjerenja jako razlikuje, primjerice pod ometanjem (pogl. @pog:napadi).
+@fig:wls uspoređuje obični i težinski LS na istim mjerenjima kroz 600 epoha. Dobitak je vidljiv, ali skroman: horizontalna pogreška p95 pada s #br(B.ls.h95) m na #br(B.wls.h95) m (medijan s #br(B.ls.h50, d: 2) m na #br(B.wls.h50, d: 2) m). Razlog je dvojak. Sateliti u rješenju razlikuju se po $sigma_i$ najviše nekoliko puta, pa težine ne mijenjaju sliku iz temelja. Osim toga, dio pogreške (sporo promjenjiva pogreška efemerida, multipath) nije ni neovisan ni bijeli, pa pretpostavke Gauss-Markovljevog teorema vrijede samo približno. Težine postaju važne kad se kvaliteta mjerenja jako razlikuje, primjerice pod ometanjem (pogl. @pog:napadi).
 
 #figure(
   image("../slike/06-ls-vs-wls.svg", width: 96%),
@@ -104,7 +105,7 @@ Međuveličine jedne epohe vide se u prozoru #ui("Pogled iznutra (matematika epo
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Vlastiti Gauss-Newton", rjesenje: [
-  Iteracija iz $(0","0","0","0)$ konvergira u 4–5 koraka. U odnosu na pravi položaj (u ECEF: pretvori 45,815° N, 15,982° E, 120 m) rješenje sa svih šest satelita odstupa za $(-6","71; -4","71; -1","20)$ m (istok, sjever, gore), a procijenjeni $b = -3","45$ m. Ako je tvoj rezultat drugačiji za desetke metara, provjeri jesi li dodao Sagnacovu korekciju: $omega_E (s_x y - s_y x) \/ c$ (gdje su $s_x, s_y$ koordinate satelita, a $x, y$ prijemnika), uz $omega_E = 7","292 space 115 space 9 dot 10^(-5)$ rad/s. Bez nje rješenje se pomiče prema istoku. Rješenje samo s prva četiri satelita odstupa 12,57 m, a ostaci su na razini zaokruživanja ($< 10^(-6)$ m).
+  Iteracija iz $(0, 0, 0, 0)$ konvergira u 4–5 koraka. U odnosu na pravi položaj (u ECEF: pretvori 45,815° N, 15,982° E, 120 m) rješenje sa svih šest satelita odstupa za (#br(B.vjezba_6sat_enu_m.at(0), d: 2); #br(B.vjezba_6sat_enu_m.at(1), d: 2); #br(B.vjezba_6sat_enu_m.at(2), d: 2)) m (istok, sjever, gore), a procijenjeni $b$ = #br(B.vjezba_6sat_cb_m, d: 2) m. Ako je tvoj rezultat drugačiji za desetke metara, provjeri jesi li dodao Sagnacovu korekciju: $omega_E (s_x y - s_y x) \/ c$ (gdje su $s_x, s_y$ koordinate satelita, a $x, y$ prijemnika), uz $omega_E = 7","292 space 115 space 9 dot 10^(-5)$ rad/s. Bez nje rješenje se pomiče prema istoku. Rješenje samo s prva četiri satelita odstupa #br(B.vjezba_4sat_greska_m, d: 2) m, a ostaci su na razini zaokruživanja ($< 10^(-6)$ m): četiri jednadžbe s četiri nepoznanice zadovoljene su točno, pa podaci ne mogu otkriti koliko je rješenje pogrešno.
 ])[
   Datoteka #kod("docs/udzbenik/podaci/epoha_zagreb.csv") sadrži jednu epohu iz simulatora: ECEF položaje šest satelita (iz navigacijske poruke), pseudoudaljenosti s već primijenjenim korekcijama ionosfere i troposfere te $sigma_i$ prema @eq:sigma. Prijemnik je stajao na 45,815° N, 15,982° E, 120 m.
   + U Pythonu (numpy) napiši Gauss-Newtonovu iteraciju prema @eq:ls s modelom $hat(rho)_i = norm(bold(s)_i - bold(x)) + b + "Sagnac"_i$. Kreni od $(0, 0, 0, 0)$.

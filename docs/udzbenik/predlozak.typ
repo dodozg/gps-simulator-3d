@@ -16,6 +16,27 @@
 )
 #let kod(t) = text(font: "DejaVu Sans Mono", size: 0.88em, t)
 
+// ---------------------------------------------------------------- brojke iz simulatora
+// Broj s hrvatskim decimalnim zarezom i razmakom za tisuće: br(1325732.9, d: 0) -> "1 325 733".
+#let br(x, d: 1) = {
+  let r = calc.round(float(x), digits: d)
+  let neg = r < 0
+  let a = calc.abs(r)
+  let cijeli = calc.floor(a)
+  let s = str(cijeli)
+  let grupe = ()
+  while s.len() > 3 { grupe.insert(0, s.slice(s.len() - 3)); s = s.slice(0, s.len() - 3) }
+  grupe.insert(0, s)
+  let out = grupe.join(sym.space.thin)
+  if d > 0 {
+    let dec = str(calc.round((a - cijeli) * calc.pow(10, d)))
+    while dec.len() < d { dec = "0" + dec }
+    if dec.len() > d { out = str(cijeli + 1); dec = "0" * d }
+    out = out + "," + dec
+  }
+  if neg { "−" + out } else { out }
+}
+
 // ---------------------------------------------------------------- okviri
 #let okvir(boja, naslov, tijelo) = block(
   width: 100%, breakable: true, above: 1.1em, below: 1.1em,
