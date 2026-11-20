@@ -1,5 +1,7 @@
 # GPS Simulator 3D
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24406780.svg)](https://doi.org/10.5281/zenodo.24406780)
+
 *[🇭🇷 Hrvatska verzija](README.md) · [Technical deep-dive](GPS_Simulator_Documentation.md) · [The Sagnac bug story](docs/sagnac-bug.md)*
 
 A software-defined **GNSS simulator with a real navigation processor** — not a
@@ -228,6 +230,11 @@ A **zero-noise consistency test** guards against the whole class of
 [Sagnac bug](docs/sagnac-bug.md) belonged to.
 
 ---
+
+## Citation
+
+Zoričić, D. and Claude (Anthropic) (2026). *GPS Simulator 3D and the textbook "Satelitska navigacija u simulatoru"*.
+Zenodo. https://doi.org/10.5281/zenodo.24406780 (always resolves to the latest release; see also `CITATION.cff`).
 
 ## License & data
 

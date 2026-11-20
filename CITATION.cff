@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Ako koristiš ovaj simulator ili udžbenik, molim citiraj ga ovako. / If you use this software or textbook, please cite it as below."
+title: "GPS Simulator 3D i udžbenik „Satelitska navigacija u simulatoru”"
+type: software
+authors:
+  - family-names: "Zoričić"
+    given-names: "Domagoj"
+  - name: "Claude (Anthropic)"
+version: "1.0.1"
+date-released: "2026-11-20"
+doi: "10.5281/zenodo.24406780"
+url: "https://github.com/dodozg/gps-simulator-3d"
+repository-code: "https://github.com/dodozg/gps-simulator-3d"
+license: MIT
+keywords:
+  - GNSS
+  - GPS
+  - satelitska navigacija
+  - RAIM
+  - RTK
+  - Kalmanov filtar
+  - udžbenik
