@@ -156,9 +156,11 @@ Koraci:
   matematičke zrake kroz DEM i odbacuje satelit koji zaklanjaju planine.
 - **DOP selekcija** (`select_best_satellites`): determinističko *pohlepno*
   biranje do **10** satelita koji najviše snižavaju GDOP — iz **procijenjene**
-  pozicije (pravi prijemnik istinu ne zna). Empirijski optimum je ~10: preko
-  toga dodatni sateliti su niske elevacije (bučniji), pa GDOP pada, ali greška
-  raste.
+  pozicije (pravi prijemnik istinu ne zna). Granica 10 potječe iz verzije bez
+  C/N0 težinjenja, kad je greška iznad ~10 satelita rasla (dodatni niski sateliti
+  bili su bučniji). Sa sadašnjim težinama više satelita i dalje pomaže — studija
+  `docs/udzbenik/studije/max_sats.json` (četiri sustava): p95 horizontalno 5,6 m
+  uz 10 → 3,8 m uz 20 satelita (udžbenik, pogl. 7). Granicu vrijedi preispitati.
 - **Signalni model**: za svaki vidljivi satelit link budget daje **C/N0**; ometač
   i cross-korelacija ostalih satelita (nakon koherentne integracije uz relativni
   Doppler) podižu šumni pod; ispod praga zabrave (28 dB-Hz) satelit se ne prati.
@@ -308,9 +310,12 @@ lažne RAIM alarme**. Rijetki pojedinačni skokovi
 korelatora (~7σ, npr. −20 m u jednoj epohi) se isključe — to je ispravno
 ponašanje FDE-a, ne lažni alarm modela.
 
-**Osjetljivost.** Kvar sata od 30 m na jednom satelitu isključuje se u svakoj
-epohi (prije: tek iznad 600 m). Tipični HPL u Zagrebu (samo GPS) je 50–200 m,
-ovisno o geometriji; stvarna greška je uvijek duboko unutar njega.
+**Osjetljivost.** (Osvježeno 2026-11, nakon ispravka faze Walker konstelacije.)
+Kvar sata od 30 m na jednom satelitu otkriva se u ~58 % epoha (P_FA = 10⁻⁴,
+studija `raim_roc.json`), od 60 m u ~98 % (prije statističkog RAIM-a: tek iznad
+600 m). Tipični HPL u Zagrebu (samo GPS, 3 sjemena × 30 min): medijan ~36 m,
+p95 ~53 m; stvarna greška je duboko unutar njega, a test u čistim epohama ima
+T/T_d p99 ≈ 0,43 i 0 alarma u 5310 epoha.
 
 Sučelje: telemetrija prikazuje status integriteta (u redu / kvar isključen /
 kvar se ne može izolirati / nedostupan), test T prema pragu (stručni mod) i
@@ -435,34 +440,37 @@ mjerenja kao EKF (Sagnac, jedan sat po sustavu — upija ISB) i snapshot RAIM-om
 FDE-om; u zero-noise modu pada na µm (test, GPS i četiri sustava).
 
 **Primjeri i rezultati** (`sandbox/examples/`, Zagreb, bez terena, `t0_random_s` =
-1 zvjezdani dan; ± = poluširina 95 % CI):
+1 zvjezdani dan). Osvježeno 2026-11 nakon ispravka faze satelita u Walker
+konstelaciji (§7); stari brojevi vrijedili su za pogrešnu, zbijenu geometriju.
+Skripte koje ih izvlače i grafovi su u `docs/udzbenik/` (udžbenik, pogl. 7–12).
 
-- **(a) RAIM ROC** (`raim_roc.json`, `sat_fault` na nasumičnom satelitu, EKF):
-  {{ROC}}
+- **(a) RAIM ROC** (`raim_roc.json`, `sat_fault` na nasumičnom satelitu, EKF, 10
+  sjemena): vjerojatnost detekcije po epohi uz P_FA = 10⁻⁴ je 3 % (10 m), 58 %
+  (30 m), 85 % (45 m) i 98 % (60 m); uz 10⁻² redom 18/79/97/99,8 %, uz 10⁻⁷
+  0,3/37/68/88 %. Izmjerena stopa lažnih alarma uz P_FA = 10⁻² je 1,0 %. Stopa
+  ispravnog isključivanja zaostaje za detekcijom (48 % pri 30 m, 10⁻⁴).
 - **(b) Koordinirani spoof vs MI** (`spoof_offset.json`, 10 sjemena): konačna
-  greška = pomak cilja (50 → 50.5 ± 1.9 m, 800 → 799 ± 1 m), RAIM **0 detekcija**
-  u svim točkama, a stopa *misleading informationa* (greška > HPL bez alarma)
-  raste s 3 % (50 m) preko 20 % (100 m) i 52 % (200 m) do 83 % (800 m; HPL
-  medijan ~116 m). Iznad HAL-a (556 m) pojavljuju se i HMI događaji (76 epoha po
-  runu pri 800 m). Kvantificirano temeljno ograničenje RAIM-a.
-- **(c) Jamming J/N** (`jamming_jn.json`, 6 sjemena, ometač od t = 30 s): fix
-  preživi do 9 dB; pri 12 dB GPS ima fix u 67 % epoha napada, četiri sustava 73 %;
-  pri 14 dB 17 % vs 50 %; od 16 dB nema fixa. Neočekivano: uz `max_sats = 10` i
-  ISB po sustavu, četiri sustava pri 9 dB imaju **lošiji** integritet (HPL ≤ 556 m
-  u 29 % epoha vs ~100 % za GPS) i veću grešku (p95 ~85–90 m pri 12–14 dB) —
-  preživjeli sateliti se raspodijele po sustavima pa redundancija po satu pada.
+  greška = pomak cilja (50,2 m za 50 m, 800,0 m za 800 m), RAIM ~0 detekcija
+  (0,1 po runu, slučajno), a stopa *misleading informationa* raste s 33 % (50 m)
+  preko 61 % (100 m) i 78 % (200 m) do 90 % (800 m; HPL medijan ~47 m). Iznad
+  HAL-a (556 m) pojavljuju se HMI događaji (76 epoha po runu pri 800 m).
+- **(c) Jamming J/N** (`jamming_jn.json`, 6 sjemena, ometač od t = 30 s): GPS
+  ima fix u svim epohama napada do 14 dB, 83 % pri 16 dB, 0 % pri 18 dB; četiri
+  sustava 100 % do 16 dB i 33 % pri 18 dB. Integritet (HPL ≤ 556 m) za GPS pada
+  na 94 % (12 dB), 63 % (14 dB) i 26 % (16 dB); četiri sustava 100 % do 14 dB i
+  88 % pri 16 dB. Bez ometanja četiri sustava uz `max_sats = 10` imaju veći HPL
+  (medijan 118 m) od samog GPS-a (42 m): četiri sata = manje redundancije.
 - **(d) Multi-GNSS vs maska** (`multignss_mask.json`, 8 sjemena, HAL = 100 m,
-  `max_sats = 16`): GPS sam nikad ne zadovoljava HAL 100 m (HPL medijan 150–400 m;
-  dostupnost integriteta 0–13 %) i gubi fix od maske 25° naviše; GPS+GAL drži
-  integritet do 20°, a pri 30° pada na 51 %; četiri sustava imaju HPL 23–56 m i
-  100 % dostupnost integriteta do 35° (75 % pri 40°), p95 horizontalne greške
-  4.3–8 m.
+  `max_sats = 16`): GPS sam ima HPL medijan 42 m uz masku 5° i dostupnost
+  integriteta 100 % (5°), 89 % (10°), 74 % (15°), 37 % (20°), 12 % (25°), 0 od
+  30°, a fix u 50 % epoha pri 35° i 12,5 % pri 40°. GPS+GAL drži integritet
+  100 % do 25° (HPL 16–30 m), 68 % pri 30°; četiri sustava HPL 14–44 m,
+  integritet 100 % do 30°, 92 % pri 35° i 88 % pri 40°, p95 horizontalno 3,5–5,7 m.
 - **(e) EKF vs WLS** (`ekf_vs_wls.json`, 5 lokacija × 10 sjemena, uparena
   usporedba): EKF ima nižu p95 horizontalnu grešku u **50/50** uparenih runova —
-  5.8–9.6 m vs 8.6–14.6 m (razlika 2.8–5.0 m po lokaciji); NIS/dof EKF-a
-  0.82–1.13, WLS-a 0.83–1.45; vrijeme solvera ~2–3 ms/epohi za oba. Detekcija
-  kvara je za oba **identična** (EKF-ov RAIM je snapshot test nad inovacijama, a
-  statistika ne ovisi o točki linearizacije) — EKF dobiva samo na točnosti.
+  4,9–5,8 m vs 6,4–7,9 m po lokaciji (vertikalno 7,1–8,5 vs 11,1–13,2 m); NIS/dof
+  EKF-a 0,74–0,81, WLS-a 0,91–1,08; vrijeme solvera ~2 ms/epohi za oba. Detekcija
+  kvara je za oba jednaka (EKF-ov RAIM je snapshot test nad inovacijama).
 
 ![Koordinirani spoof: stopa misleading informationa vs pomak](docs/media/sandbox_spoof_mi.png)
 ![Multi-GNSS: dostupnost integriteta (HPL ≤ 100 m) vs maska](docs/media/sandbox_multignss_integrity.png)
