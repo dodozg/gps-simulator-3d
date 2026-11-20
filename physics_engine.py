@@ -31,7 +31,9 @@ def calculate_orbital_position(a, e, i, lan, w, m0, t):
     Vraća (poziciju_ecef, E_anomaliju).
     """
     n = np.sqrt(MU / a**3)
-    M = m0 + n * t
+    # m0 je u STUPNJEVIMA (kao i, lan, w). Ranije je zbrajan kao radijan pa su sateliti
+    # iste ravnine Walker konstelacije bili na 0°/118°/128°/10° umjesto 0°/90°/180°/270°.
+    M = np.radians(m0) + n * t
     
     # Newton-Raphson za Keplerovu jednadžbu
     E = M

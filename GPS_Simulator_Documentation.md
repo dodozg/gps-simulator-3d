@@ -547,6 +547,15 @@ pristranost. Sada Gauss-Markov/OU proces (`evolve_ephemeris_error`, σ=1,5 m/os,
 je realizam, ne poboljšanje — bijeli model je bio *optimističan*. (Regresija:
 `test_ephemeris_error_is_slowly_varying`.)
 
+**Naknadni ispravak — faza satelita u Walker konstelaciji (2026-11):** početna
+srednja anomalija `m0` zadaje se u stupnjevima (kao `i`, `lan`, `w`), ali ju je
+`calculate_orbital_position` zbrajao kao radijane. Sateliti iste ravnine GPS
+konstelacije 24/6/1 stajali su zato na 0°/118°/128°/10° (dva zbijena para) umjesto
+0°/90°/180°/270°. Otkriveno pri pisanju udžbenika (provjera razmaka u ravnini).
+Nakon ispravka (4 lokacije × 2 sjemena × 300 s, samo GPS): medijan 3D greške
+**6,23 → 3,93 m**, p95 11,9 → 7,5 m, medijan GDOP-a 3,09 → 2,28. Prave orbite
+(`real_orbits.py`) i broadcast konstelacija nisu bile pogođene.
+
 ---
 
 ## 8. Osvrt i analiza (iskreno)
