@@ -31,9 +31,9 @@ def razdiobe(b):
     ax.plot(x, p0, color=PLAVA, label=f"bez kvara: χ²({dof})")
     ax.plot(x, p1, color=CRVENA, label=f"kvar: necentralni χ²({dof}, λ = {lam:.1f})".replace(".", ","))
     ax.axvline(td, color="black", lw=1, ls="--")
-    ax.text(td + 1.5, max(p0) * 0.85, f"prag T_d = {td:.1f}\n(P_FA = 10⁻⁵)".replace(".", ","), fontsize=7.5)
+    ax.text(td + 1.5, max(p0) * 0.85, f"prag $T_d$ = {td:.1f}".replace(".", ",") + "\n" + r"($P_{\mathrm{FA}} = 10^{-5}$)", fontsize=7.5)
     ax.fill_between(x, 0, p1, where=x < td, color=CRVENA, alpha=0.25, linewidth=0)
-    ax.text(td - 27, 2e-6,"P_MD = 10⁻³\n(propušteno)", fontsize=7.5, color=CRVENA)
+    ax.text(td - 27, 2e-6,r"$P_{\mathrm{MD}} = 10^{-3}$" + "\n(propušteno)", fontsize=7.5, color=CRVENA)
     ax.set_xlabel("testna statistika T")
     ax.set_ylabel("gustoća vjerojatnosti")
     ax.set_xlim(0, 140)
@@ -135,12 +135,12 @@ def rampa(b):
     axs[0].set_ylabel("horizontalno [m]")
     axs[0].set_yscale("log")
     axs[0].legend(loc="upper left", fontsize=7.5)
-    axs[1].plot(r["t"], r["omj"], color=PLAVA, lw=1, label="T/T_d (prijemnik s RAIM-om)")
+    axs[1].plot(r["t"], r["omj"], color=PLAVA, lw=1, label=r"$T/T_d$ (prijemnik s RAIM-om)")
     if prvo is not None:
         axs[1].axvline(prvo, color=CRVENA, lw=0.8, ls=":")
     axs[1].axhline(1, color="black", lw=0.8, ls="--")
     axs[1].set_yscale("log")
-    axs[1].set_ylabel("T / T_d")
+    axs[1].set_ylabel(r"$T\,/\,T_d$")
     axs[1].set_xlabel("vrijeme [s]  (kvar raste 0,5 m/s od t = 120 s)")
     axs[1].legend(loc="upper left", fontsize=7.5)
     spremi(fig, "10-rampa")
@@ -167,7 +167,7 @@ def roc(b):
     for (k, niz), boja in zip(out.items(), (PLAVA, ZELENA, LJUBICASTA)):
         oznaka = {"0.01": "10⁻²", "0.0001": "10⁻⁴", "1e-07": "10⁻⁷"}[k]
         ax.plot([p["x"] for p in niz], [np.nan if p["raim_pd"] is None else p["raim_pd"] for p in niz], "o-", ms=3.5, color=boja,
-                label=f"P_FA = {oznaka}")
+                label=r"$P_{\mathrm{FA}}$ = " + oznaka)
     ax.set_xlabel("kvar sata jednog satelita [m]")
     ax.set_ylabel("vjerojatnost detekcije po epohi")
     ax.set_ylim(-0.02, 1.02)

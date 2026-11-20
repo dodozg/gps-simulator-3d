@@ -26,8 +26,8 @@ Istraživanje se u sandboxu (#kod("sandbox.py")) opisuje jednom JSON specifikaci
 Za svaku točku rešetke i procjenitelja sandbox daje srednju vrijednost, medijan, p95 i 95 % interval pouzdanosti srednje vrijednosti preko sjemena (Studentova razdioba). Rezultati se spremaju u #kod("results.json") (uz git commit i inačice za ponovljivost) i CSV datoteke. Isto je dostupno u web-aplikaciji: #ui("Eksperimenti…") → #ui("Sandbox").
 
 ```
-python sandbox.py list                                   # procjenitelji, napadi, metrike
-python sandbox.py validate moja_studija.json             # provjera bez izvođenja
+python sandbox.py list                        # procjenitelji, napadi
+python sandbox.py validate moja_studija.json  # samo provjera
 python sandbox.py run moja_studija.json --workers 4 --plot
 ```
 

@@ -108,8 +108,8 @@ def walker_faze():
     con = WalkerDeltaConstellation(rng=np.random.default_rng(0))
     ravnina = [s for s in con.satellites if s.sat_id.startswith("SAT_0_")]
     fig, axs = plt.subplots(1, 2, figsize=(5.2, 2.7), subplot_kw={"projection": "polar"})
-    for ax, naslov, fn in ((axs[0], "prije ispravka (m0 kao radijani)", lambda m: m % (2 * np.pi)),
-                           (axs[1], "ispravno (m0 u stupnjevima)", np.radians)):
+    for ax, naslov, fn in ((axs[0], "prije ispravka (M₀ kao radijani)", lambda m: m % (2 * np.pi)),
+                           (axs[1], "ispravno (M₀ u stupnjevima)", np.radians)):
         kut = [fn(s.m0) for s in ravnina]
         ax.plot(np.linspace(0, 2 * np.pi, 200), np.ones(200), color=SIVA, lw=0.8)
         ax.plot(kut, np.ones(len(kut)), "o", color=CRVENA if "prije" in naslov else PLAVA, ms=8)

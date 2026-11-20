@@ -80,7 +80,7 @@ Dvije tehnike vode od metara iz ovog poglavlja prema decimetrima i centimetrima 
 
 *SBAS* (_satellite-based augmentation system_; u Europi EGNOS) preko geostacionarnih satelita na frekvenciji L1 emitira ispravke orbita, satova i mrežnu kartu ionosfere, uz podatke o integritetu iz kojih prijemnik računa zaštitne granice sa zajamčenim rizikom. To omogućuje zrakoplovne prilaze s vertikalnim vođenjem (LPV), uz strože granice uzbune nego za RAIM (pogl. @pog:raim): oko 40 m horizontalno i 50 m vertikalno.
 
-Simulator ne implementira ni PPP ni SBAS. Oba su dobri teme za istraživačke projekte (pogl. @pog:projekti), jer su sastavni dijelovi (precizne orbite, iono-free kombinacija, Kalmanov filtar, zaštitne granice) već u knjizi.
+Simulator ne implementira ni PPP ni SBAS. Obje su dobre teme za istraživačke projekte (pogl. @pog:projekti), jer su sastavni dijelovi (precizne orbite, iono-free kombinacija, Kalmanov filtar, zaštitne granice) već u knjizi.
 
 #kljucno[
   - Algoritmi iz ove knjige rade na stvarnim mjerenjima bez izmjene. Mijenja se samo izvor pseudoudaljenosti.

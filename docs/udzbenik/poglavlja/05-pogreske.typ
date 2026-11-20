@@ -35,7 +35,7 @@ $ I(f) = (40","3 dot "TEC") / f^2 , $ <eq:iono>
 
 gdje je TEC ukupni sadržaj elektrona duž puta (u elektronima po m²). Jedna jedinica TECU ($10^16$ el/m²) kasni L1 za #br(B.tecu_l1_m, d: 3) m. TEC jako ovisi o dobu dana, Sunčevoj aktivnosti i zemljopisnoj širini.
 
-Jednofrekvencijski prijemnici ionosferu procjenjuju *Klobucharovim modelom*: kosinusom kroz dan s vrhom u 14 h lokalnog vremena i stalnim noćnim pragom, uz faktor nagiba koji raste prema horizontu. Simulator upravo tim modelom ubrizgava ionosferu u mjerenje (#kod("physics_engine.klobuchar_delay")), s koeficijentima kakve emitira GPS pri umjerenoj Sunčevoj aktivnosti (@fig:iono). U Zagrebu zenitno kašnjenje na L1 raste od #br(B.iono_noc_m) m noću do #br(B.iono_vrh_m) m u #B.iono_vrh_h h. Koso, na 5° elevacije oko podneva, iznosi #br(B.iono_l1_5_podne) m.
+Jednofrekvencijski prijemnici ionosferu procjenjuju *Klobucharovim modelom*: kosinusom kroz dan s vrhom u 14 h lokalnog vremena i stalnim noćnim pragom, uz faktor nagiba koji raste prema horizontu. Simulator upravo tim modelom ubrizgava ionosferu u mjerenje (#kod("physics_engine.klobuchar_delay")), s koeficijentima kakve emitira GPS pri umjerenoj Sunčevoj aktivnosti (@fig:iono). U Zagrebu zenitno kašnjenje na L1 raste od #br(B.iono_noc_m) m noću do #br(B.iono_vrh_m) m u #br(B.iono_vrh_h, d: 0) h. Koso, na 5° elevacije oko podneva, iznosi #br(B.iono_l1_5_podne) m.
 
 #figure(
   image("../slike/05-ionosfera.svg", width: 98%),

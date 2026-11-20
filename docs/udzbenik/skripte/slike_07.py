@@ -48,7 +48,7 @@ def dop_kroz_dan(b):
     ax.set_ylabel("DOP")
     ax.set_xlim(0, 24)
     ax.set_xticks(range(0, 25, 3))
-    ax.set_ylim(0, None)
+    ax.set_ylim(0, 4.2)          # mjesto za legendu iznad krivulja
     ax2 = ax.twinx()
     ax2.step(t / 3600, [d["n"] for d in niz], where="mid", color=SIVA, lw=0.8, alpha=0.7)
     ax2.set_ylabel("broj satelita (sivo)", color=SIVA)

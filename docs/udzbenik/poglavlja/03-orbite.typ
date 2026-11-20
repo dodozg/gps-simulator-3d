@@ -101,7 +101,7 @@ Rupa na sjeveru ima izravnu posljedicu za točnost: kad nijedan satelit nije na 
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Keplerova jednadžba", rjesenje: [
-  Iteracija daje $E_0 = 1$, $E_1 = #B.kepler_koraci.at(1)$, $E_2 = #B.kepler_koraci.at(2)$, a $E_3$ se poklapa s $E_2$ na 10 decimala. Konvergencija je kvadratna: broj točnih znamenaka se otprilike udvostručuje u svakom koraku. Razlika $E - M approx 0","0127$ rad $approx 0","73°$ pomiče satelit za oko $a(E - M) approx 340$ km duž orbite. Zato se Keplerova jednadžba ne smije preskočiti ni za gotovo kružne orbite.
+  Iteracija daje $E_0 = 1$, $E_1 = #br(B.kepler_koraci.at(1), d: 10)$, $E_2 = #br(B.kepler_koraci.at(2), d: 10)$, a $E_3$ se poklapa s $E_2$ na 10 decimala. Konvergencija je kvadratna: broj točnih znamenaka se otprilike udvostručuje u svakom koraku. Razlika $E - M approx 0","0127$ rad $approx 0","73°$ pomiče satelit za oko $a(E - M) approx 340$ km duž orbite. Zato se Keplerova jednadžba ne smije preskočiti ni za gotovo kružne orbite.
 ])[
   Riješi @eq:keplereq Newtonovom metodom za $M = 1$ rad i $e = 0","015$ (ekscentricitet idealiziranog GPS-a u simulatoru). Ispiši $E_k$ za prva tri koraka. Koliko bi kilometara pogriješio položaj satelita da se uzme $E approx M$?
 ]

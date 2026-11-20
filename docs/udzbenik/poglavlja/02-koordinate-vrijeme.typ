@@ -92,7 +92,7 @@ gdje su $(x_s, y_s)$ koordinate satelita, a $(x, y)$ prijemnika. Korekcija ovisi
 
 U ranoj verziji simulatora prijemnik je Sagnacovu korekciju uredno *dodavao u model*, ali je mjerni model *nije unosio u mjerenje*. Dok je šum mjerenja bio reda 50 m, ništa se nije primijetilo. Kad je šum smanjen, pogreška je prestala padati i zastala na oko 25 m.
 
-Dijagnoza nije došla iz iznosa pogreške, nego iz njezinog *smjera*. Rastav pogreške u ENU prema @eq:enu i usrednjavanje kroz vrijeme pokazali su stalan pomak od 25 m prema istoku, uz nulu na sjeveru i visini. Šum i multipath nemaju smjer, ali Sagnac ima (@fig:sagnac). @fig:bezsagnaca reproducira istu grešku obrnuto: mjerenja su ispravna, a iz modela prijemnika uklonjen je član @eq:sagnac. Srednji pomak je (#br(B.bez_sagnaca_sred_enu_m.at(0), d: 1); #br(B.bez_sagnaca_sred_enu_m.at(1), d: 1); #br(B.bez_sagnaca_sred_enu_m.at(2), d: 1)) m u smjeru istok, sjever, gore. S ispravnim modelom sve tri komponente su unutar pola metra od nule.
+Dijagnoza nije došla iz iznosa pogreške, nego iz njezinog *smjera*. Rastav pogreške u ENU prema @eq:enu i usrednjavanje kroz vrijeme pokazali su stalan pomak od 25 m prema istoku, uz nulu na sjeveru i visini. Šum i multipath nemaju smjer, ali Sagnac ima (@fig:sagnac). @fig:bezsagnaca reproducira istu grešku obrnuto: mjerenja su ispravna, a iz modela prijemnika uklonjen je član @eq:sagnac. Srednji pomak je (#br(B.bez_sagnaca_sred_enu_m.at(0), d: 1)\; #br(B.bez_sagnaca_sred_enu_m.at(1), d: 1)\; #br(B.bez_sagnaca_sred_enu_m.at(2), d: 1)) m u smjeru istok, sjever, gore. S ispravnim modelom sve tri komponente su unutar pola metra od nule.
 
 #figure(
   image("../slike/02-bez-sagnaca.svg", width: 70%),
@@ -114,16 +114,16 @@ Drugi, periodički dio potječe od ekscentriciteta orbite:
 
 $ Delta t_"rel" = -(2 sqrt(mu a)) / c^2 e sin E , $ <eq:rel>
 
-gdje je $E$ ekscentrična anomalija (pogl. @pog:orbite). Za ekscentricitet idealizirane GPS orbite u simulatoru ($e = #B.ekscentricitet_walker$) amplituda je #br(B.rel_ekscentr_amp_ns) ns, tj. #br(B.rel_ekscentr_amp_m) m. U simulatoru se oba učinka uključuju u sat satelita i jednako tako korigiraju preko navigacijske poruke, pa za ispravan satelit nestaju.
+gdje je $E$ ekscentrična anomalija (pogl. @pog:orbite). Za ekscentricitet idealizirane GPS orbite u simulatoru ($e = #br(B.ekscentricitet_walker, d: 3)$) amplituda je #br(B.rel_ekscentr_amp_ns) ns, tj. #br(B.rel_ekscentr_amp_m) m. U simulatoru se oba učinka uključuju u sat satelita i jednako tako korigiraju preko navigacijske poruke, pa za ispravan satelit nestaju.
 
 #vjezba(vrsta: "racunska", naslov: "Zagreb u ECEF-u", rjesenje: [
-  Uz $phi = 45","815°$, $lambda = 15","982°$, $h = 120$ m: $N = #br(B.zagreb_N_m)$ m, pa je $bold(r) = (#br(B.zagreb_ecef_m.at(0), d: 1); #br(B.zagreb_ecef_m.at(1), d: 1); #br(B.zagreb_ecef_m.at(2), d: 1))$ m. Udaljenost od središta je $norm(bold(r)) approx$ #br(B.zagreb_r_km) km, manje od ekvatorskog polumjera jer je Zemlja spljoštena. Geocentrična širina je $arctan(z \/ sqrt(x^2 + y^2)) = #br(B.geocentricna_sirina_deg, d: 4)°$.
+  Uz $phi = 45","815°$, $lambda = 15","982°$, $h = 120$ m: $N = #br(B.zagreb_N_m)$ m, pa je $bold(r) = (#br(B.zagreb_ecef_m.at(0), d: 1)\; #br(B.zagreb_ecef_m.at(1), d: 1)\; #br(B.zagreb_ecef_m.at(2), d: 1))$ m. Udaljenost od središta je $norm(bold(r)) approx$ #br(B.zagreb_r_km) km, manje od ekvatorskog polumjera jer je Zemlja spljoštena. Geocentrična širina je $arctan(z \/ sqrt(x^2 + y^2)) = #br(B.geocentricna_sirina_deg, d: 4)°$.
 ])[
   Prema @eq:lla izračunaj ECEF koordinate Zagreba (45,815° N, 15,982° E, 120 m). Kolika je udaljenost od središta Zemlje? Izračunaj geocentričnu širinu i usporedi je s geodetskom.
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Azimut i elevacija", rjesenje: [
-  Razlika satelit − prijemnik u ENU je približno (#br(B.vjezba_enu_km.at(0)); #br(B.vjezba_enu_km.at(1)); #br(B.vjezba_enu_km.at(2))) km, pa je azimut #br(B.vjezba_az_deg, d: 1)° (jugoistok), a elevacija #br(B.vjezba_el_deg, d: 1)°. Satelit je visoko na nebu.
+  Razlika satelit − prijemnik u ENU je približno (#br(B.vjezba_enu_km.at(0))\; #br(B.vjezba_enu_km.at(1))\; #br(B.vjezba_enu_km.at(2))) km, pa je azimut #br(B.vjezba_az_deg, d: 1)° (jugoistok), a elevacija #br(B.vjezba_el_deg, d: 1)°. Satelit je visoko na nebu.
 ])[
   Uzmi prvi satelit (#raw(B.vjezba_sat)) iz datoteke #kod("podaci/epoha_zagreb.csv") i položaj Zagreba iz prethodne vježbe. Prema @eq:enu i @eq:azel izračunaj njegov azimut i elevaciju. Na kojoj je strani neba?
 ]

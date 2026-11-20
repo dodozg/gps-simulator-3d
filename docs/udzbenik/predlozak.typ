@@ -116,6 +116,7 @@
 
 // Ispis svih rješenja (dodatak A).
 #let sva-rjesenja() = context {
+  set par(justify: false)       // dugi kod u rješenjima inače rasteže retke
   let svi = query(<rjesenje>)
   let zadnje-poglavlje = none
   for m in svi {
