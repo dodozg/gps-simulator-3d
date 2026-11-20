@@ -34,7 +34,7 @@ def slike(filtar=None):
 DECIMALNI = re.compile(r"(\d),(\d)")
 
 
-def popravi_decimalni_zarez():
+def popravi_izvore():
     """U Typst formulama je zarez razdjelnik i dobiva razmak („2,5" se slaže kao „2, 5").
     Hrvatski decimalni zarez se zato u formuli piše 2","5 — ovdje automatski: unutar $...$
     (izvan ``` blokova) svaki znamenka,znamenka postaje znamenka","znamenka. Popravlja na mjestu."""
@@ -47,6 +47,8 @@ def popravi_decimalni_zarez():
                 seg[j] = DECIMALNI.sub(lambda m: m.group(1) + '","' + m.group(2), seg[j])
             dijelovi[k] = "$".join(seg)
         novo = "```".join(dijelovi)
+        # hrvatski navodnici: „…" (ASCII zatvaranje) -> „…” — inače ga Typst slaže kao novo „
+        novo = re.sub('„([^"„”\\n]{1,120})"', '„\\1”', novo)
         for k in range(0, len(dijelovi), 2):
             for red in dijelovi[k].splitlines():
                 if "~" in red and not red.lstrip().startswith("//"):
@@ -54,11 +56,11 @@ def popravi_decimalni_zarez():
                           os.path.relpath(put, OVDJE), "|", red.strip()[:70])
         if novo != izvor:
             open(put, "w", encoding="utf-8", newline="").write(novo)
-            print("  decimalni zarez popravljen:", os.path.relpath(put, OVDJE))
+            print("  izvor popravljen (zarez/navodnici):", os.path.relpath(put, OVDJE))
 
 
 def pdf():
-    popravi_decimalni_zarez()
+    popravi_izvore()
     import typst
     t = time.time()
     try:

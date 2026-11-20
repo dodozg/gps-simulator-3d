@@ -1,0 +1,1111 @@
+{
+ "isb_istina": {
+  "GAL": 12.5,
+  "GLO": -8.0,
+  "BDS": 20.0
+ },
+ "isb_kraj": {
+  "GAL": 13.92,
+  "GLO": -8.47,
+  "BDS": 19.14
+ },
+ "isb_sigma_kraj": {
+  "GAL": 0.68,
+  "GLO": 0.63,
+  "BDS": 0.68
+ },
+ "isb_sred_zadnjih_300": {
+  "GAL": 14.03,
+  "GLO": -8.31,
+  "BDS": 18.34
+ },
+ "isb_err3d_med": 4.13,
+ "studija": {
+  "GPS": [
+   {
+    "x": 5,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 41.624,
+     "ci": [
+      35.305,
+      47.944
+     ]
+    },
+    "h_err_p95": {
+     "mean": 5.705,
+     "ci": [
+      4.607,
+      6.804
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.097,
+     "ci": [
+      1.811,
+      2.384
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 7.506,
+     "ci": [
+      7.065,
+      7.948
+     ]
+    }
+   },
+   {
+    "x": 10,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.885,
+     "ci": [
+      0.62,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 55.44,
+     "ci": [
+      26.882,
+      83.998
+     ]
+    },
+    "h_err_p95": {
+     "mean": 5.939,
+     "ci": [
+      5.067,
+      6.811
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.665,
+     "ci": [
+      2.166,
+      3.163
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 6.51,
+     "ci": [
+      5.9,
+      7.12
+     ]
+    }
+   },
+   {
+    "x": 15,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.74,
+     "ci": [
+      0.357,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 62.062,
+     "ci": [
+      25.667,
+      98.457
+     ]
+    },
+    "h_err_p95": {
+     "mean": 11.638,
+     "ci": [
+      0.0,
+      26.201
+     ]
+    },
+    "gdop_median": {
+     "mean": 7.194,
+     "ci": [
+      0.0,
+      17.324
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 5.748,
+     "ci": [
+      4.885,
+      6.611
+     ]
+    }
+   },
+   {
+    "x": 20,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.365,
+     "ci": [
+      0.0,
+      0.786
+     ]
+    },
+    "hpl_median": {
+     "mean": 99.509,
+     "ci": [
+      39.739,
+      159.278
+     ]
+    },
+    "h_err_p95": {
+     "mean": 12.061,
+     "ci": [
+      0.0,
+      26.508
+     ]
+    },
+    "gdop_median": {
+     "mean": 9.149,
+     "ci": [
+      0.0,
+      19.382
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 5.0,
+     "ci": [
+      4.368,
+      5.632
+     ]
+    }
+   },
+   {
+    "x": 25,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.115,
+     "ci": [
+      0.0,
+      0.386
+     ]
+    },
+    "hpl_median": {
+     "mean": 130.446,
+     "ci": [
+      95.278,
+      165.614
+     ]
+    },
+    "h_err_p95": {
+     "mean": 12.396,
+     "ci": [
+      0.0,
+      26.724
+     ]
+    },
+    "gdop_median": {
+     "mean": 9.905,
+     "ci": [
+      0.0,
+      19.855
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 4.625,
+     "ci": [
+      4.192,
+      5.058
+     ]
+    }
+   },
+   {
+    "x": 30,
+    "availability": {
+     "mean": 0.925,
+     "ci": [
+      0.748,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 138.516,
+     "ci": [
+      null,
+      null
+     ]
+    },
+    "h_err_p95": {
+     "mean": 15.316,
+     "ci": [
+      1.729,
+      28.902
+     ]
+    },
+    "gdop_median": {
+     "mean": 13.819,
+     "ci": [
+      4.557,
+      23.081
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 4.05,
+     "ci": [
+      3.684,
+      4.416
+     ]
+    }
+   },
+   {
+    "x": 35,
+    "availability": {
+     "mean": 0.5,
+     "ci": [
+      0.053,
+      0.947
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "hpl_median": {
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ]
+    },
+    "h_err_p95": {
+     "mean": 20.387,
+     "ci": [
+      0.0,
+      56.736
+     ]
+    },
+    "gdop_median": {
+     "mean": 16.923,
+     "ci": [
+      0.0,
+      39.547
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 3.375,
+     "ci": [
+      2.753,
+      3.997
+     ]
+    }
+   },
+   {
+    "x": 40,
+    "availability": {
+     "mean": 0.125,
+     "ci": [
+      0.0,
+      0.421
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ]
+    },
+    "hpl_median": {
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ]
+    },
+    "h_err_p95": {
+     "mean": 54.637,
+     "ci": [
+      null,
+      null
+     ]
+    },
+    "gdop_median": {
+     "mean": 37.141,
+     "ci": [
+      null,
+      null
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 2.875,
+     "ci": [
+      2.339,
+      3.411
+     ]
+    }
+   }
+  ],
+  "GPS+Galileo": [
+   {
+    "x": 5,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 15.935,
+     "ci": [
+      14.431,
+      17.44
+     ]
+    },
+    "h_err_p95": {
+     "mean": 3.977,
+     "ci": [
+      3.279,
+      4.675
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.4,
+     "ci": [
+      1.266,
+      1.534
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 15.256,
+     "ci": [
+      14.392,
+      16.12
+     ]
+    }
+   },
+   {
+    "x": 10,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 15.79,
+     "ci": [
+      13.947,
+      17.634
+     ]
+    },
+    "h_err_p95": {
+     "mean": 3.892,
+     "ci": [
+      3.344,
+      4.44
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.61,
+     "ci": [
+      1.505,
+      1.716
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 13.562,
+     "ci": [
+      12.961,
+      14.164
+     ]
+    }
+   },
+   {
+    "x": 15,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 18.497,
+     "ci": [
+      13.85,
+      23.143
+     ]
+    },
+    "h_err_p95": {
+     "mean": 4.141,
+     "ci": [
+      3.625,
+      4.657
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.909,
+     "ci": [
+      1.7,
+      2.118
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 11.998,
+     "ci": [
+      11.0,
+      12.996
+     ]
+    }
+   },
+   {
+    "x": 20,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 23.412,
+     "ci": [
+      16.127,
+      30.696
+     ]
+    },
+    "h_err_p95": {
+     "mean": 4.917,
+     "ci": [
+      3.849,
+      5.986
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.495,
+     "ci": [
+      1.993,
+      2.996
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 10.375,
+     "ci": [
+      9.382,
+      11.368
+     ]
+    }
+   },
+   {
+    "x": 25,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 29.509,
+     "ci": [
+      20.202,
+      38.817
+     ]
+    },
+    "h_err_p95": {
+     "mean": 5.393,
+     "ci": [
+      4.595,
+      6.19
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.971,
+     "ci": [
+      2.335,
+      3.607
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 9.5,
+     "ci": [
+      8.606,
+      10.394
+     ]
+    }
+   },
+   {
+    "x": 30,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.675,
+     "ci": [
+      0.286,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 106.574,
+     "ci": [
+      11.677,
+      201.471
+     ]
+    },
+    "h_err_p95": {
+     "mean": 6.655,
+     "ci": [
+      4.755,
+      8.555
+     ]
+    },
+    "gdop_median": {
+     "mean": 5.373,
+     "ci": [
+      3.034,
+      7.712
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 8.05,
+     "ci": [
+      7.684,
+      8.416
+     ]
+    }
+   },
+   {
+    "x": 35,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.375,
+     "ci": [
+      0.0,
+      0.808
+     ]
+    },
+    "hpl_median": {
+     "mean": 1280.425,
+     "ci": [
+      0.0,
+      3997.567
+     ]
+    },
+    "h_err_p95": {
+     "mean": 7.755,
+     "ci": [
+      5.046,
+      10.464
+     ]
+    },
+    "gdop_median": {
+     "mean": 6.32,
+     "ci": [
+      4.255,
+      8.384
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 6.906,
+     "ci": [
+      5.985,
+      7.827
+     ]
+    }
+   },
+   {
+    "x": 40,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.25,
+     "ci": [
+      0.0,
+      0.637
+     ]
+    },
+    "hpl_median": {
+     "mean": 1377.429,
+     "ci": [
+      0.0,
+      4062.963
+     ]
+    },
+    "h_err_p95": {
+     "mean": 8.501,
+     "ci": [
+      7.02,
+      9.983
+     ]
+    },
+    "gdop_median": {
+     "mean": 7.504,
+     "ci": [
+      5.25,
+      9.757
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 6.25,
+     "ci": [
+      5.659,
+      6.841
+     ]
+    }
+   }
+  ],
+  "četiri sustava": [
+   {
+    "x": 5,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 25.878,
+     "ci": [
+      16.418,
+      35.338
+     ]
+    },
+    "h_err_p95": {
+     "mean": 4.203,
+     "ci": [
+      3.745,
+      4.661
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.086,
+     "ci": [
+      1.022,
+      1.15
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 10,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 21.889,
+     "ci": [
+      15.016,
+      28.763
+     ]
+    },
+    "h_err_p95": {
+     "mean": 4.08,
+     "ci": [
+      3.664,
+      4.496
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.202,
+     "ci": [
+      1.148,
+      1.256
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 15,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 14.075,
+     "ci": [
+      12.506,
+      15.645
+     ]
+    },
+    "h_err_p95": {
+     "mean": 3.716,
+     "ci": [
+      3.096,
+      4.336
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.398,
+     "ci": [
+      1.284,
+      1.511
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 20,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 14.547,
+     "ci": [
+      11.066,
+      18.029
+     ]
+    },
+    "h_err_p95": {
+     "mean": 3.493,
+     "ci": [
+      2.563,
+      4.423
+     ]
+    },
+    "gdop_median": {
+     "mean": 1.812,
+     "ci": [
+      1.549,
+      2.074
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 25,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 16.493,
+     "ci": [
+      12.673,
+      20.312
+     ]
+    },
+    "h_err_p95": {
+     "mean": 3.535,
+     "ci": [
+      2.955,
+      4.115
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.058,
+     "ci": [
+      1.771,
+      2.346
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 30,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 16.405,
+     "ci": [
+      14.756,
+      18.053
+     ]
+    },
+    "h_err_p95": {
+     "mean": 4.187,
+     "ci": [
+      3.692,
+      4.681
+     ]
+    },
+    "gdop_median": {
+     "mean": 2.76,
+     "ci": [
+      2.287,
+      3.233
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 16.0,
+     "ci": [
+      16.0,
+      16.0
+     ]
+    }
+   },
+   {
+    "x": 35,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.917,
+     "ci": [
+      0.72,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 40.728,
+     "ci": [
+      1.665,
+      79.791
+     ]
+    },
+    "h_err_p95": {
+     "mean": 5.725,
+     "ci": [
+      3.732,
+      7.717
+     ]
+    },
+    "gdop_median": {
+     "mean": 4.033,
+     "ci": [
+      3.212,
+      4.854
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 13.658,
+     "ci": [
+      11.958,
+      15.358
+     ]
+    }
+   },
+   {
+    "x": 40,
+    "availability": {
+     "mean": 1.0,
+     "ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "integrity_availability": {
+     "mean": 0.875,
+     "ci": [
+      0.579,
+      1.0
+     ]
+    },
+    "hpl_median": {
+     "mean": 44.14,
+     "ci": [
+      6.278,
+      82.002
+     ]
+    },
+    "h_err_p95": {
+     "mean": 5.711,
+     "ci": [
+      4.325,
+      7.096
+     ]
+    },
+    "gdop_median": {
+     "mean": 4.657,
+     "ci": [
+      3.813,
+      5.502
+     ]
+    },
+    "n_sats_mean": {
+     "mean": 12.683,
+     "ci": [
+      11.293,
+      14.073
+     ]
+    }
+   }
+  ]
+ }
+}
