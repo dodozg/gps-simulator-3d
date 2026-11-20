@@ -23,7 +23,7 @@ $ rho_i = norm(bold(s)_i - bold(x)) + b + "ISB"_(s(i)) + epsilon_i , $ <eq:isb>
 
 gdje je $"ISB"_s$ (_inter-system bias_) pomak sustava $s$ u odnosu na GPS (za GPS $"ISB" = 0$). Svaki dodatni sustav donosi jednu nepoznanicu više. Prvi satelit novog sustava zato se „potroši” na procjenu njegovog ISB-a, a tek ostali pridonose položaju. Najmanji broj satelita za rješenje s $k$ sustava je $3 + k$.
 
-U simulatoru su istiniti ISB-ovi #B.isb_istina.GAL m za Galileo, #B.isb_istina.GLO m za GLONASS i #B.isb_istina.BDS m za BeiDou. Ubrizgavaju se u mjerenja, a Kalmanov filtar ih procjenjuje kao tri dodatna stanja (pogl. @pog:kalman). @fig:isb pokazuje kako procjene konvergiraju. Nakon deset minuta filtar procjenjuje #br(B.isb_kraj.GAL) m, #br(B.isb_kraj.GLO) m i #br(B.isb_kraj.BDS) m, uz σ od oko #br(B.isb_sigma_kraj.GAL, d: 1) m.
+U simulatoru su istiniti ISB-ovi #br(B.isb_istina.GAL) m za Galileo, #br(B.isb_istina.GLO, d: 0) m za GLONASS i #br(B.isb_istina.BDS, d: 0) m za BeiDou. Ubrizgavaju se u mjerenja, a Kalmanov filtar ih procjenjuje kao tri dodatna stanja (pogl. @pog:kalman). @fig:isb pokazuje kako procjene konvergiraju. Nakon deset minuta filtar procjenjuje #br(B.isb_kraj.GAL) m, #br(B.isb_kraj.GLO) m i #br(B.isb_kraj.BDS) m, uz σ od oko #br(B.isb_sigma_kraj.GAL, d: 1) m.
 
 #figure(
   image("../slike/09-isb.svg", width: 90%),

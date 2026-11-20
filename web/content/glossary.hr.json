@@ -2,7 +2,7 @@
   "GDOP": {
     "term": "GDOP — Geometric Dilution of Precision",
     "short": "Mjera koliko geometrija satelita množi grešku mjerenja.",
-    "long": "Kad su sateliti lijepo raspoređeni po nebu, GDOP je nizak (~2) i greška je mala. Ako su zbijeni na jednom dijelu neba, GDOP raste (>6) i ista greška mjerenja daje puno veću grešku pozicije. Zato prijemnik bira satelite s dobrom geometrijom.",
+    "long": "Kad su sateliti lijepo raspoređeni po nebu, GDOP je nizak (oko 2) i greška je mala. Ako su zbijeni na jednom dijelu neba, GDOP raste (>6) i ista greška mjerenja daje puno veću grešku pozicije. Zato prijemnik bira satelite s dobrom geometrijom.",
     "related": ["PDOP", "elevation mask"]
   },
   "PDOP": {
@@ -14,13 +14,13 @@
   "RAIM": {
     "term": "RAIM — Receiver Autonomous Integrity Monitoring",
     "short": "Prijemnik sam otkriva pokvareni satelit i izbaci ga.",
-    "long": "Prijemnik iz VIŠKA mjerenja provjerava jesu li dosljedna: težinski najmanji kvadrati daju reziduale, a njihova suma kvadrata (testna statistika) se uspoređuje s chi-kvadrat pragom za zadanu vjerojatnost lažnog alarma. Ako test padne, RAIM isključuje satelit s najvećim normaliziranim rezidualom (FDE) i provjerava ponovno. Uz to računa zaštitne granice (HPL/VPL). Treba barem 5 satelita (za detekciju) odnosno 6 (za isključivanje). Temeljno ograničenje: KONZISTENTAN napad (koordinirani spoof) ne ostavlja rezidual pa ga RAIM ne vidi.",
+    "long": "Prijemnik iz VIŠKA mjerenja provjerava jesu li dosljedna: težinski najmanji kvadrati daju reziduale, a njihova suma kvadrata (testna statistika) se uspoređuje s χ² pragom za zadanu vjerojatnost lažnog alarma. Ako test padne, RAIM isključuje satelit s najvećim normaliziranim rezidualom (FDE) i provjerava ponovno. Uz to računa zaštitne granice (HPL/VPL). Treba barem 5 satelita (za detekciju) odnosno 6 (za isključivanje). Temeljno ograničenje: KONZISTENTAN napad (koordinirani spoof) ne ostavlja rezidual pa ga RAIM ne vidi.",
     "related": ["spoofing", "NIS", "HPL"]
   },
   "HPL": {
     "term": "HPL / VPL — zaštitna granica (protection level)",
     "short": "Polumjer unutar kojeg RAIM jamči poziciju.",
-    "long": "Najveća vodoravna (HPL) ili okomita (VPL) greška koju kvar na JEDNOM satelitu može izazvati, a da ga RAIM test još ne uoči (uz vjerojatnost propusta P_MD). Računa se iz geometrije i očekivanog šuma, NE iz stvarne greške — zato je obično mnogo veći od nje. Ako je HPL veći od granice uzbune (HAL, npr. 556 m za ne-precizni prilaz), integritet nije dostupan i pilot ne smije koristiti GPS za tu fazu leta.",
+    "long": "Najveća vodoravna (HPL) ili okomita (VPL) greška koju kvar na JEDNOM satelitu može izazvati, a da ga RAIM test još ne uoči (uz vjerojatnost propusta P(MD)). Računa se iz geometrije i očekivanog šuma, NE iz stvarne greške — zato je obično mnogo veći od nje. Ako je HPL veći od granice uzbune (HAL, npr. 556 m za neprecizni prilaz), integritet nije dostupan i pilot ne smije koristiti GPS za tu fazu leta.",
     "related": ["RAIM", "GDOP"]
   },
   "NIS": {
@@ -32,19 +32,19 @@
   "EKF": {
     "term": "EKF — Extended Kalman Filter",
     "short": "Algoritam koji glađe procjenjuje položaj kroz vrijeme.",
-    "long": "Umjesto da svaku sekundu računa položaj od nule, EKF kombinira prethodnu procjenu (i kretanje) s novim mjerenjima. Rezultat je stabilnija, manje 'skakutava' pozicija te procjena brzine i pogreške sata prijemnika.",
+    "long": "Umjesto da svaku sekundu računa položaj od nule, EKF kombinira prethodnu procjenu (i kretanje) s novim mjerenjima. Rezultat je stabilnija, manje „skakutava” pozicija te procjena brzine i pogreške sata prijemnika.",
     "related": ["NIS", "pseudorange"]
   },
   "PRN": {
     "term": "PRN — Pseudo-Random Noise kod",
-    "short": "Jedinstveni 'potpis' svakog satelita u signalu.",
+    "short": "Jedinstveni „potpis” svakog satelita u signalu.",
     "long": "Svaki satelit odašilje poseban pseudoslučajni niz. Prijemnik ga korelira s vlastitom kopijom da prepozna satelit i izmjeri kašnjenje signala (a time i udaljenost).",
     "related": ["pseudorange", "C/N0"]
   },
   "pseudorange": {
     "term": "Pseudoudaljenost",
     "short": "Izmjerena udaljenost do satelita — s pogreškom sata.",
-    "long": "Dobiva se iz vremena putovanja signala × brzina svjetlosti. Zove se 'pseudo' jer sat prijemnika nije savršen, pa svakoj udaljenosti dodaje isti nepoznati pomak. Zato treba 4 satelita: 3 za položaj + 1 za sat.",
+    "long": "Dobiva se iz vremena putovanja signala × brzina svjetlosti. Zove se „pseudo” jer sat prijemnika nije savršen, pa svakoj udaljenosti dodaje isti nepoznati pomak. Zato treba 4 satelita: 3 za položaj + 1 za sat.",
     "related": ["PRN", "EKF"]
   },
   "ephemeris": {
@@ -56,20 +56,20 @@
   "ionosphere": {
     "term": "Ionosfera",
     "short": "Nabijeni sloj atmosfere koji usporava GPS signal.",
-    "long": "Slobodni elektroni na 60–1000 km visine kašnjenje signala ovisno o frekvenciji i dobu dana (najjače oko 14 h lokalno). Modelira se Klobuchar modelom ili poništava dvofrekvencijski (iono-free).",
+    "long": "Slobodni elektroni na 60–1000 km visine uzrokuju kašnjenje signala ovisno o frekvenciji i dobu dana (najjače oko 14 h lokalno). Modelira se Klobuchar modelom ili poništava dvofrekvencijski (iono-free).",
     "related": ["Klobuchar", "iono-free", "troposphere"]
   },
   "Klobuchar": {
     "term": "Klobuchar model",
     "short": "Standardni GPS model ionosferskog kašnjenja.",
     "short_alt": "",
-    "long": "Opisuje dnevnu krivulju ionosfere s 8 koeficijenata iz navigacijske poruke: kosinusni 'brijeg' danju s vrhom oko 14 h, tanki pod noću. Jednofrekvencijski prijemnik njime korigira ~50% pogreške.",
+    "long": "Opisuje dnevnu krivulju ionosfere s 8 koeficijenata iz navigacijske poruke: kosinusni „brijeg” danju s vrhom oko 14 h, tanki pod noću. Jednofrekvencijski prijemnik njime korigira oko 50 % pogreške.",
     "related": ["ionosphere", "iono-free"]
   },
   "troposphere": {
     "term": "Troposfera",
     "short": "Donji, vlažni sloj atmosfere — kašnjenje neovisno o frekvenciji.",
-    "long": "Vodena para i zrak usporavaju signal ~2.4 m u zenitu, više pri niskim elevacijama. Za razliku od ionosfere, jednaka je za sve frekvencije pa se ne poništava iono-free kombinacijom.",
+    "long": "Vodena para i zrak usporavaju signal oko 2,4 m u zenitu, više pri niskim elevacijama. Za razliku od ionosfere, jednaka je za sve frekvencije pa se ne poništava iono-free kombinacijom.",
     "related": ["ionosphere"]
   },
   "iono-free": {
@@ -81,7 +81,7 @@
   "Sagnac": {
     "term": "Sagnac efekt",
     "short": "Korekcija zbog Zemljine rotacije tijekom putovanja signala.",
-    "long": "Dok signal putuje ~70 ms do prijemnika, Zemlja se malo zarotira. Bez te korekcije (par metara) položaj bi bio pomaknut.",
+    "long": "Dok signal putuje oko 70 ms do prijemnika, Zemlja se malo zarotira. Bez te korekcije (par metara) položaj bi bio pomaknut.",
     "related": ["pseudorange"]
   },
   "multipath": {
@@ -93,19 +93,19 @@
   "elevation mask": {
     "term": "Maska elevacije",
     "short": "Najniži kut iznad horizonta na kojem se satelit koristi.",
-    "long": "Sateliti nisko nad horizontom imaju slabiji signal i više atmosferske/multipath greške. Prijemnik ih ispod praga (npr. 5–15°) ignorira. U 'urbanom kanjonu' zgrade dižu efektivnu masku pa GPS sam ostane bez dovoljno satelita.",
+    "long": "Sateliti nisko nad horizontom imaju slabiji signal i više atmosferske/multipath greške. Prijemnik ih ispod praga (npr. 5–15°) ignorira. U „urbanom kanjonu” zgrade dižu efektivnu masku pa GPS sam ostane bez dovoljno satelita.",
     "related": ["multipath", "GDOP", "PDOP"]
   },
   "C/N0": {
     "term": "C/N0 — omjer nosioca i šuma",
     "short": "Jakost satelitskog signala (dB-Hz).",
-    "long": "Veći C/N0 (~45 dB-Hz) znači čist signal i točno mjerenje; niži (ispod ~30) znači gubitak praćenja. Jamming ga obara dizanjem šumnog poda.",
+    "long": "Veći C/N0 (oko 45 dB-Hz) znači čist signal i točno mjerenje; niži (ispod oko 30) znači gubitak praćenja. Jamming ga obara dizanjem šumnog poda.",
     "related": ["jamming", "PRN"]
   },
   "RTK": {
     "term": "RTK — Real-Time Kinematic",
     "short": "Centimetarsko pozicioniranje pomoću faze nosioca.",
-    "long": "Umjesto koda (~metri), RTK mjeri fazu vala nosioca (~milimetri) i uspoređuje s poznatom baznom stanicom (double-differencing). Nakon što razriješi cjelobrojnu neodređenost, točnost je centimetarska.",
+    "long": "Umjesto koda (≈metri), RTK mjeri fazu vala nosioca (≈milimetri) i uspoređuje s poznatom baznom stanicom (double-differencing). Nakon što razriješi cjelobrojnu neodređenost, točnost je centimetarska.",
     "related": ["ambiguity", "pseudorange"]
   },
   "ambiguity": {
@@ -129,7 +129,7 @@
   "spoofing": {
     "term": "Spoofing",
     "short": "Lažni GPS signali koji obmanjuju prijemnik.",
-    "long": "Napadač šalje krivotvorene signale da prijemnik izračuna POGREŠAN položaj a da to ne primijeti. Koordinirani (konzistentni) spoof RAIM ne hvata — pozicija tiho 'odšeta' na napadačevu metu.",
+    "long": "Napadač šalje krivotvorene signale da prijemnik izračuna POGREŠAN položaj a da to ne primijeti. Koordinirani (konzistentni) spoof RAIM ne hvata — pozicija tiho „odšeta” na napadačevu metu.",
     "related": ["RAIM", "meaconing", "jamming"]
   },
   "meaconing": {

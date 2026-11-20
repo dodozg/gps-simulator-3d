@@ -96,7 +96,7 @@ def trokut():
         ax.plot(*tocka, "o", color=INK, ms=4)
         tekst(ax, tocka + np.array(pomak), ime, INK, fs=8.5)
     tekst(ax, (O + P) / 2 + np.array([0.05, -0.05]), "R", SIVA, fs=9)
-    tekst(ax, (O + S) / 2 + np.array([0.06, -0.12]), "r_s = R + h", SIVA, fs=9)
+    tekst(ax, (O + S) / 2 + np.array([0.06, -0.12]), r"$r_s = R + h$", SIVA, fs=9)
     tekst(ax, (P + S) / 2 + np.array([-0.12, 0.08]), "d (kosa udaljenost)", NARANCASTA, fs=9)
     tekst(ax, P + 0.33 * (hor + smjer) / 2 + np.array([0.02, -0.03]), "el", NARANCASTA, fs=9)
     tekst(ax, (P[0] + 0.25, P[1] - 0.32), "horizont", SIVA, fs=8)

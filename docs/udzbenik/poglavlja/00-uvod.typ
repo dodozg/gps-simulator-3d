@@ -38,9 +38,9 @@ Simulator je projekt otvorenog koda (#link("https://github.com/dodozg/gps-simula
 ```
 git clone https://github.com/dodozg/gps-simulator-3d
 cd gps-simulator-3d
-setup.bat            # Windows (macOS/Linux: ./setup.sh) — virtualno okruženje i ovisnosti
-build_web.bat        # jednom: izgradi web-sučelje (macOS/Linux: ./build_web.sh)
-run_webapp.bat       # pokreni (macOS/Linux: ./run_webapp.sh), pa otvori http://localhost:8010
+setup.bat        # okruženje i ovisnosti (macOS/Linux: ./setup.sh)
+build_web.bat    # izgradi web-sučelje (macOS/Linux: ./build_web.sh)
+run_webapp.bat   # pokreni (./run_webapp.sh), otvori localhost:8010
 ```
 
 Alati bez sučelja pokreću se izravno, npr. #kod("python sandbox.py list") ili #kod("python realdata.py --help").

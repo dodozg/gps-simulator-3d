@@ -25,7 +25,7 @@ redom položaj i brzinu u ECEF-u, pomak i drift sata u metrima ($b = c delta t$)
 $ bold(x)_(k+1) = bold(F) bold(x)_k + bold(w)_k , quad
   bold(F) = mat(bold(I)_3, Delta t bold(I)_3, 0, 0; 0, bold(I)_3, 0, 0; 0, 0, mat(1, Delta t; 0, 1), 0; 0, 0, 0, bold(I)_3) , $ <eq:F>
 
-gdje je $bold(w)_k$ procesni šum s kovarijancom $bold(Q) Delta t$. Ta kovarijanca kaže koliko model *ne* vjeruje sam sebi. Simulator koristi dijagonalni $bold(Q)$ sa spektralnim gustoćama: #B.Q.pos m²/s za položaj, #B.Q.vel (m/s)²/s za brzinu, #B.Q.bias m²/s za pomak sata, #B.Q.drift (m/s)²/s za drift i #B.Q.isb m²/s za ISB, koji je gotovo stalan.
+gdje je $bold(w)_k$ procesni šum s kovarijancom $bold(Q) Delta t$. Ta kovarijanca kaže koliko model *ne* vjeruje sam sebi. Simulator koristi dijagonalni $bold(Q)$ sa spektralnim gustoćama: #br(B.Q.pos) m²/s za položaj, #br(B.Q.vel, d: 0) (m/s)²/s za brzinu, #br(B.Q.bias, d: 0) m²/s za pomak sata, #br(B.Q.drift, d: 0) (m/s)²/s za drift i #br(B.Q.isb, d: 2) m²/s za ISB, koji je gotovo stalan.
 
 == Predikcija i ažuriranje
 

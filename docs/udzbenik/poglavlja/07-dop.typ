@@ -45,7 +45,7 @@ Svaki redak matrice $bold(G)$ je jedinični vektor prema satelitu, uz jedinicu z
 
 Dva primjera s četiri satelita:
 
-- jedan u zenitu i tri na horizontu, razmaknuta po 120°: GDOP = #br(B.primjer_dobra.G, d: 2), HDOP = #br(B.primjer_dobra.H, d: 2), VDOP = #br(B.primjer_dobra.V, d: 2);
+- jedan u zenitu i tri na horizontu, razmaknuta po 120°: GDOP = #br(B.primjer_dobra.G, d: 2), HDOP = #br(B.primjer_dobra.H, d: 2), VDOP = #br(B.primjer_dobra.V, d: 2)\;
 - jedan u zenitu i tri na elevaciji 80°: GDOP = #br(B.primjer_losa.G, d: 0), HDOP = #br(B.primjer_losa.H, d: 1), VDOP = #br(B.primjer_losa.V, d: 0).
 
 U drugom slučaju pogreška mjerenja od 4 m postala bi pogreška visine od preko 300 m.
