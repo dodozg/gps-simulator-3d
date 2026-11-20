@@ -2,7 +2,8 @@
 import { h, clear } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import type { Globe } from "../globe/globe";
-import type { StateFrame, SystemInfo } from "../lib/types";
+import type { StateFrame, SystemInfo, OrbitInfo } from "../lib/types";
+import { api } from "../lib/api";
 
 type Send = (msg: Record<string, unknown>) => void;
 
@@ -17,17 +18,31 @@ function loadSaved(): Record<string, unknown> {
 
 export function mountControls(container: HTMLElement, send: Send, globe: Globe,
                               onExperiments?: () => void, onLessons?: () => void,
-                              onGuide?: () => void) {
+                              onGuide?: () => void, onInside?: () => void) {
   const saved = loadSaved();
   const savedShow = (saved.show ?? {}) as Partial<{ orbits: boolean; rays: boolean; labels: boolean }>;
-  const state = {
+  // Zadano stanje = ono na koje se backend vraća pri Poništi (SimSession._build).
+  const defaults = () => ({
     playing: false,   // playing se NE pamti (ne auto-startaj nakon restarta)
+    timeScale: 100,
+    tow: 50400,       // 14:00 lokalnog vremena prijemnika
+    kinematic: false,
+    raim: true,
+    attack: "none",
+    rtk: false,       // živi RTK (backend ga pri Poništi isključi)
+  });
+  const state = {
+    ...defaults(),
     timeScale: (saved.timeScale as number) ?? 100,
     tow: (saved.tow as number) ?? 50400,
     kinematic: (saved.kinematic as boolean) ?? false,
     raim: (saved.raim as boolean) ?? true,
     attack: (saved.attack as string) ?? "none",
+    rtk: (saved.rtk as boolean) ?? false,
   };
+  // Ručno postavljena RTK baza (Shift + dvoklik); null = automatska baza.
+  let rtkBase: { lat: number; lon: number } | null =
+    (saved.rtkBase as { lat: number; lon: number } | null | undefined) ?? null;
   const show = {
     orbits: savedShow.orbits ?? true,
     rays: savedShow.rays ?? true,
@@ -51,9 +66,27 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       localStorage.setItem(LS_KEY, JSON.stringify({
         timeScale: state.timeScale, tow: state.tow, kinematic: state.kinematic,
         raim: state.raim, attack: state.attack, show, systemsOn,
+        rtk: state.rtk, rtkBase,
       }));
     } catch { /* localStorage nedostupan (privatni mod) — ignoriraj */ }
   }
+
+  // Elementi koje frame osvježava bez ponovnog crtanja panela (brzina, doba dana).
+  let spdLabel: HTMLElement | null = null;
+  let todLabel: HTMLElement | null = null;
+  let todInput: HTMLInputElement | null = null;
+  let actualScale = 0;               // ostvareno ubrzanje iz frame-a (0 = nepoznato)
+
+  // Pri velikim zadanim ubrzanjima CPU ne stigne odvrtjeti tražene epohe, pa uz
+  // zadanu vrijednost pokazujemo i STVARNO ostvarenu (inače sučelje obećava ×1000
+  // a simulacija teče ×300).
+  function speedText(): string {
+    const req = `${t("speed")} ×${state.timeScale}`;
+    return (state.playing && actualScale > 0 && actualScale < state.timeScale * 0.9)
+      ? `${req} (${t("speed_actual")} ×${Math.round(actualScale)})` : req;
+  }
+  const todText = (hh: number): string =>
+    `${t("time_of_day")}: ${String(hh).padStart(2, "0")}:00`;
 
   let systems: Record<string, SystemInfo> | null = null;
   let systemsSig = "";
@@ -101,6 +134,41 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     return r;
   }
 
+  // Poništi: backend rebuilda sesiju na zadano. Kontrole moraju krenuti s njim, inače
+  // panel pokazuje RAIM/kinematiku/napad/brzinu koje simulacija više ne koristi.
+  // Isti put koriste i gumb i vođene lekcije (korak "reset").
+  // --- izvor orbita: idealizirane (Walker, za lekcije) ili prave (CelesTrak/SGP4) ---
+  // Ne pamti se u localStorage: prave orbite za "sada" nakon restarta bi bile drugi
+  // trenutak; stanje se čita iz frame-a (backend je izvor istine).
+  let orbitMode: "walker" | "real" = "walker";
+  let orbitEpochLocal = "";            // datetime-local vrijednost ("" = sada)
+  let orbitInfo: OrbitInfo | null = null;
+  let orbitStatusEl: HTMLElement | null = null;
+  let orbitNote = "";
+  function applyOrbits(): void {
+    const epoch = orbitEpochLocal ? new Date(orbitEpochLocal).toISOString() : "now";
+    send({ type: "orbits", mode: orbitMode, ...(orbitMode === "real" ? { epoch } : {}) });
+  }
+  function orbitStatusText(): string {
+    const o = orbitInfo;
+    if (!o || o.mode !== "real") return "";
+    const utc = (o.utc ?? "").replace("T", " ").replace("Z", " UTC");
+    const src = t("orbits_origin_" + (o.origin ?? "snapshot"));
+    const age = o.elements_age_days != null ? " · " + t("orbits_age").replace("{d}", o.elements_age_days.toFixed(1)) : "";
+    return `${utc} · ${src}${age}${orbitNote ? " · " + orbitNote : ""}`;
+  }
+
+  function resetAll(): void {
+    orbitMode = "walker"; orbitEpochLocal = "";
+    send({ type: "reset" });
+    Object.assign(state, defaults());
+    for (const k of Object.keys(systemsOn)) delete systemsOn[k];
+    rtkBase = null;        // backend je zaboravio i ručnu bazu
+    persist();
+    pushPersisted();       // doba dana ovisi o dužini rovera -> pošalji preračunato
+    render();
+  }
+
   function render(): void {
     clear(container);
     container.appendChild(h("div", "panel-title", t("controls")));
@@ -113,23 +181,20 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       playBtn.textContent = state.playing ? t("pause") : t("play");
     });
     const resetBtn = h("button", "btn", t("reset"));
-    resetBtn.addEventListener("click", () => {
-      state.playing = false;
-      send({ type: "reset" });
-      playBtn.textContent = t("play");
-    });
+    resetBtn.addEventListener("click", resetAll);
     const bar = h("div", "btn-bar");
     bar.append(playBtn, resetBtn);
     container.appendChild(bar);
 
     // brzina
-    const spd = row(`${t("speed")} ×${state.timeScale}`);
+    const spd = row(speedText());
+    spdLabel = spd.querySelector(".ctl-label") as HTMLElement;
     const spdIn = h("input", "slider") as HTMLInputElement;
     spdIn.type = "range"; spdIn.min = "1"; spdIn.max = "1000"; spdIn.step = "1";
     spdIn.value = String(state.timeScale);
     spdIn.addEventListener("input", () => {
       state.timeScale = Number(spdIn.value);
-      spd.querySelector(".ctl-label")!.textContent = `${t("speed")} ×${state.timeScale}`;
+      spdLabel!.textContent = speedText();
       send({ type: "time_scale", value: state.timeScale });
       persist();
     });
@@ -138,14 +203,16 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
 
     // doba dana (ionosfera)
     const hh = Math.floor(state.tow / 3600);
-    const tod = row(`${t("time_of_day")}: ${String(hh).padStart(2, "0")}:00`);
+    const tod = row(todText(hh));
+    todLabel = tod.querySelector(".ctl-label") as HTMLElement;
     const todIn = h("input", "slider") as HTMLInputElement;
     todIn.type = "range"; todIn.min = "0"; todIn.max = "23"; todIn.step = "1";
     todIn.value = String(hh);
+    todIn.disabled = orbitMode === "real";     // prave orbite: doba dana je pravo vrijeme
+    todInput = todIn;
     todIn.addEventListener("input", () => {
       state.tow = Number(todIn.value) * 3600;
-      tod.querySelector(".ctl-label")!.textContent =
-        `${t("time_of_day")}: ${String(todIn.value).padStart(2, "0")}:00`;
+      todLabel!.textContent = todText(Number(todIn.value));
       sendTow();
       persist();
     });
@@ -173,6 +240,40 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }
     }
 
+    // izvor orbita
+    container.appendChild(h("div", "panel-sub", t("orbits_src")));
+    container.appendChild(selectRow(t("orbits_mode"), orbitMode,
+      [["walker", t("orbits_walker")], ["real", t("orbits_real")]], (v) => {
+        orbitMode = v === "real" ? "real" : "walker"; applyOrbits(); render();
+      }));
+    if (orbitMode === "real") {
+      const er = row(t("orbits_epoch"));
+      const inp = h("input", "ctl-select") as HTMLInputElement;
+      inp.type = "datetime-local";
+      inp.value = orbitEpochLocal;
+      inp.addEventListener("change", () => { orbitEpochLocal = inp.value; applyOrbits(); });
+      er.appendChild(inp);
+      container.appendChild(er);
+      const bar2 = h("div", "btn-bar");
+      const now = h("button", "btn", t("orbits_now"));
+      now.addEventListener("click", () => { orbitEpochLocal = ""; inp.value = ""; applyOrbits(); });
+      const refresh = h("button", "btn", t("orbits_refresh"));
+      refresh.addEventListener("click", () => {
+        orbitNote = "…";
+        if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText();
+        api.orbitsRefresh()
+          .then(() => { orbitNote = t("orbits_refreshed"); applyOrbits(); })
+          .catch(() => { orbitNote = t("orbits_fail"); })
+          .finally(() => { if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText(); });
+      });
+      bar2.append(now, refresh);
+      container.appendChild(bar2);
+      orbitStatusEl = h("div", "hint", orbitStatusText());
+      container.appendChild(orbitStatusEl);
+    } else {
+      orbitStatusEl = null;
+    }
+
     // simulacija (šalje backendu)
     container.appendChild(h("div", "panel-sub", t("simulation")));
     container.appendChild(toggle(t("kinematic"), state.kinematic, (v) => {
@@ -181,6 +282,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     container.appendChild(toggle(t("raim"), state.raim, (v) => {
       state.raim = v; send({ type: "raim", on: v }); persist();
     }));
+    renderRtk();
 
     // živi napad (spoofing/jamming) — prozor se na backendu sidri na "sada"
     container.appendChild(selectRow(t("f_attack"), state.attack,
@@ -191,7 +293,7 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }));
 
     // eksperimenti (Faza 2)
-    if (onExperiments || onLessons || onGuide) {
+    if (onExperiments || onLessons || onGuide || onInside) {
       container.appendChild(h("div", "panel-sub", t("academy")));
       if (onGuide) {
         const g = h("button", "btn exp-open-btn", t("open_guide"));
@@ -203,6 +305,11 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
         les.addEventListener("click", onLessons);
         container.appendChild(les);
       }
+      if (onInside) {
+        const ins = h("button", "btn exp-open-btn", t("open_inside"));
+        ins.addEventListener("click", onInside);
+        container.appendChild(ins);
+      }
       if (onExperiments) {
         const exp = h("button", "btn exp-open-btn", t("open_experiments"));
         exp.addEventListener("click", onExperiments);
@@ -211,7 +318,37 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     }
 
     container.appendChild(h("div", "hint", t("place_hint")));
+    container.appendChild(h("div", "hint", t("rtk_base_hint")));
   }
+
+  // --- živi RTK: prekidač + baza ------------------------------------------
+  // Bazu korisnik postavlja Shift + dvoklikom na globus (običan dvoklik ostaje
+  // za rover); gumb "Automatska baza" vraća auto bazu ~4 km od rovera.
+  function sendRtkBase(): void {
+    if (rtkBase) send({ type: "set_base", lat: rtkBase.lat, lon: rtkBase.lon });
+    else send({ type: "set_base", auto: true });
+  }
+  function renderRtk(): void {
+    container.appendChild(toggle(t("rtk"), state.rtk, (v) => {
+      state.rtk = v; send({ type: "rtk", on: v }); persist(); render();
+    }));
+    if (!state.rtk) return;
+    const r = h("div", "ctl-row rtk-base-row");
+    r.appendChild(h("span", "ctl-label", rtkBase ? t("rtk_base_user") : t("rtk_base_auto")));
+    if (rtkBase) {
+      const b = h("button", "btn rtk-base-btn", t("rtk_base_reset"));
+      b.addEventListener("click", () => { rtkBase = null; sendRtkBase(); persist(); render(); });
+      r.appendChild(b);
+    }
+    container.appendChild(r);
+  }
+  globe.onBasePlace((lat, lon) => {
+    rtkBase = { lat, lon };
+    sendRtkBase();
+    if (!state.rtk) { state.rtk = true; send({ type: "rtk", on: true }); }   // baza => RTK
+    persist();
+    render();
+  });
 
   // Primijeni spremljene prikaz-postavke na globus odmah (globe je već stvoren).
   globe.setShow("orbits", show.orbits);
@@ -227,6 +364,8 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
     send({ type: "kinematic", on: state.kinematic });
     send({ type: "raim", on: state.raim });
     if (state.attack !== "none") send({ type: "attack", spec: state.attack });
+    if (rtkBase) sendRtkBase();
+    send({ type: "rtk", on: state.rtk });
     if (systems) {
       for (const name of Object.keys(systems)) {
         if (name in systemsOn) send({ type: "set_system", system: name, on: systemsOn[name] });
@@ -265,6 +404,31 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       state.playing = f.playing;
       const btn = container.querySelector(".btn.primary");
       if (btn) btn.textContent = state.playing ? t("pause") : t("play");
+
+      // Ostvarena brzina (backend mjeri koliko sim-vremena stvarno prođe).
+      const act = f.time_scale_actual ?? 0;
+      if (spdLabel && Math.abs(act - actualScale) > Math.max(1, state.timeScale * 0.02)) {
+        actualScale = act;
+        spdLabel.textContent = speedText();
+      }
+
+      // Doba dana teče sa simulacijom (tow_now = tow0 + sim_time), pa slider prati
+      // STVARNO vrijeme modela umjesto da zauvijek pokazuje trenutak odabira.
+      if (f.tow_now !== undefined && todInput && document.activeElement !== todInput) {
+        const local = (((f.tow_now + 240 * roverLon) % 86400) + 86400) % 86400;
+        const hh = Math.floor(local / 3600);
+        if (Number(todInput.value) !== hh) {
+          todInput.value = String(hh);
+          state.tow = hh * 3600;
+          if (todLabel) todLabel.textContent = todText(hh);
+        }
+      }
+      // Izvor orbita: backend je izvor istine (npr. Poništi vraća idealizirane).
+      if (f.orbits) {
+        orbitInfo = f.orbits;
+        if (f.orbits.mode !== orbitMode) { orbitMode = f.orbits.mode; render(); }
+        else if (orbitStatusEl) orbitStatusEl.textContent = orbitStatusText();
+      }
       // Sustavi (konstelacije): re-render tek kad se on-stanje promijeni.
       if (f.systems) {
         const sig = sigOf(f.systems);
@@ -272,16 +436,18 @@ export function mountControls(container: HTMLElement, send: Send, globe: Globe,
       }
     },
     resync(): void { needSync = true; },            // pozovi na ponovno spajanje
+    reset: resetAll,                                // Poništi (backend + kontrole na zadano)
     // Programsko podešavanje (vođene lekcije): ažurira stanje, pošalje backendu,
     // pa ponovno iscrta panel da UI odražava promjenu.
     set(patch: Partial<{ playing: boolean; timeScale: number; tow: number;
-                         kinematic: boolean; raim: boolean; attack: string }>): void {
+                         kinematic: boolean; raim: boolean; attack: string; rtk: boolean }>): void {
       if (patch.playing !== undefined) { state.playing = patch.playing; send({ type: patch.playing ? "play" : "pause" }); }
       if (patch.timeScale !== undefined) { state.timeScale = patch.timeScale; send({ type: "time_scale", value: patch.timeScale }); }
       if (patch.tow !== undefined) { state.tow = patch.tow; sendTow(); }
       if (patch.kinematic !== undefined) { state.kinematic = patch.kinematic; send({ type: "kinematic", on: patch.kinematic }); }
       if (patch.raim !== undefined) { state.raim = patch.raim; send({ type: "raim", on: patch.raim }); }
       if (patch.attack !== undefined) { state.attack = patch.attack; send({ type: "attack", spec: patch.attack === "none" ? null : patch.attack }); }
+      if (patch.rtk !== undefined) { state.rtk = patch.rtk; send({ type: "rtk", on: patch.rtk }); }
       persist();
       render();
     },

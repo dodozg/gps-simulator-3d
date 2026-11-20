@@ -14,8 +14,14 @@
   "RAIM": {
     "term": "RAIM — Receiver Autonomous Integrity Monitoring",
     "short": "Prijemnik sam otkriva pokvareni satelit i izbaci ga.",
-    "long": "Ako jedan satelit šalje pogrešnu udaljenost (kvar ili spoofing), njegovo mjerenje 'ne pristaje' uz ostale. RAIM to prepozna po velikom rezidualu i odbaci ga. Ali ako je napad KONZISTENTAN (svi lažni podaci se slažu), RAIM ga ne vidi — to je njegovo temeljno ograničenje.",
-    "related": ["spoofing", "NIS"]
+    "long": "Prijemnik iz VIŠKA mjerenja provjerava jesu li dosljedna: težinski najmanji kvadrati daju reziduale, a njihova suma kvadrata (testna statistika) se uspoređuje s chi-kvadrat pragom za zadanu vjerojatnost lažnog alarma. Ako test padne, RAIM isključuje satelit s najvećim normaliziranim rezidualom (FDE) i provjerava ponovno. Uz to računa zaštitne granice (HPL/VPL). Treba barem 5 satelita (za detekciju) odnosno 6 (za isključivanje). Temeljno ograničenje: KONZISTENTAN napad (koordinirani spoof) ne ostavlja rezidual pa ga RAIM ne vidi.",
+    "related": ["spoofing", "NIS", "HPL"]
+  },
+  "HPL": {
+    "term": "HPL / VPL — zaštitna granica (protection level)",
+    "short": "Polumjer unutar kojeg RAIM jamči poziciju.",
+    "long": "Najveća vodoravna (HPL) ili okomita (VPL) greška koju kvar na JEDNOM satelitu može izazvati, a da ga RAIM test još ne uoči (uz vjerojatnost propusta P_MD). Računa se iz geometrije i očekivanog šuma, NE iz stvarne greške — zato je obično mnogo veći od nje. Ako je HPL veći od granice uzbune (HAL, npr. 556 m za ne-precizni prilaz), integritet nije dostupan i pilot ne smije koristiti GPS za tu fazu leta.",
+    "related": ["RAIM", "GDOP"]
   },
   "NIS": {
     "term": "NIS — Normalized Innovation Squared",

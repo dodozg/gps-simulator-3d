@@ -16,9 +16,10 @@ headless `numpy` engine — live 3D globe, telemetry, guided lessons, experiment
 
 > **What's real vs. simulated?** Everything *above the signal layer* is
 > authentic — the solver is the same algorithm that would run on a real
-> receiver. The RF layer is a faithful but calibrated model: real C/A **Gold
-> codes** and FFT correlation, but each satellite is decoded from its own channel
-> (no carrier-phase tracking or combined-signal near-far model yet). See the
+> receiver. The RF layer is a semi-analytic correlator model: real C/A **Gold
+> codes**, **C/N0 from a link budget**, coherent integration + relative Doppler
+> (cross-correlation / near-far), jamming in the signal and DLL noise from C/N0
+> (no sample-level signal or carrier-phase tracking in the code chain). See the
 > [honest self-assessment](GPS_Simulator_Documentation.md#8-osvrt-i-analiza-iskreno).
 
 ---
@@ -44,6 +45,11 @@ headless `numpy` engine — live 3D globe, telemetry, guided lessons, experiment
 - **Engineering hygiene** — 60 tests, CI on Python 3.11–3.13, a single seeded
   `Generator` threaded through every noise source (byte-reproducible), headless
   engine fully decoupled from the GUI.
+- **Research sandbox** — declarative experiments from one JSON spec: parameter
+  sweeps × Monte Carlo over seeds (noise *and* constellation geometry) × several
+  estimators on the *same* measurements, 95 % confidence intervals, CSV/JSON/PNG
+  export, plugin registries for estimators/attacks/metrics, parallel and
+  bit-for-bit reproducible regardless of worker count.
 - **Educational web layer** — live globe, click-to-place receiver, glossary
   popovers over live numbers, guided lessons that drive the app, bilingual HR/EN.
 
@@ -91,13 +97,74 @@ creates the venv and installs everything.
 
 Interactive 3D globe (CesiumJS), live simulation, click-to-place receiver,
 telemetry, glossary and guided lessons — the existing engine driven live over a
-FastAPI backend. Build once (needs Node 18+), then run:
+FastAPI backend. Build once (needs Node 20.19+ or 22.12+), then run:
 
 - **Windows:** `build_web.bat` → `run_webapp.bat`
 - **macOS/Linux:** `./build_web.sh` → `./run_webapp.sh` (or `./gps.sh web`)
 
 The browser opens automatically once the server is up. Details in
 [`web/README.md`](web/README.md).
+
+The live simulation also shows **integrity** (statistical RAIM: status, HPL/VPL and
+a protection-level circle around the estimate) and **RTK** (toggle in the panel; the
+base is placed automatically 4 km from the rover or with Shift + double-click; FIX
+≈1 cm with GPS+Galileo+BeiDou).
+
+**Real orbits** (panel → Orbits → Real): the actual GPS, Galileo, GLONASS and BeiDou satellites
+(146, including BeiDou GEO/IGSO) for "now" or a chosen date, from CelesTrak GP elements
+propagated with SGP4 (`real_orbits.py`). The simulation then runs in real UTC: Earth rotation
+(GMST), the Sun on the globe and the ionosphere match the actual moment, so the skyplot matches
+your phone. Fresh elements are downloaded only on "Refresh data" (12 h cache); offline, a
+built-in snapshot is used (`data/gnss_gp_snapshot.json`, data: CelesTrak).
+
+**Inside view** (button in the academy section) opens the math of one epoch: model and
+innovation of every pseudorange with an error budget (that only the simulator knows),
+the geometry matrix and DOPs, the Kalman step (predict → gain → update, each satellite's
+contribution) and RAIM (T on the χ² curve, slopes, HPL). It can be frozen and stepped.
+
+---
+
+## Research sandbox
+
+`sandbox.py` runs a whole **study** from one JSON spec: a parameter grid (sweep) ×
+Monte Carlo over seeds (noise **and** constellation geometry via `t0_random_s`) ×
+several algorithms fed the **same** measurements. For every sweep point it reports
+mean, median, p95 and a **95 % confidence interval** across seeds, writes
+`results.json` (spec + git commit + per-run and aggregated metrics) and
+`results.csv`, and `--plot` draws the metric vs the swept parameter with a CI band.
+Results are identical for any `--workers` count.
+
+```bash
+python sandbox.py list                                   # estimators / attacks / metrics / examples
+python sandbox.py validate sandbox/examples/raim_roc.json
+python sandbox.py run sandbox/examples/spoof_offset.json --workers 4 --out results/spoof --plot
+```
+
+```python
+import sandbox
+res = sandbox.run({"world": {"duration_s": 120, "t0_random_s": 86164}, "seeds": 8,
+                   "attack": {"type": "sat_fault", "start": 30},
+                   "sweep": {"attack.bias_m": [0, 15, 30, 60], "raim.pfa": [1e-3, 1e-5]},
+                   "metrics": ["raim_pd", "mi_events", "h_err_p95"]}, workers=4)
+res.table("raim_pd")          # numpy array of means per sweep point
+```
+
+**Plugins** without touching the engine: `@register_estimator("name")`
+(`factory(world)` → object with `solve(signals, t) -> (pos_ecef | None, info)`),
+`@register_attack("name")` (`apply(signals, t, rx_pos, rng)` + `is_active(t)`),
+`@register_metric("name")` (`fn(trace) -> float`). Built in: `ekf` (the real
+`receiver.Receiver` incl. RAIM), `wls` (snapshot WLS + snapshot RAIM with FDE), all
+`spoofing.py` attacks + `sat_fault` (single-satellite clock fault) and ~40 metrics —
+accuracy, availability, integrity availability (HPL ≤ HAL), P_D, false alarms,
+time-to-detect, **misleading information** (error > HPL with no alarm), HMI,
+NIS/dof, solver runtime. Example studies (RAIM ROC, spoof vs MI, jamming, multi-GNSS
+vs mask, EKF vs WLS) live in [`sandbox/examples/`](sandbox/examples/README.md); the
+web app has the same in Experiments → **Sandbox** (edit the spec, background job,
+CI chart, CSV download).
+
+| RAIM detection probability vs fault size | Coordinated spoof: misleading-information rate |
+|---|---|
+| ![RAIM P_D vs clock-fault size for several P_FA](docs/media/sandbox_raim_roc.png) | ![Misleading-information rate vs spoof offset](docs/media/sandbox_spoof_mi.png) |
 
 ---
 
@@ -127,13 +194,17 @@ Full architecture, block diagrams and model derivations:
 |--------|------|
 | `physics_engine.py` | Orbits (Kepler + J2), iono/tropo, relativity, clocks, slowly-varying ephemeris |
 | `satellite.py` | Satellites + Walker-Delta and multi-GNSS (GPS/GAL/GLO/BDS) constellations |
-| `signal_processing.py` | Real C/A **Gold codes**, RF channel (correlated L1/L2 multipath + AWGN), 8× FFT correlation |
+| `signal_processing.py` | Real C/A **Gold codes**, correlated L1/L2 multipath, reference 8× FFT RF channel |
+| `signal_model.py` | Signal model: **C/N0** link budget, jammer + cross-correlation (near-far), DLL bias/noise |
 | `measurement.py` | Measurement model: channel + corrections + DOP selection → pseudoranges |
 | `receiver.py` | Estimator: LS cold start → 11-D EKF → RAIM (owns the measurement model) |
+| `raim.py` | Integrity: χ² residual test, fault exclusion (FDE), protection levels HPL/VPL |
 | `terrain.py` | Global DEM (NASA SRTM) + bilinear interpolation |
 | `utils.py` | Geodesy: LLA ↔ ECEF on the WGS-84 ellipsoid |
 | `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) — the 3D interface |
+| `rinex.py` · `ephemeris.py` · `realdata.py` · `broadcast_constellation.py` | **Real data**: RINEX obs/nav (v2/v3) + SP3 parsers, IS-GPS-200 broadcast orbits, single-point positioning on real RINEX through the same EKF/RAIM, constellation driven by a real nav file |
 | `rtk.py` · `spoofing.py` · `multignss.py` · `iono.py` · `skyplot.py` · `scenario.py` · `benchmark.py` | Standalone headless tools |
+| `sandbox.py` · `sandbox/examples/` | Research sandbox: declarative sweep × Monte Carlo × estimator experiments, plugin registries |
 
 ---
 

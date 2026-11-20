@@ -10,17 +10,20 @@ cd /d "%~dp0"
 set "SRC=%~dp0web\frontend"
 set "BUILD=%LOCALAPPDATA%\gpsweb"
 
-where node >nul 2>&1 || ( echo [!] Node.js nije pronaden. Instaliraj Node 18+ i pokreni ponovno. & pause & exit /b 1 )
+where node >nul 2>&1 || ( echo [!] Node.js nije pronaden. Instaliraj Node 20.19+ ili 22.12+ i pokreni ponovno. & pause & exit /b 1 )
 
 echo [i] Build dir: %BUILD%
 if not exist "%BUILD%" mkdir "%BUILD%"
-robocopy "%SRC%" "%BUILD%" package.json vite.config.ts tsconfig.json index.html /NJH /NJS /NFL /NDL >nul
+robocopy "%SRC%" "%BUILD%" package.json package-lock.json vite.config.ts tsconfig.json index.html /NJH /NJS /NFL /NDL >nul
 robocopy "%SRC%\src" "%BUILD%\src" /MIR /NJH /NJS /NFL /NDL >nul
 
 pushd "%BUILD%"
+REM Verzije su zakljucane u package-lock.json (reproducibilan build).
 if not exist node_modules (
-    echo [i] npm install ^(prvi put, moze potrajati^)...
-    call npm install
+    echo [i] npm ci ^(prvi put, moze potrajati^)...
+    call npm ci --no-audit --no-fund
+) else (
+    call npm install --no-audit --no-fund
 )
 echo [i] npm run build...
 call npm run build

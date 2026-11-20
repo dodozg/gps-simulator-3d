@@ -8,7 +8,7 @@
 import { h, term } from "../lib/dom";
 import { t, onLangChange } from "../lib/i18n";
 import { getMode, onModeChange } from "../lib/prefs";
-import type { StateFrame, SatFrame } from "../lib/types";
+import type { StateFrame, SatFrame, RtkFrame } from "../lib/types";
 
 function vis(node: HTMLElement, on: boolean): void {
   node.style.display = on ? "" : "none";
@@ -29,6 +29,80 @@ function mkRow(concept: string, cls = ""): Row {
 
 function fmtAlt(a: number | null | undefined): string {
   return a == null ? "—" : `${a.toFixed(0)} m`;
+}
+
+// Udaljenost s jedinicom prilagođenom veličini (RTK: od mm do km).
+function fmtDist(m: number | null | undefined): string {
+  if (m == null) return "—";
+  const a = Math.abs(m);
+  if (a < 1) return `${(m * 100).toFixed(1)} cm`;
+  if (a < 1000) return `${m.toFixed(2)} m`;
+  return `${(m / 1000).toFixed(2)} km`;
+}
+
+// --- živi RTK: samostalna sekcija (gradi se jednom, update mijenja tekst) ---
+function mountRtkSection() {
+  const box = h("div", "rtk-section");
+  const head = h("div", "panel-sub rtk-head");
+  const titleEl = h("span");
+  const badge = h("span", "rtk-badge");
+  head.append(titleEl, badge);
+  const msg = h("div", "hint");
+  const errR = mkRow("rtk", "accent");
+  const fErrR = mkRow("rtk");
+  const blR = mkRow("rtk");
+  const ddR = mkRow("rtk");
+  const ttfR = mkRow("rtk");
+  const ratioR = mkRow("rtk");
+  const costR = mkRow("rtk");
+  box.append(head, msg, errR.row, fErrR.row, blR.row, ddR.row, ttfR.row, ratioR.row, costR.row);
+
+  function labels(): void {
+    titleEl.textContent = t("rtk_title");
+    errR.label.textContent = t("rtk_error");
+    fErrR.label.textContent = t("rtk_error_float");
+    blR.label.textContent = t("rtk_baseline");
+    ddR.label.textContent = t("rtk_dd");
+    ttfR.label.textContent = t("rtk_ttf");
+    ratioR.label.textContent = t("rtk_ratio");
+    costR.label.textContent = t("rtk_cost");
+  }
+
+  function update(r: RtkFrame | null | undefined, kinematic: boolean, expert: boolean,
+                  gpsOnly: boolean): void {
+    vis(box, !!r);
+    if (!r) return;
+    badge.textContent = t("rtk_" + r.status);
+    badge.className = "rtk-badge " + r.status;
+    const has = r.status !== "none";
+    // poruka: nema rješenja / savjet za kinematiku samo s GPS-om
+    const note = !has ? t("rtk_no_solution")
+      : (kinematic && gpsOnly && r.status === "float") ? t("rtk_kin_hint") : "";
+    msg.textContent = note;
+    vis(msg, note !== "");
+    vis(errR.row, has);
+    if (has) {
+      const hv = r.error_h_m != null && r.error_v_m != null
+        ? `  (H ${fmtDist(r.error_h_m)} · V ${fmtDist(r.error_v_m)})` : "";
+      errR.value.textContent = fmtDist(r.error_m) + (expert ? hv : "");
+    }
+    vis(fErrR.row, expert && has && r.status === "fixed");
+    if (expert) fErrR.value.textContent = fmtDist(r.float_error_m);
+    vis(blR.row, true);
+    blR.value.textContent = fmtDist(r.baseline_m)
+      + (r.base_switches ? `  (${r.base_switches} ${t("rtk_switches")})` : "");
+    vis(ddR.row, true);
+    ddR.value.textContent = `${r.n_dd}` + (r.n_fixed ? ` · ${r.n_fixed} ${t("rtk_fixed_of")}` : "");
+    vis(ttfR.row, true);
+    ttfR.value.textContent = r.time_to_fix_s != null
+      ? `${r.time_to_fix_s.toFixed(0)} s` : `${t("rtk_ttf_wait")} ${r.elapsed_s.toFixed(0)} s`;
+    vis(ratioR.row, expert);
+    if (expert) ratioR.value.textContent = r.ratio != null ? r.ratio.toFixed(1) : "—";
+    vis(costR.row, expert);
+    if (expert) costR.value.textContent = r.cost_ms != null ? `${r.cost_ms.toFixed(1)} ms` : "—";
+  }
+
+  return { box, labels, update };
 }
 
 export function mountTelemetry(container: HTMLElement,
@@ -60,6 +134,8 @@ export function mountTelemetry(container: HTMLElement,
   const velEstR = mkRow("velocity");
   const gdopR = mkRow("gdop");
   const satsR = mkRow("sats");
+  const integR = mkRow("integrity");   // status integriteta (statistički RAIM)
+  const hplR = mkRow("hpl");           // zaštitne granice HPL / VPL
   const nisR = mkRow("nis");
   const clkR = mkRow("clock");
   // ISB (inter-system bias) — po jedan redak za Galileo/GLONASS/BeiDou (multi-GNSS).
@@ -74,14 +150,15 @@ export function mountTelemetry(container: HTMLElement,
   const satBody = document.createElement("tbody");
   satTbl.append(satHead, satBody);
   tableWrap.append(satTitle, satTbl);
-  interface SatRow { tr: HTMLElement; tog: HTMLElement; enabled: boolean; id: HTMLElement; sys: HTMLElement; el: HTMLElement; az: HTMLElement; status: HTMLElement; resid: HTMLElement; }
+  interface SatRow { tr: HTMLElement; tog: HTMLElement; enabled: boolean; id: HTMLElement; sys: HTMLElement; el: HTMLElement; az: HTMLElement; status: HTMLElement; cn0: HTMLElement; resid: HTMLElement; }
   const satRows = new Map<string, SatRow>();
+  const rtkSec = mountRtkSection();
 
   container.append(title, attackBanner, raimBanner, noFix,
     truthR.row, estR.row, errR.row,
     altTrueR.row, altEstR.row, velTrueR.row, velEstR.row, waiting,
-    gdopR.row, satsR.row, nisR.row, clkR.row,
-    isbR.GAL.row, isbR.GLO.row, isbR.BDS.row, tableWrap);
+    gdopR.row, satsR.row, integR.row, hplR.row, nisR.row, clkR.row,
+    isbR.GAL.row, isbR.GLO.row, isbR.BDS.row, rtkSec.box, tableWrap);
 
   // Statične (jezično ovisne) oznake — postave se jednom i na promjenu jezika.
   function applyLabels(): void {
@@ -93,6 +170,8 @@ export function mountTelemetry(container: HTMLElement,
     errR.label.textContent = t("error");
     gdopR.label.textContent = "GDOP";
     satsR.label.textContent = t("sats");
+    integR.label.textContent = t("integrity");
+    hplR.label.textContent = t("protection");
     nisR.label.textContent = "NIS/dof";
     altTrueR.label.textContent = t("altitude_true");
     altEstR.label.textContent = t("altitude_est");
@@ -104,9 +183,10 @@ export function mountTelemetry(container: HTMLElement,
     isbR.BDS.label.textContent = "ISB " + t("sys_BDS");
     satTitle.textContent = t("satellite_table");
     satHead.replaceChildren(
-      ...["", t("col_sat"), t("col_sys"), t("col_el"), t("col_az"), t("col_used"), t("col_resid")]
+      ...["", t("col_sat"), t("col_sys"), t("col_el"), t("col_az"), t("col_used"), t("col_cn0"), t("col_resid")]
         .map((c) => h("th", undefined, c)));
     // truth oznaka ovisi o frameu (Istina/Let) — postavlja se u updateView().
+    rtkSec.labels();
   }
 
   // Ažuriranje tablice satelita in-place: postojeći redci se mijenjaju i
@@ -127,9 +207,10 @@ export function mountTelemetry(container: HTMLElement,
         const el = h("td", "mono");
         const az = h("td", "mono");
         const status = h("td");
+        const cn0 = h("td", "mono");
         const resid = h("td", "mono");
-        tr.append(tog, id, sys, el, az, status, resid);
-        const row: SatRow = { tr, tog, enabled: true, id, sys, el, az, status, resid };
+        tr.append(tog, id, sys, el, az, status, cn0, resid);
+        const row: SatRow = { tr, tog, enabled: true, id, sys, el, az, status, cn0, resid };
         const sid = s.id;   // stabilan id za klik (s se mijenja svaki frame)
         tog.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -152,6 +233,7 @@ export function mountTelemetry(container: HTMLElement,
       r.el.textContent = s.el != null ? s.el.toFixed(0) + "°" : "—";
       r.az.textContent = s.az != null ? s.az.toFixed(0) + "°" : "—";
       r.status.textContent = s.rejected ? t("used_rejected") : s.tracked ? t("used_yes") : t("used_visible");
+      r.cn0.textContent = s.cn0_dbhz != null ? s.cn0_dbhz.toFixed(0) : "—";
       r.resid.textContent = s.residual_m != null ? s.residual_m.toFixed(0) + " m" : "—";
       satBody.appendChild(r.tr);   // premjesti u sortirani položaj
     }
@@ -164,10 +246,13 @@ export function mountTelemetry(container: HTMLElement,
     const f = last;
     const placed = !!(f && f.receiver.placed);
     vis(noFix, !placed);
+    const sysOn = f?.systems ? Object.entries(f.systems).filter(([, v]) => v.on).map(([k]) => k) : [];
+    rtkSec.update(placed ? f!.rtk : null, !!f?.kinematic, getMode() === "expert",
+      sysOn.length === 1 && sysOn[0] === "GPS");
     if (!f || !placed) {
       [attackBanner, raimBanner, truthR.row, estR.row, errR.row,
        altTrueR.row, altEstR.row, velTrueR.row, velEstR.row, waiting,
-       gdopR.row, satsR.row, nisR.row, clkR.row,
+       gdopR.row, satsR.row, integR.row, hplR.row, nisR.row, clkR.row,
        isbR.GAL.row, isbR.GLO.row, isbR.BDS.row, tableWrap]
         .forEach((n) => vis(n, false));
       return;
@@ -223,6 +308,26 @@ export function mountTelemetry(container: HTMLElement,
     gdopR.value.textContent = rx.gdop != null ? rx.gdop.toFixed(2) : "—";
     vis(satsR.row, true);
     satsR.value.textContent = `${f.sats_tracked}/${f.sats_total} ${t("tracked")}`;
+
+    // Integritet: status statističkog RAIM-a (+ test/prag u stručnom modu) i HPL/VPL.
+    const ig = rx.integrity;
+    vis(integR.row, !!ig);
+    vis(hplR.row, !!ig && ig.hpl != null);
+    if (ig) {
+      let txt = t("integ_" + ig.status);
+      if (ig.status === "excluded" && ig.excluded?.length) txt += ": " + ig.excluded.join(", ");
+      if (expert && ig.test != null && ig.threshold != null)
+        txt += `  (T ${ig.test.toFixed(1)} / ${ig.threshold.toFixed(1)}, dof ${ig.dof})`;
+      integR.value.textContent = txt;
+      integR.value.className = "tel-value integ-" + ig.status;
+      if (ig.hpl != null) {
+        let p = `H ${ig.hpl.toFixed(0)} m`;
+        if (ig.vpl != null) p += ` · V ${ig.vpl.toFixed(0)} m`;
+        if (ig.available === false) p += ` — ${t("integ_not_available")}`;
+        hplR.value.textContent = p;
+        hplR.value.classList.toggle("bad", ig.available === false);
+      }
+    }
 
     // stručni redci
     vis(nisR.row, expert);

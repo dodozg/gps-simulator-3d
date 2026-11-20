@@ -1,3 +1,9 @@
+"""DSP jezgra: pravi C/A Gold kodovi, geometrija multipatha i referentni FFT RF kanal.
+
+Živi mjerni lanac koristi korelatorski signalni model (`signal_model.py`: C/N0,
+koherentna integracija + Doppler, DLL); FFT kanal (`simulate_channel`,
+`simulate_rf_channel`/`decode_signal`) ostaje kao referenca i za testove.
+"""
 import numpy as np
 from physics_engine import C
 

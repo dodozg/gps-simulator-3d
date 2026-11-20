@@ -30,8 +30,8 @@ solver je pravi GNSS algoritam — isti kakav bi radio i na stvarnim mjerenjima
 Tehnologije: Python 3.11–3.14 · numpy · FastAPI · uvicorn · CesiumJS ·
 TypeScript (vanilla, bez frameworka) · Vite · matplotlib (headless grafovi).
 
-Opseg (grubo): engine ~3.100 linija Pythona, web ~3.800 linija TypeScripta +
-~600 linija backend Pythona, 62 testova, CI na Pythonu 3.11–3.13.
+Opseg (grubo): engine ~3.400 linija Pythona, web ~3.800 linija TypeScripta +
+~600 linija backend Pythona, 117 testova, CI na Pythonu 3.11–3.13.
 
 ---
 
@@ -42,7 +42,7 @@ flowchart TB
     subgraph ENGINE["Engine (Python/numpy, headless)"]
         PE["physics_engine.py<br/>orbite Kepler+J2, iono/tropo,<br/>relativnost, Sagnac, satovi"]
         SAT["satellite.py<br/>Satellite, WalkerDelta,<br/>MultiGNSS, GNSS_SYSTEMS"]
-        SP["signal_processing.py<br/>PRN, RF kanal, 8× korelacija"]
+        SP["signal_processing.py + signal_model.py<br/>Gold kodovi, C/N0, korelatori, DLL"]
         TER["terrain.py<br/>globalni DEM (SRTM)"]
         MEAS["measurement.py<br/>kanal + korekcije + DOP<br/>selekcija → pseudoudalj."]
         RX["receiver.py<br/>LS init + EKF(11) + RAIM<br/>+ ISB (estimator)"]
@@ -83,8 +83,9 @@ flowchart TB
 |-------|-------:|-------|
 | `physics_engine.py` | 272 | Keplerove orbite + J2, Klobuchar ionosfera, Hopfield troposfera, Sagnac, relativistički driftovi, Allanov model sata, sporo-promjenjiva (OU) ephemeris greška |
 | `satellite.py` | 183 | `Satellite` (orbita + sat + PRN + ephemeris stanje), `WalkerDeltaConstellation` (GPS 24/6/1), `MultiGNSSConstellation` (GPS/GAL/GLO/BDS, 96 sat.), `GNSS_SYSTEMS` (parametri + ISB) |
-| `signal_processing.py` | 262 | **Pravi C/A Gold kodovi** (LFSR-i), RF kanal u frek. domeni (**korelirani L1/L2 multipath** + AWGN), **8× naduzorkovana** FFT korelacija (keširano), dekodiranje pseudoudaljenosti |
-| `measurement.py` | 249 | **Mjerni model** ("svijet → pseudoudaljenosti"): vidljivost+LOS, DOP selekcija, RF kanal, iono-free, sve korekcije (tropo/Sagnac/sat/ISB), sat prijemnika, `ideal` mod |
+| `signal_processing.py` | 262 | **Pravi C/A Gold kodovi** (LFSR-i), dijeljena geometrija multipatha; referentni FFT RF kanal (8× naduzorkovanje) — više nije u živom lancu (§5.1) |
+| `signal_model.py` | ~330 | **Signalni model** (§5.1): link budget → **C/N0**, ometač (J/N) i cross-korelacija (MAI) → efektivni C/N0 i gubitak zabrave, koherentna integracija + Doppler, DLL pristranost (multipath + Gold cross-korelacija) i DLL šum |
+| `measurement.py` | ~330 | **Mjerni model** ("svijet → pseudoudaljenosti"): vidljivost+LOS, signalni model (C/N0, zabrava), DOP selekcija praćenih, iono-free, sve korekcije (tropo/Sagnac/sat/ISB), sat prijemnika, `ideal` mod |
 | `receiver.py` | 350 | **Estimator**: LS "cold start" → **11-D EKF** → RAIM → NIS; vlasi mjerni model, predaje mu procjenu (§19.2) |
 | `terrain.py` | 94 | Globalni DEM (`terrain_dem.npz`, NASA SRTM), bilinearna interpolacija |
 | `utils.py` | 92 | LLA ↔ ECEF (WGS-84, Bowring — sub-mm točnost), DMS format |
@@ -139,12 +140,13 @@ Srce projekta: `receiver.receive_signals()` + `receiver.solve_position()`.
 
 ```mermaid
 flowchart LR
-    A["Vidljivi sateliti<br/>elevacija > 5°<br/>LOS kroz teren"] --> B["DOP selekcija<br/>10 najboljih<br/>(greedy, iz procjene)"]
-    B --> C["RF kanal + korelacija<br/>L1 i L2, 8× oversample"]
+    A["Vidljivi sateliti<br/>elevacija > 5°<br/>LOS kroz teren"] --> S["Signalni model<br/>C/N0 (link budget)<br/>+ ometač + MAI → zabrava"]
+    S --> B["DOP selekcija<br/>10 najboljih praćenih<br/>(greedy, iz procjene)"]
+    B --> C["Korelatori + DLL<br/>L1 i L2: multipath,<br/>cross-korelacija, šum(C/N0)"]
     C --> D["Iono-free kombinacija<br/>(poništi ionosferu)"]
     D --> E["Korekcije mjerenja<br/>+ sat prijemnika<br/>− tropo (Hopfield)<br/>+ Sagnac + ISB(sustav)"]
     E --> F["EKF predict/update<br/>11 stanja"]
-    F --> G["RAIM (MAD)<br/>izbaci outliere"]
+    F --> G["RAIM: MAD filtar + χ² test<br/>FDE + HPL/VPL"]
     G --> H["Pozicija + GDOP + NIS"]
 ```
 
@@ -157,9 +159,12 @@ Koraci:
   pozicije (pravi prijemnik istinu ne zna). Empirijski optimum je ~10: preko
   toga dodatni sateliti su niske elevacije (bučniji), pa GDOP pada, ali greška
   raste.
-- **Korelacija**: pseudoudaljenost se ne uzima kao geometrijska udaljenost nego
-  se **fizički mjeri** FFT korelacijom PRN koda s primljenim signalom (uz
-  multipath i AWGN) i paraboličnom sub-uzorak interpolacijom vrha (§5.1).
+- **Signalni model**: za svaki vidljivi satelit link budget daje **C/N0**; ometač
+  i cross-korelacija ostalih satelita (nakon koherentne integracije uz relativni
+  Doppler) podižu šumni pod; ispod praga zabrave (28 dB-Hz) satelit se ne prati.
+- **Korelatori/DLL**: pseudoudaljenost nije geometrijska udaljenost nego izlaz
+  rani-kasni petlje (DLL): pristranost od multipatha i koherentne cross-korelacije
+  (pravi Gold kodovi) + termalni šum iz C/N0 (§5.1).
 - **Iono-free**: linearna kombinacija L1/L2 poništava (disperzivnu) ionosferu,
   ali pojačava šum ~3× — fizička cijena koju i pravi prijemnici plaćaju.
 
@@ -167,32 +172,75 @@ Koraci:
 
 ## 5. Ključni algoritmi i modeli
 
-### 5.1 Obrada signala — pravi C/A Gold kodovi + 8× naduzorkovana korelacija
+### 5.1 Obrada signala — Gold kodovi, C/N0 iz link budgeta, korelatori i DLL
 
 PRN je **pravi GPS C/A Gold kod** od **1023 čipa** (`gold_code`: dva 10-bitna
 LFSR-a, preferirani par G1/G2), a ne random ±1 niz. Gold kodovi imaju
 GARANTIRANO omeđenu **troznačnu cross-korelaciju** {−65, −1, 63} (za razliku od
 random ~√1023, neomeđeno) — svojstvo koje razdvaja satelite u istom signalu.
-1 čip ≈ **293 m**. Naivna korelacija na 1 uzorak/čip daje razlučivost tek
-~0,1 čipa ≈ **27 m**, pa se signal **naduzorkuje 8×** (`OVERSAMPLE = 8` →
-~36,6 m/uzorak); parabolička interpolacija spušta ranging na **~2,5 m**.
+1 čip ≈ **293 m**.
 
-Per-satelitski kanal (`simulate_channel`) radi cijelo u **frekvencijskoj
-domeni** (korelacija koda sa samim sobom je keširani |FFT|², šum se doda kao
-FFT bijelog šuma), pa uz 1023-dužinu (ne-potencija dvojke, ~2× sporiji FFT)
-ostaje izvediv. Dodaje **multipath** (reflektirana, prigušena kopija; rezidual
-1–12 m, **jači pri niskoj elevaciji**, ~0 u zenitu) i **AWGN** (despread SNR
-−2 dB). Kodni multipath uvijek *kasni* (pozitivan bias), pa ga filtar ne može
-usredniti na nulu.
+Živi lanac (`signal_model.py`) radi na **razini korelatora** (polu-analitički),
+a ne generiranjem uzoraka signala — brže je i fizikalno vjernije:
 
-> **Zašto per-satelitski kanal, a ne jedan kombinirani antenski signal?** Pokušaj
-> zbrajanja svih satelita u jedan signal po bandu (da cross-korelacija postane
-> "stvarna") *pogoršao* je točnost ~5 → 10 m (NIS↑): jedan 1 ms snapshot
-> **precjenjuje** cross-korelaciju jer izostavlja vremensku integraciju kojom
-> pravi prijemnik (koherentna integracija + relativni Doppler) tu korelaciju
-> **usredni prema nuli**. Per-sat kanal upravo modelira taj dobro-razdvojeni
-> ishod. Pravi kombinirani model (Doppler + integracija → stvaran near-far/
-> jamming) je u planu — vidi §10. Gold kodovi su temelj za njega.
+1. **C/N0 iz link budgeta** (`cn0_dbhz`, po satelitu i bandu): primljena snaga
+   u izotropnu antenu na 20 200 km (L1 −155,5 dBW, L2 −158,5 dBW), skaliranje
+   udaljenošću (1/d² — Galileo je slabiji, GLONASS jači), oblikovani snop
+   satelitske antene (+2 dB na rubu Zemlje), atmosfersko gušenje, dijagram
+   antene prijemnika (+3 dBic u zenitu → −7 dBic na 5°) i šumni pod
+   N0 = k·(T_ant + T0·(F − 1)) ≈ −203,8 dBW/Hz (NF 2 dB) uz 2 dB
+   implementacijskih gubitaka. Rezultat: **~49 dB-Hz u zenitu, ~39 dB-Hz na 5°**
+   (L2 3 dB niže). Satelit može imati pomak snage (`tx_power_offset_db`, editor
+   satelita "Snaga signala") — za near-far pokuse.
+2. **Efektivni C/N0** — ometač i cross-korelacija (MAI) podižu šumni pod:
+   `1/(C/N0)_eff = (1 + J/N)/(C/N0) + Σ_k (C_k/C)·κ_k`. Za širokopojasni šumni
+   ometač Q = 2, B_fe = 2·Rc pa je faktor uz J/N točno 1. κ_k je snaga
+   cross-korelacije satelita k koja **prođe koherentnu integraciju** T_coh = 20 ms:
+   C/A kod je periodičan (1 ms) pa ima linijski spektar s razmakom 1 kHz, a
+   integracija je sinc filtar širine ~1/T oko svake linije:
+   `κ = T·⟨X²⟩·Σ_m sinc²(π·(Δf − m·1 kHz)·T)`. Usrednjeno po Doppleru to daje
+   poznati C/A spektralni koeficijent **−61,8 dB/Hz**; za konkretan par ovisi o
+   relativnom Doppleru i T. MAI računamo **unutar sustava** (u stvarnosti su
+   sustavi razdvojeni frekvencijom ili modulacijom, iako simulator svima daje
+   C/A-like kod). Nominalno je MAI < 2 dB; **satelit +25 dB jači** (near-far,
+   npr. spoofer) ostalima povremeno (kad im se Doppleri poklope s linijom) sruši
+   C/N0 za 8–20 dB, do gubitka zabrave.
+3. **Gubitak zabrave**: satelit čiji (C/N0)_eff na L1 ili L2 padne ispod
+   **28 dB-Hz** (prag PLL/DLL za T = 20 ms) se ne prati; DOP selekcija bira samo
+   među praćenima.
+4. **DLL** (nekoherentni rani-kasni, razmak d = 0,5 čipa, B_L = 2 Hz):
+   - *pristranost* iz lineariziranog nul-prijelaza diskriminatora: multipath
+     (dvozračni, `ε = α·δ/(1+α)` za kratka kašnjenja; dijeljena geometrija L1/L2)
+     + **koherentna cross-korelacija** jačih satelita: stvarne Gold vrijednosti
+     X(τ ± d/2) u Doppler-binu najbliže linije × sinc(π·δ·T) × odziv petlje na
+     otkucaj δ (petlja 1. reda usrednji sve što rotira brže od ~B_L), s fazom
+     nosioca koja rotira s Δf·t. Ako pristranost premaši d/2 (zabrava na
+     cross-korelacijski vrh), lock detektor odbaci kanal;
+   - *termalni šum* (Betz & Kolodziejski / Kaplan):
+     `σ² = B_L·d/(2·C/N0)·(1 + 2/((2 − d)·T·C/N0))` [čip²] → L1 ~0,7 m u zenitu,
+     ~2,4 m na 5°; iono-free ~2,5–8 m.
+5. Svako mjerenje nosi `cn0_dbhz` (L1), `cn0_l2_dbhz` i `sigma_code_m`
+   (iono-free σ šuma koda iz C/N0 — kao prStdev pravih prijemnika); prijemnik
+   ga koristi za težinjenje (§5.2/5.3), a web ga prikazuje (tablica satelita,
+   editor satelita).
+
+**Zašto polu-analitički, a ne uzorci?** Odbačene alternative: (a) *jedan 1 ms
+snapshot kombiniranog antenskog signala* — pokušano ranije, **pogoršalo** je
+točnost ~5 → 10 m (NIS↑): snapshot precjenjuje cross-korelaciju jer izostavlja
+koherentnu integraciju i relativni Doppler; (b) *brute-force uzorci* kroz
+T_coh = 20 ms (20× 8184 uzoraka × ~10 satelita × 2 banda, plus Doppler rotacija)
+— desetke puta skuplje od budžeta žive epohe; (c) *čisti SSC model* (MAI samo kao
+očekivani šum) — ne daje koherentnu pristranost kod poklopljenih Dopplera
+(stvarni C/A near-far problem). Korelatorski model daje oboje uz cijenu od par
+ms po epohi. Stari FFT kanal (`signal_processing.simulate_channel`, 8×
+naduzorkovanje, fiksni despread SNR −2 dB) ostaje kao referenca/test, ali više
+nije u živom lancu.
+
+**Učinak** (benchmark, 4 lokacije × 2 seeda × 300 s, samo GPS): medijan 3D
+greške **4,75 → 3,73 m**, p95 10,7 → 7,5 m; multi-GNSS (4 lokacije, 240 s)
+5,2 → 4,0 m. NIS/dof 0,99 → 0,74 (prekonzervativno zbog namjerno velikog Q,
+vidi §5.2). Trošak žive epohe **pao**: samo GPS 54 → 27 ms, sva 4 sustava
+107 → 80 ms (FFT po kanalu više se ne radi).
 
 ### 5.2 Navigacija — 11-D Extended Kalman Filter
 
@@ -216,22 +264,63 @@ flowchart TB
   `h = |sat − rx| + c·bias + sagnac + ISBₛ` (GPS: ISB = 0).
   Jacobijev redak: jedinični vektor prema satelitu (3) · `1` na c·bias · `1` na
   ISB stupcu tog sustava.
-- **Adaptivni mjerni šum** `R`: `σ(elev) = SIGMA_ZENITH / sin(elev)`,
-  `SIGMA_ZENITH = 1,9 m` — podešeno tako da **NIS/dof ≈ 1** (statistički
-  konzistentan filtar).
+- **Mjerni šum po C/N0** `R`: `σ² = σ_kod(C/N0)² + (SIGMA_RES_ZENITH/sin el)²`
+  — prvi član je DLL šum iono-free kombinacije iz izmjerenog C/N0 (`sigma_code_m`,
+  §5.1), drugi ne-termalni rezidual (ephemeris, multipath, tropo), 0,8 m u
+  zenitu. Kao u pravim prijemnicima: slab/ometan satelit automatski dobije manju
+  težinu. NIS/dof ≈ 0,75 (u rasponu 0,5–2; ispod 1 jer je procesni šum Q namjerno
+  širok za kinematiku, pa statičan prijemnik precjenjuje H·P·Hᵀ). Mjerenja bez
+  `sigma_code_m` (npr. pravi RINEX) koriste stari model `1,9 m / sin(el)`.
 - **NIS** (Normalized Innovation Squared) se računa svaki korak: ~1 = zdrav,
   trajno >1 = R premalen (preoptimističan), <1 = prekonzervativan.
 
-### 5.3 RAIM — robusna detekcija outliera (MAD)
+### 5.3 RAIM — statistički test, FDE i zaštitne granice
 
-`_raim_screen`: iterativno nalazi satelit čija inovacija najviše odstupa od
-**medijane**; ako prelazi `RAIM_K` robusnih sigma (MAD skala) **i** apsolutni
-prag (600 m), izbacuje ga i ponavlja. MAD skala se sama prilagođava razini šuma,
-pa hvata i više istovremeno pokvarenih satelita, a ne dira normalni multipath.
+Dva stupnja (`receiver.py` + `raim.py`):
 
-Bitna edukativna poanta (spoofing lab): **koordinirani spoof** — konzistentna
-laž na svim satelitima — RAIM *ne može* uhvatiti. To nije bug simulatora, nego
-točno reproducirano temeljno ograničenje RAIM-a.
+1. **Grubi filtar** (`_raim_screen`, MAD): iterativno izbacuje inovacije koje od
+   medijane odstupaju više od `RAIM_K` robusnih sigma **i** 600 m. Štiti
+   linearizaciju od km-razine blundera (i više istovremenih).
+2. **Klasični snapshot RAIM** (`raim.run_raim`), nad ostatkom:
+   - težinski najmanji kvadrati (σ_i = `RAIM_SIGMA_SCALE`·σ_i(C/N0, elev) — ista σ kao EKF R, jedan stupac
+     sata po sustavu prisutnom u mjerenjima) → rezidual r = S·y;
+   - **detekcija**: T = rᵀWr ~ χ²(n − m); prag T_d za P_FA = 10⁻⁵ po epohi;
+   - **FDE**: ako T > T_d i dof ≥ 2, isključi satelit s najvećim normaliziranim
+     rezidualom |r_i|/(σ_i√S_ii) i ponovi; ako dof = 1 → "kvar, ne može se
+     izolirati" (alarm bez isključivanja);
+   - **zaštitne granice** (slope metoda): HPL = max_i √(K_E,i² + K_N,i²)·σ_i/√S_ii ·
+     √λ, gdje je λ necentralni parametar za koji P(χ'²(dof, λ) < T_d) = P_MD = 10⁻³
+     (VPL analogno s K_U). Integritet je **dostupan** kad je HPL ≤ HAL
+     (zadano 556 m = NPA/RNP 0.3; VAL nema za klasični RAIM).
+
+Chi-kvadrat i necentralni chi-kvadrat su implementirani bez scipy-ja
+(nepotpuna gama funkcija: red + kontinuirani razlomak; Poissonov zbroj) i
+provjereni prema scipy-ju na < 10⁻¹⁰ (`tests/test_raim.py` drži referentne vrijednosti).
+
+**Kalibracija.** Model šuma nije savršeno Gaussov (multipath je pristran,
+ephemeris greška korelirana), pa je σ za RAIM skalirana i kalibrirana na čistim
+scenarijima (4 lokacije × 18 seedova × 300 s = 5400 epoha). Sa starim
+elevacijskim modelom trebalo je `RAIM_SIGMA_SCALE = 1.4`; s **C/N0 težinjenjem**
+σ je fizikalno ispravna pa je skala **1.0**: T/T_d p50 ≈ 0,13, **p99 ≈ 0,49,
+p99.9 ≈ 0,67**, max 0,86, **0 alarma** (χ² za dof 5–6 daje p99 ≈ 0,55). Pod
+ometanjem preživjeli sateliti imaju nizak C/N0 i veću σ, pa jamming **ne izaziva
+lažne RAIM alarme**. Rijetki pojedinačni skokovi
+korelatora (~7σ, npr. −20 m u jednoj epohi) se isključe — to je ispravno
+ponašanje FDE-a, ne lažni alarm modela.
+
+**Osjetljivost.** Kvar sata od 30 m na jednom satelitu isključuje se u svakoj
+epohi (prije: tek iznad 600 m). Tipični HPL u Zagrebu (samo GPS) je 50–200 m,
+ovisno o geometriji; stvarna greška je uvijek duboko unutar njega.
+
+Sučelje: telemetrija prikazuje status integriteta (u redu / kvar isključen /
+kvar se ne može izolirati / nedostupan), test T prema pragu (stručni mod) i
+HPL/VPL; na globusu je **krug HPL-a** oko procjene (zelen = dostupno, crven =
+alarm ili HPL > HAL).
+
+Bitna edukativna poanta (spoofing lab) ostaje: **koordinirani spoof** —
+konzistentna laž na svim satelitima — ne ostavlja rezidual pa ga RAIM *ne može*
+uhvatiti. To nije bug simulatora, nego točno reproducirano temeljno
+ograničenje RAIM-a.
 
 ### 5.4 Modeli grešaka (fizika kanala)
 
@@ -243,6 +332,9 @@ točno reproducirano temeljno ograničenje RAIM-a.
 | **Relativnost** | stacionarni drift + dinamički (po ekscentričnoj anomaliji) | u satelitskom satu, broadcast korigira |
 | **Sat satelita** | Allanova varijanca (H0/H2) + broadcast korekcija | net ~0 za zdrav satelit; kvar/spoof ostaje |
 | **Ephemeris** | Gaussov šum ~1,5 m/os na broadcast poziciji | prijemnik koristi broadcast poziciju (s greškom) |
+| **Termalni šum koda** | DLL formula iz C/N0 (link budget: udaljenost, antene, N0), T_coh = 20 ms, d = 0,5, B_L = 2 Hz | težinjenje po C/N0 (EKF R + RAIM σ) |
+| **Cross-korelacija (MAI, near-far)** | Gold X(τ) u Doppler-binu × sinc(π·δ·T) × odziv petlje; snaga → N0 (SSC −61,8 dB/Hz) | ne korigira se; vidi se kao niži C/N0 / veća σ, ekstremno → gubitak zabrave |
+| **Jamming** | širokopojasni ometač: (C/N0)_eff = C/N0 − 10·log10(1 + J/N) | sateliti ispod 28 dB-Hz gube zabravu; preživjeli dobiju manju težinu |
 
 ### 5.5 Multi-GNSS i inter-system bias (ISB)
 
@@ -279,11 +371,102 @@ paljenje/gašenje po sustavu i po satelitu, a telemetrija (stručni mod) prikazu
 | `set_system {system,on}` | upali/ugasi cijelu konstelaciju |
 | `set_sat {id,on}` | upali/ugasi jedan satelit |
 | `set_sat_param {id,param,value}` | **editor satelita**: kvar sata / visina orbite / inklinacija |
+| `rtk {on}` | živi carrier-phase RTK uključen/isključen |
+| `orbits {mode, epoch}` | izvor orbita: `walker` (idealizirane) ili `real` (CelesTrak/SGP4; epoch `now` ili ISO UTC) |
+| `set_base {lat,lon[,alt]}` / `set_base {auto:true}` | ručna RTK bazna stanica / povratak na automatsku |
+
+**Pogled iznutra** — `GET /api/inspect` (`web/backend/inspect_epoch.py`) vraća međuveličine
+zadnjeg EKF koraka iz `Receiver.last_epoch` (pod lockom simulacijske petlje): po satelitu
+model pseudoudaljenosti, inovacija, σ, proračun greške mjerenja (sat prijemnika, Sagnac, ISB,
+kvar, tropo ostatak, multipath+šum) i greška efemerida duž LOS-a; ENU matrica geometrije, DOP-ovi
+i (GᵀG)⁻¹; stanje prije/predikcija/ažuriranje s 1σ, doprinos K_j·y_j svakog satelita; RAIM
+T, T_d, λ, krivulja χ², normalizirani reziduali i nagibi. `tests/test_inspect.py` provjerava da
+se brojke međusobno slažu (Σ doprinosa = korekcija, GDOP i HPL = prijemnikovi).
 
 ### REST `/api/*`
 
 `constellation` · `glossary` · `lessons` (meta/edu) — `rtk` · `spoofing` ·
-`multignss` · `iono` · `benchmark` (eksperimenti) — `scenario/*` (scenariji).
+`multignss` · `iono` · `benchmark` (eksperimenti) — `scenario/*` (scenariji) —
+`sandbox/*` (istraživački sandbox: `examples`, `validate`, `run` → job,
+`jobs/{id}`, `jobs/{id}/csv`, `jobs/{id}/cancel`).
+
+### Istraživački sandbox (`sandbox.py`, `/api/sandbox`)
+
+Scenarij (`scenario.py`) odgovara na "što se dogodi ovdje, s ovim sjemenom";
+sandbox odgovara na istraživačko pitanje: **kako se metrika mijenja s parametrom,
+koliko je to stabilno i je li razlika između algoritama stvarna**. Jedan JSON
+spec opisuje svijet (lokacija ili lista lokacija, trajanje, korak, sustavi,
+maska, `max_sats`, ionosfera, kinematika, teren, `ideal`), sjemena, **sweep**
+(rešetka ili `zip` nad `attack.*`, `raim.{enabled,pfa,pmd,hal,val,sigma_scale}`,
+poljima svijeta i `estimator`), estimatore, napad i metrike.
+
+**Izvođenje.** Svaki run = (točka sweepa, lokacija, sjeme) je čista funkcija:
+vlastiti `np.random.Generator(seed)`, svi estimatori dobivaju **iste** (kopirane)
+pseudoudaljenosti iste epohe (uparena usporedba; mjerni model vodi procjena prvog
+estimatora, kao `Receiver.receive_signals`). `t0_random_s` pomiče početak runa po
+sjemenu (zaseban generator, tok šuma se ne mijenja) — Monte Carlo i **geometrije**,
+ne samo šuma; bez toga je HPL/GDOP identičan za sva sjemena. Maska iznad 5° i
+filtriranje sustava rade se pogledom na konstelaciju prije mjernog modela;
+`raim.RAIM_PFA/PMD/HAL/VAL`, `receiver.RAIM_SIGMA_SCALE` i `measurement.MAX_SATS`
+postavljaju se po runu i vraćaju (`engine_settings`); budući da `raim.run_raim` ima
+zadane argumente vezane pri definiciji, za trajanje runa se omota da čita
+trenutne konstante — `receiver.py` ostaje netaknut. Paralelizam je
+`multiprocessing` (spawn, picklabilan top-level worker, plugini se učitavaju u
+svakom workeru); rezultati se slažu po indeksu runa pa su **identični za bilo koji
+broj workera** (test). Iznimka su metrike vremena (`runtime_ms`), označene kao
+nedeterminističke. S isključenim RAIM-om i maskom 5° sandbox reproducira
+`scenario.run_scenario` bit-za-bit (test).
+
+**Agregacija.** Po točki sweepa × estimatoru: n, srednja vrijednost, medijan,
+p95, std, min/max i 95 % CI srednje vrijednosti (Studentov t; tablica kvantila,
+bez scipy-ja), odrezan na dopušteni raspon metrike (udjeli ∈ [0, 1]). Izlaz:
+`results.json` (spec, git commit + dirty, verzije, metrike po runu i agregat),
+`results.csv` (agregat), `runs.csv`, opcionalno tragovi po epohama i PNG
+(metrika vs parametar s CI vrpcom; `python sandbox.py plot results.json`).
+
+**Plugini.** `@register_estimator` (`factory(world)` → `solve(signals, t)` →
+`(pos | None, info)`; `info` smije sadržavati `hpl`, `vpl`, `status`, `excluded`,
+`alarm`, `nis`/`nis_dof`, `gdop`), `@register_attack` (`apply`, `is_active`,
+opcionalno `bind(ctx)`, `faulty_ids(t)`, `target_ecef`), `@register_metric`
+(`fn(trace)`; trag su numpy nizovi po epohi: fix, greška H/V/3D u ENU, HPL/VPL,
+detekcija, isključenja, prisutnost pokvarenog satelita, aktivnost napada, NIS,
+GDOP, vrijeme solvera). Ugrađeni `wls` je snapshot Gauss-Newton s istim modelom
+mjerenja kao EKF (Sagnac, jedan sat po sustavu — upija ISB) i snapshot RAIM-om s
+FDE-om; u zero-noise modu pada na µm (test, GPS i četiri sustava).
+
+**Primjeri i rezultati** (`sandbox/examples/`, Zagreb, bez terena, `t0_random_s` =
+1 zvjezdani dan; ± = poluširina 95 % CI):
+
+- **(a) RAIM ROC** (`raim_roc.json`, `sat_fault` na nasumičnom satelitu, EKF):
+  {{ROC}}
+- **(b) Koordinirani spoof vs MI** (`spoof_offset.json`, 10 sjemena): konačna
+  greška = pomak cilja (50 → 50.5 ± 1.9 m, 800 → 799 ± 1 m), RAIM **0 detekcija**
+  u svim točkama, a stopa *misleading informationa* (greška > HPL bez alarma)
+  raste s 3 % (50 m) preko 20 % (100 m) i 52 % (200 m) do 83 % (800 m; HPL
+  medijan ~116 m). Iznad HAL-a (556 m) pojavljuju se i HMI događaji (76 epoha po
+  runu pri 800 m). Kvantificirano temeljno ograničenje RAIM-a.
+- **(c) Jamming J/N** (`jamming_jn.json`, 6 sjemena, ometač od t = 30 s): fix
+  preživi do 9 dB; pri 12 dB GPS ima fix u 67 % epoha napada, četiri sustava 73 %;
+  pri 14 dB 17 % vs 50 %; od 16 dB nema fixa. Neočekivano: uz `max_sats = 10` i
+  ISB po sustavu, četiri sustava pri 9 dB imaju **lošiji** integritet (HPL ≤ 556 m
+  u 29 % epoha vs ~100 % za GPS) i veću grešku (p95 ~85–90 m pri 12–14 dB) —
+  preživjeli sateliti se raspodijele po sustavima pa redundancija po satu pada.
+- **(d) Multi-GNSS vs maska** (`multignss_mask.json`, 8 sjemena, HAL = 100 m,
+  `max_sats = 16`): GPS sam nikad ne zadovoljava HAL 100 m (HPL medijan 150–400 m;
+  dostupnost integriteta 0–13 %) i gubi fix od maske 25° naviše; GPS+GAL drži
+  integritet do 20°, a pri 30° pada na 51 %; četiri sustava imaju HPL 23–56 m i
+  100 % dostupnost integriteta do 35° (75 % pri 40°), p95 horizontalne greške
+  4.3–8 m.
+- **(e) EKF vs WLS** (`ekf_vs_wls.json`, 5 lokacija × 10 sjemena, uparena
+  usporedba): EKF ima nižu p95 horizontalnu grešku u **50/50** uparenih runova —
+  5.8–9.6 m vs 8.6–14.6 m (razlika 2.8–5.0 m po lokaciji); NIS/dof EKF-a
+  0.82–1.13, WLS-a 0.83–1.45; vrijeme solvera ~2–3 ms/epohi za oba. Detekcija
+  kvara je za oba **identična** (EKF-ov RAIM je snapshot test nad inovacijama, a
+  statistika ne ovisi o točki linearizacije) — EKF dobiva samo na točnosti.
+
+![Koordinirani spoof: stopa misleading informationa vs pomak](docs/media/sandbox_spoof_mi.png)
+![Multi-GNSS: dostupnost integriteta (HPL ≤ 100 m) vs maska](docs/media/sandbox_multignss_integrity.png)
+![EKF vs WLS: p95 horizontalne greške po lokaciji](docs/media/sandbox_ekf_vs_wls.png)
 
 ### Funkcionalnosti sučelja
 
@@ -376,7 +559,7 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
 
 ### Što je stvarno dobro
 
-1. **Solver je pravi, ne gluma.** LS → 11-D EKF → MAD-RAIM → NIS dijagnostika su
+1. **Solver je pravi, ne gluma.** LS → 11-D EKF → RAIM (χ² + FDE + HPL) → NIS dijagnostika su
    algoritmi iz GNSS udžbenika, korektno izvedeni. Posebna vrijednost je
    disciplina "prijemnik ne smije znati što ne bi znao" (selekcija iz procjene,
    greška mjerljiva samo zato što je ovo simulator).
@@ -384,7 +567,7 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
    dana, dinamička relativnost, Allanovi satovi, J2, pravi DEM s LOS-om. Greške
    se ubrizgavaju na razini mjerenja i rješavaju pravim algoritmima — zato
    spoofing lab demonstrira *stvarnu* ranjivost.
-3. **Inženjerska higijena**: 62 testova, CI, seedani RNG (bajt-reproducibilnost),
+3. **Inženjerska higijena**: 117 testova, CI, seedani RNG (bajt-reproducibilnost),
    headless jezgra, komentari koji objašnjavaju *zašto*.
 4. **Edukativni sloj je autentična vrijednost** — pravi algoritmi + objašnjenja
    nad živim brojkama je kombinacija koju ni komercijalni alati često nemaju.
@@ -393,12 +576,14 @@ GNSS lanac čija bi jezgra, uz ingest sloj, radila na stvarnim mjerenjima.
 
 ### Slabosti (pošteno)
 
-1. **Signalni sloj je najtanji dio fizike.** PRN su sada **pravi C/A Gold kodovi**
-   (§5.1, bila je to prva stavka ove slabosti), ali i dalje: nema Dopplera,
-   carrier-phase praćenja ni C/N0 u živom lancu; sateliti se dekodiraju iz
-   ZASEBNIH kanala (jedan kombinirani antenski signal precjenjuje cross-korelaciju
-   bez vremenske integracije — vidi §5.1 i §10); SNR/multipath parametri su
-   *kalibrirani* na realne brojke, ne izvedeni iz fizike linka.
+1. **Signalni sloj je najtanji dio fizike.** PRN su **pravi C/A Gold kodovi**, a
+   živi lanac sada ima **C/N0 iz link budgeta**, Doppler, koherentnu integraciju,
+   cross-korelaciju/near-far, fizički jamming i DLL šum iz C/N0 (§5.1). Preostaje:
+   model je polu-analitički (korelatori, ne uzorci signala), nema carrier-phase
+   praćenja (PLL) u kodnom lancu, ni navigacijske poruke (bitovi ograničavaju
+   T_coh), svi sustavi dijele C/A-like kod (MAI samo unutar sustava kao
+   aproksimacija FDMA/BOC razdvajanja), multipath parametri su i dalje
+   *kalibrirani*, a C/N0 procjena prijemnika je savršena.
    *(L1/L2 multipath je KORELIRAN — dijeljena geometrija odraza, §7 — pa iono-free
    više ne predodaje ~3× šuma.)*
 2. **Latentni rizik klase "istina curi u model".** Sagnac bug je bio točno taj
@@ -437,7 +622,7 @@ single-point positioning engine, ~par metara. RTK (cm) bi tražio carrier-phase;
 
 ## 9. Testiranje
 
-`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **62 testova**:
+`tests/` (`pytest`, konfiguracija u `pyproject.toml`) — **117 testova**:
 konverzije/geodezija, DSP/korelacija, pozicioniranje (točnost + NIS),
 **zero-noise konzistencija**, RTK, spoofing, teren, web backend. Svi izvori šuma
 dijele seedani `np.random.Generator` → reproducibilno bez globalnog stanja. CI
@@ -446,8 +631,9 @@ greške headless.
 
 **Zero-noise konzistencija** (`test_consistency.py`) je poseban čuvar: `ideal`
 mod (`Receiver(..., ideal=True)` + `constellation.update_all(t, ideal=True)`)
-gasi SVE stohastičke i kvantizacijske izvore (multipath, AWGN, korelatorska
-kvantizacija → savršeno mjerenje dometa, ephemeris greška, Allanov šum satova) i
+gasi SVE stohastičke izvore (multipath, DLL šum, cross-korelacijska pristranost
+→ savršeno mjerenje dometa, ephemeris greška, Allanov šum satova; C/N0 se i dalje
+računa deterministički iz link budgeta, bez MAI) i
 ostavlja samo determinističke modele koje prijemnik i sam korigira. Rezidual
 tada mora pasti na ~strojnu preciznost; svaka veća, sustavna vrijednost odaje
 nekonzistentnost injekcije↔korekcije — točno klasa buga kao nekadašnji Sagnac.
@@ -463,20 +649,36 @@ Prioritetno (po omjeru vrijednost/trud):
 1. **Realizam grešaka**: ~~korelirani L1/L2 multipath~~ i
    ~~sporo-promjenjiva ephemeris greška~~ (**oboje napravljeno**, §7); preostaje
    tropo rezidual modela i frekvencijski-ovisan (ne 100%) L1/L2 multipath.
-2. **Puni signalni model — kombinirani antenski signal + Doppler/integracija.**
-   Svi sateliti u jedan signal po bandu (Gold kodovi ih razdvajaju), ALI s
-   koherentnom integracijom preko više kodnih perioda i relativnim Dopplerom, da
-   se cross-korelacija realno usredni (bez toga snapshot precjenjuje šum — vidi
-   §5.1). Tek to daje STVARAN near-far/jamming efekt uz očuvanu nominalnu točnost.
-   Time bi i jamming postao fizički (šum u signalu), ne post-hoc na mjerenjima.
-3. **RTK u živom sučelju** (carrier-phase, cm-razina).
-4. **Ingest pravog hardvera** (§8) — sirove pseudoudaljenosti + broadcast
-   efemeride → prava lokacija na karti.
+2. ~~**Puni signalni model**~~ — **većim dijelom napravljeno** (`signal_model.py`,
+   §5.1): C/N0 iz link budgeta, koherentna integracija + relativni Doppler
+   potiskuju cross-korelaciju (Gold vrijednosti × sinc), near-far (jak satelit/
+   spoofer degradira slabe), jamming u signalu (efektivni C/N0 → gubitak zabrave,
+   bučnije preživjele), DLL šum iz C/N0 i C/N0 težinjenje u EKF-u/RAIM-u — uz
+   BOLJU nominalnu točnost (~3,7 m) i brži lanac. **Preostaje**: model na razini
+   uzoraka/PLL (fazni šum, cycle slipovi, false-lock akvizicija), navigacijski
+   bitovi i data wipe-off (T_coh > 20 ms), stvarne modulacije po sustavu (BOC,
+   FDMA) umjesto C/A-like koda za sve, procjena C/N0 sa šumom, uskopojasni (CW)
+   ometač i ometač na udaljenosti (J/N iz geometrije umjesto zadanog).
+3. ~~**RTK u živom sučelju**~~ — **napravljeno** (`rtk.LiveRTK`): Kalman nad
+   dvostrukim razlikama koda i faze po sustavu (GPS/GAL/BDS), LAMBDA + ratio test,
+   automatska ili ručna baza (Shift + dvoklik). FIX ~1 cm nakon ~40–60 s s tri
+   sustava; samo GPS ~10 min (jednofrekvencijski L1). Preostaje: dvofrekvencijski
+   (wide-lane) model za brži fix, utjecaj spoofinga na RTK.
+4. **Pravi podaci** — **djelomično napravljeno**: `rinex.py` + `ephemeris.py` +
+   `realdata.py` rješavaju poziciju iz pravih RINEX datoteka kroz isti EKF/RAIM
+   (uzorak GEONET 0759: ~0.4 m vodoravno, medijan), kartica "Pravi podaci" u
+   eksperimentima. Preostaje: `BroadcastConstellation` (prave orbite za zadani
+   datum) uključiti u živu simulaciju — **zamijenjeno pravim orbitama** (`real_orbits.py`:
+   CelesTrak GP + SGP4, pravi UTC/GMST, Sunce i ionosfera u pravom vremenu, 146 satelita;
+   WS `orbits {mode, epoch}`, REST `/api/orbits/{status,refresh,tracks}`), RINEX 4, Galileo/GLONASS navigacija,
+   ingest sirovih podataka izravno s prijemnika (npr. u-blox RAWX).
 5. **Vidljivost**: ~~engleski README~~ ([`README.en.md`](README.en.md)) i
    ~~write-up o Sagnac bugu~~ ([`docs/sagnac-bug.md`](docs/sagnac-bug.md))
    **napravljeni**, uz showcase figure u `docs/media/`; preostaju GIF-ovi žive
    web 3D scene (traže snimku pokrenutog GUI-ja).
 
+6. ~~**Integritet (pravi RAIM)**~~ — **napravljeno** (§5.3): χ² test reziduala,
+   FDE, zaštitne granice HPL/VPL, krug HPL-a na globusu.
 ---
 
 *Dokument opisuje stanje nakon prelaska na 11-D EKF s ISB-om, 8× korelaciju i

@@ -19,18 +19,25 @@ za priču o dijagnostici Sagnac buga (ENU dekompozicija → zero-noise test) vid
 | `physics_engine.py`   | Orbite, atmosfera (iono/tropo), relativnost, modeli satova |
 | `terrain.py`          | Pravi globalni DEM (NASA SRTM) + bilinearna interpolacija visina |
 | `satellite.py`        | Walker-Delta konstelacija i satelitski satovi |
-| `signal_processing.py`| Pravi C/A Gold kodovi, RF kanal, FFT korelacija |
+| `signal_processing.py`| Pravi C/A Gold kodovi, multipath, referentni FFT RF kanal |
+| `signal_model.py`     | Signalni model: C/N0 iz link budgeta, ometač + cross-korelacija (near-far), DLL šum |
 | `receiver.py`         | Estimator: LS inicijalizacija + EKF + RAIM (vlasi mjerni model) |
 | `utils.py`            | Geodezija: LLA ↔ ECEF na WGS-84 elipsoidu, DMS format |
 | `measurement.py`      | Mjerni model: kanal + korekcije + DOP selekcija → pseudoudaljenosti |
 | `web/`                | Web kontrolni centar + GPS učilište (FastAPI + CesiumJS) — 3D prikaz |
 | `benchmark.py`        | Headless pokretanje scenarija i statistika greške |
 | `skyplot.py`          | Headless skyplot + grafovi GDOP/greška/NIS (PNG) |
-| `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing) |
+| `rtk.py`              | Carrier-phase RTK (cm-precizno, double differencing, LAMBDA) — offline i živo u webu |
+| `raim.py`             | Integritet: χ² test reziduala, isključivanje kvara (FDE), zaštitne granice HPL/VPL |
 | `spoofing.py`         | Spoofing/jamming lab: napadi kroz pravi EKF/RAIM (headless) |
 | `iono.py`             | Klobuchar ionosferska analiza (dnevna krivulja TEC-a) |
 | `multignss.py`        | Multi-GNSS (GPS/GAL/GLO/BDS) + procjena inter-system biasa |
 | `scenario.py`         | Snimanje/reprodukcija scenarija (JSON) + usporedba algoritama |
+| `rinex.py`            | Parseri PRAVIH podataka: RINEX opažanja v2/v3, GPS navigacija v2/v3, SP3 |
+| `ephemeris.py`        | IS-GPS-200 broadcast efemeride → ECEF pozicija i sat satelita |
+| `realdata.py`         | SPP na pravim RINEX podacima kroz isti EKF/RAIM (CLI + `/api/realdata`) |
+| `broadcast_constellation.py` | Konstelacija iz prave nav datoteke (isto sučelje kao Walker-Delta) |
+| `sandbox.py`          | **Istraživački sandbox**: sweep × Monte Carlo × algoritmi iz JSON speca, plugini, CI, CSV/PNG |
 
 Cijeli engine radi bez GUI-ja, pa se testira i mjeri na CI-ju (3D prikaz je u `web/`).
 
@@ -42,8 +49,9 @@ uključena; `fetch_terrain.py` je regenerira/finije (`--width`).
 prolaze kroz pravi EKF/RAIM: **koordinirani spoof** (konzistentna lažna mjerenja
 tiho odvuku poziciju — RAIM ne alarmira, temeljno ograničenje), **naivni
 multi-SV** (nezavisni pomaci — robusni RAIM ih izolira), **meaconing** (uniformno
-kašnjenje — upije se u sat prijemnika), **jamming** (J/N ruši broj satelita i
-gubi fix). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
+kašnjenje — upije se u sat prijemnika), **jamming** (ometač u SIGNALU: podiže
+šumni pod, C/N0 pada, sateliti gube zabravu, preživjeli su bučniji — i gubi se
+fix, bez lažnih RAIM alarma jer prijemnik težini po C/N0). `--plot` crta grešku/RAIM/satelite kroz vrijeme.
 
 Ionosfera je pravi **Klobuchar model** (`physics_engine.klobuchar_delay`), ovisan
 o dobu dana (vrh TEC-a ~14:00 lokalno, noćni pod) i geometriji. Prijemnik injektira
@@ -103,20 +111,86 @@ python iono.py          # Klobuchar dnevna ionosfera -> iono.png
 python multignss.py     # GPS+GAL+GLO+BDS: dostupnost/PDOP/ISB -> multignss.png
 python scenario.py list                                  # bundlani JSON scenariji
 python scenario.py compare scenarios/jamming_naive_spoof.json   # RAIM on vs off
+python sandbox.py run sandbox/examples/raim_roc.json --workers 4 --plot   # istraživačka studija
 pytest                  # test suite
 ```
 
 Interaktivni 3D prikaz (globus, klik-postavljanje prijemnika, telemetrija, živa
 simulacija) je u **web kontrolnom centru** — vidi niže i [`web/README.md`](web/README.md).
 
+**Pravi podaci.** `realdata.py` čita stvarna RINEX opažanja (v2.1x/v3.0x) i GPS
+navigacijsku datoteku, računa pozicije satelita iz broadcast efemerida
+(`ephemeris.py`, IS-GPS-200), korigira sat satelita, Klobuchar ionosferu i
+troposferu te mjerenja predaje ISTOM `Receiver` EKF-u/RAIM-u. Uzorak (RTKLIB test
+data, BSD-2; GEONET stanica 0759, 1 h) je u `tests/data/`:
+`python realdata.py tests/data/07590920.05o tests/data/07590920.05n --plot` →
+greška vs. koordinata stanice (horizontalno medijan ~0.4 m, 95% ~0.8 m).
+`BroadcastConstellation` daje STVARNE položaje satelita za odabrani datum (upute
+za spajanje u živu sesiju su u zaglavlju `broadcast_constellation.py`).
+
+## Istraživački sandbox
+
+`sandbox.py` vrti cijelu **studiju** iz jednog JSON speca: rešetku parametara
+(sweep) × Monte Carlo preko sjemena (šum **i** geometrija konstelacije) × više
+algoritama na **istim** mjerenjima. Za svaku točku sweepa daje srednju vrijednost,
+medijan, p95 i **95 % interval pouzdanosti** preko sjemena, sprema
+`results.json` (spec + git commit + metrike po runu i agregat) i `results.csv`, a
+`--plot` crta metriku vs parametar s CI vrpcom. Rezultat je identičan neovisno o
+broju procesa (`--workers`).
+
+```bash
+python sandbox.py list                                   # estimatori / napadi / metrike / primjeri
+python sandbox.py validate sandbox/examples/raim_roc.json
+python sandbox.py run sandbox/examples/spoof_offset.json --workers 4 --out results/spoof --plot
+```
+
+```python
+import sandbox
+res = sandbox.run({"world": {"duration_s": 120, "t0_random_s": 86164}, "seeds": 8,
+                   "attack": {"type": "sat_fault", "start": 30},
+                   "sweep": {"attack.bias_m": [0, 15, 30, 60], "raim.pfa": [1e-3, 1e-5]},
+                   "metrics": ["raim_pd", "mi_events", "h_err_p95"]}, workers=4)
+res.table("raim_pd")          # numpy niz srednjih vrijednosti po točki sweepa
+```
+
+**Plugini** bez diranja enginea: `@register_estimator("ime")` (`factory(world)` →
+objekt s `solve(signals, t) -> (pos_ecef | None, info)`), `@register_attack("ime")`
+(`apply(signals, t, rx_pos, rng)` + `is_active(t)`), `@register_metric("ime")`
+(`fn(trace) -> float`). Ugrađeni su `ekf` (pravi `receiver.Receiver` s RAIM-om),
+`wls` (snapshot WLS + snapshot RAIM s FDE-om), svi napadi iz `spoofing.py` + `sat_fault`
+(kvar sata jednog satelita) i ~40 metrika — točnost, dostupnost, dostupnost
+integriteta (HPL ≤ HAL), P_D, lažni alarmi, vrijeme do detekcije, **misleading
+information** (greška > HPL bez alarma), HMI, NIS/dof, vrijeme solvera.
+Primjeri studija (ROC RAIM-a, spoof vs MI, jamming, multi-GNSS vs maska, EKF vs
+WLS) su u [`sandbox/examples/`](sandbox/examples/README.md); isto je dostupno u
+webu (Eksperimenti → **Sandbox**: uređivanje speca, pozadinski job, graf s CI, CSV).
+
+![Koordinirani spoof: stopa misleading informationa vs pomak cilja](docs/media/sandbox_spoof_mi.png)
+
 ## Web kontrolni centar + GPS učilište
 
 Moderno web sučelje (3D globus na CesiumJS, živa simulacija, telemetrija i
 edukativni pojmovnik na klik, dvojezično HR/EN) koje postojeći numpy engine
-koristi izravno preko FastAPI backenda. Jednom (traži Node 18+) pa pokreni:
+koristi izravno preko FastAPI backenda. Jednom (traži Node 20.19+ ili 22.12+) pa pokreni:
 **Windows** `build_web.bat` → `run_webapp.bat`; **macOS/Linux** `./build_web.sh`
 → `./run_webapp.sh` (ili kraće `./gps.sh web`). Detalji u
 [`web/README.md`](web/README.md).
+
+U živoj simulaciji su i **integritet** (statistički RAIM: status, HPL/VPL i krug
+zaštitne granice oko procjene) te **RTK** (prekidač u panelu; baza se postavlja
+sama 4 km od rovera ili Shift + dvoklikom na globus; FIX ~1 cm uz GPS+Galileo+BeiDou).
+
+**Prave orbite** (panel → Orbite → Prave): stvarni GPS, Galileo, GLONASS i BeiDou sateliti
+(146, uključujući BeiDou GEO/IGSO) za "sada" ili odabrani datum, iz CelesTrak GP elemenata
+propagiranih SGP4-om (`real_orbits.py`). Simulacija tada teče u pravom UTC-u: rotacija Zemlje
+(GMST), Sunce na globusu i ionosfera odgovaraju stvarnom trenutku, pa se skyplot poklapa s
+mobitelom. Svježi elementi se skidaju samo na klik "Osvježi podatke" (cache 12 h); bez
+interneta se koristi ugrađena snimka (`data/gnss_gp_snapshot.json`, podaci: CelesTrak).
+
+**Pogled iznutra** (gumb u učilištu) otvara matematiku jedne epohe: model i inovacija
+svake pseudoudaljenosti s proračunom greške (koji zna samo simulator), matrica
+geometrije i DOP-ovi, Kalmanov korak (predikcija → pojačanje → ažuriranje, doprinos
+svakog satelita) i RAIM (T na krivulji χ², nagibi, HPL). Može se zamrznuti i ići korak po korak.
 
 ## Testovi
 

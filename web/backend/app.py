@@ -24,6 +24,9 @@ from web.backend.routes_sim import router as sim_router          # noqa: E402
 from web.backend.routes_experiments import router as exp_router  # noqa: E402
 from web.backend.routes_scenario import router as scn_router     # noqa: E402
 from web.backend.routes_meta import router as meta_router        # noqa: E402
+from web.backend.routes_inspect import router as inspect_router  # noqa: E402
+from web.backend.routes_orbits import router as orbits_router    # noqa: E402
+from web.backend.routes_sandbox import router as sandbox_router  # noqa: E402
 
 # Buildani frontend: zbog Google Drive/NTFS ograničenja build ide u lokalni dir
 # (vidi build_web.bat), a putanja se prosljeđuje kroz GPSWEB_DIST. Fallback je
@@ -43,6 +46,9 @@ def create_app():
     app.include_router(exp_router, prefix="/api")
     app.include_router(scn_router, prefix="/api/scenario")
     app.include_router(meta_router, prefix="/api")
+    app.include_router(inspect_router, prefix="/api")
+    app.include_router(orbits_router, prefix="/api/orbits")
+    app.include_router(sandbox_router, prefix="/api/sandbox")
 
     @app.get("/api/health")
     def health():

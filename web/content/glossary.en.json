@@ -14,8 +14,14 @@
   "RAIM": {
     "term": "RAIM — Receiver Autonomous Integrity Monitoring",
     "short": "The receiver detects and rejects a faulty satellite on its own.",
-    "long": "If one satellite reports a wrong range (fault or spoofing), its measurement does not 'fit' with the others. RAIM spots the large residual and drops it. But if an attack is CONSISTENT (all fake data agrees), RAIM cannot see it — that is its fundamental limit.",
-    "related": ["spoofing", "NIS"]
+    "long": "The receiver uses SURPLUS measurements to check that they are consistent: weighted least squares gives residuals, and their sum of squares (the test statistic) is compared with a chi-square threshold for a chosen false-alarm probability. If the test fails, RAIM excludes the satellite with the largest normalized residual (FDE) and checks again. It also computes protection levels (HPL/VPL). Detection needs at least 5 satellites, exclusion 6. Fundamental limitation: a CONSISTENT attack (coordinated spoof) leaves no residual, so RAIM cannot see it.",
+    "related": ["spoofing", "NIS", "HPL"]
+  },
+  "HPL": {
+    "term": "HPL / VPL — protection level",
+    "short": "The radius within which RAIM guarantees the position.",
+    "long": "The largest horizontal (HPL) or vertical (VPL) error a fault on ONE satellite could cause while the RAIM test still fails to notice it (with missed-detection probability P_MD). It is computed from geometry and expected noise, NOT from the actual error — so it is usually much larger than the error. If HPL exceeds the alert limit (HAL, e.g. 556 m for a non-precision approach), integrity is unavailable and the pilot must not use GPS for that phase of flight.",
+    "related": ["RAIM", "GDOP"]
   },
   "NIS": {
     "term": "NIS — Normalized Innovation Squared",

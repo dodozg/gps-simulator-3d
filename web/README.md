@@ -18,7 +18,7 @@ sloj** (pojmovnik na klik, dvojezično HR/EN, Početnik/Stručnjak). Backend
 Frontend se builda u **lokalni dir** izvan repozitorija (na Windowsu i zbog
 Google Drive/NTFS ograničenja — `node_modules` na G: puca): Windows
 `%LOCALAPPDATA%\gpsweb`, macOS/Linux `~/.local/share/gpsweb` (promjenjivo preko
-`GPSWEB_BUILD`). Traži Node 18+.
+`GPSWEB_BUILD`). Traži Node 20.19+ ili 22.12+ (Vite 8).
 
 **Windows**
 1. **`build_web.bat`** — kopira frontend izvor lokalno, `npm install` + `npm run

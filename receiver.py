@@ -10,6 +10,7 @@ proksiraju na mjerni model, estimatorski (x_ekf, raim_alarm, nis…) su izravni.
 import numpy as np
 from physics_engine import calculate_sagnac_correction
 from measurement import MeasurementModel
+import raim
 
 # --- Inter-system bias (ISB), multi-GNSS -------------------------------------
 # Svaki GNSS sustav ima svoju vremensku skalu -> konstantni pomak pseudoudalje-
@@ -34,8 +35,28 @@ Q_ISB = 0.01                        # [m^2/s] procesni šum ISB-a (skoro konstan
 # Prije je bilo 48 (dominirao grubi multipath 10–100 m + neriješeni Sagnac).
 # Rezultat: greška pozicije ~4–6 m (mediana), vrhovi ~13 m; nepristrana (Sagnac
 # fix). Vidi benchmark.py.
-SIGMA_ZENITH = 1.9      # [m] devijacija pseudoudaljenosti u zenitu
+SIGMA_ZENITH = 1.9      # [m] devijacija pseudoudaljenosti u zenitu (stari model bez C/N0)
 MIN_SIN_ELEV = 0.1      # granica (~5.7°) da R ne eksplodira na horizontu
+
+# C/N0 težinjenje (signalni model, signal_model.py). Mjerni model uz svako mjerenje
+# daje `sigma_code_m` — termalni šum koda iono-free kombinacije iz DLL formule i
+# procijenjenog C/N0 (kao prStdev u pravim prijemnicima). Ostatak budžeta (sporo-
+# promjenjiva ephemeris greška, multipath, rezidual tropo modela) nije vidljiv u
+# C/N0 pa ostaje elevacijski model:
+#     sigma² = sigma_code(C/N0)² + (SIGMA_RES_ZENITH / sin(elev))²
+# Jamming tako NE izaziva lažne RAIM alarme: preživjeli sateliti imaju nizak C/N0,
+# pa im prijemnik sam poveća sigmu (i u EKF R i u RAIM testu).
+SIGMA_RES_ZENITH = 0.8  # [m] ne-termalni rezidual u zenitu (kalibrirano na NIS/dof, vidi niže)
+
+
+def meas_sigma(sig, sin_el):
+    """Devijacija pseudoudaljenosti [m] za EKF R i RAIM: C/N0 model ako mjerenje
+    nosi `sigma_code_m`, inače stari elevacijski model (vanjska/RINEX mjerenja)."""
+    sin_el = max(float(sin_el), MIN_SIN_ELEV)
+    sc = sig.get('sigma_code_m')
+    if sc is None:
+        return SIGMA_ZENITH / sin_el
+    return float(np.hypot(sc, SIGMA_RES_ZENITH / sin_el))
 
 # Procesni šum Q (nesigurnost modela gibanja/sata) po jedinici vremena [/s].
 # Veći iznos = filter više vjeruje mjerenjima nego predviđanju.
@@ -49,9 +70,22 @@ Q_DRIFT = 1.0           # [ (m/s)^2/s ] šum drifta sata (c*drift)
 # sigma (MAD skala) I više od apsolutnog praga RAIM_MIN_ABS. Postupak je
 # iterativan (najveći outlier prvo) pa hvata i više istovremeno pokvarenih
 # satelita, a MAD skala se prilagođava razini šuma umjesto fiksnog praga.
+#
+# Ovo je samo PRVI stupanj: grubi "blunder" filter (km-razina) koji štiti
+# linearizaciju. Pravi integritet radi DRUGI stupanj — statistički RAIM s FDE i
+# zaštitnim granicama (raim.run_raim): chi-kvadrat test reziduala, isključivanje
+# kvara i HPL/VPL. Taj hvata i kvarove od desetak metara.
 RAIM_K = 6.0            # broj robusnih sigma za odbacivanje
-RAIM_MIN_ABS = 600.0    # [m] apsolutni prag (ispod = normalni multipath, ne diramo)
+RAIM_MIN_ABS = 600.0    # [m] apsolutni prag grubog filtra
 RAIM_MIN_SATS = 5       # ne odbacuj ako bi ostalo < 4 satelita za rješenje
+
+# Devijacija mjerenja za RAIM test = RAIM_SIGMA_SCALE × meas_sigma (isti C/N0 model
+# kao EKF R). Skala je kalibrirana na čistim scenarijima (4 lokacije × 18 seedova
+# × 300 s, alat raimtail) tako da raspodjela T/T_d odgovara χ² i nema lažnih alarma.
+# Stari elevacijski model trebao je 1.4 (σ = 1,9 m/sin(el) podcjenjivao je šum);
+# s C/N0 težinjenjem (DLL šum iz C/N0 ⊕ rezidual) σ je fizikalno ispravna pa skala
+# pada na 1.0: p99(T/T_d) ≈ 0.5, p99.9 ≈ 0.7, 0 lažnih alarma u 5400 epoha.
+RAIM_SIGMA_SCALE = 1.0
 
 
 class Receiver:
@@ -62,6 +96,8 @@ class Receiver:
 
         self.raim_alarm = ""
         self.raim_enabled = True   # dopušta usporedbu algoritama sa/bez RAIM-a (#10)
+        # Integritet zadnje epohe (statistički RAIM): status, test vs prag, HPL/VPL.
+        self.integrity = {"status": "unavailable"}
 
         # EKF State: [x, y, z, vx, vy, vz, c*bias, c*drift, isb_GAL, isb_GLO, isb_BDS]
         self.ekf_initialized = False
@@ -74,6 +110,7 @@ class Receiver:
         self.nis = 0.0
         self.nis_dof = 0
         self.last_solution = {}   # {sat_id: {residual_m, rejected}} — za web UI (#12)
+        self.last_epoch = None    # snimka zadnjeg EKF koraka ("pogled iznutra")
 
     # --- Proxyji na mjerni model (nepromijenjeno javno sučelje) ---------------
     @property
@@ -103,6 +140,15 @@ class Receiver:
     @property
     def last_update_time(self):
         return self.meas.last_update_time
+
+    @property
+    def jammer_jn_db(self):
+        """J/N ometača [dB] za tekuću epohu (signalni model; 0 = nema ometača)."""
+        return self.meas.jammer_jn_db
+
+    @jammer_jn_db.setter
+    def jammer_jn_db(self, value):
+        self.meas.jammer_jn_db = float(value)
 
     @property
     def iono_tow0(self):
@@ -139,6 +185,8 @@ class Receiver:
         self.raim_alarm = ""
         self.ekf_last_time = 0.0
         self.last_solution = {}
+        self.integrity = {"status": "unavailable"}
+        self.last_epoch = None
 
     def _raim_screen(self, innovations):
         """Iterativna robusna RAIM detekcija: vrati skup indeksa za odbacivanje.
@@ -164,6 +212,36 @@ class Receiver:
             else:
                 break
         return rejected
+
+    def _integrity(self, signals, innovations, sigmas, pre_rejected, lin_pos):
+        """Statistički RAIM nad mjerenjima koja su prošla grubi filtar.
+
+        Geometrija: stupci ECEF pozicije + JEDAN stupac sata po sustavu prisutnom u
+        mjerenjima (GPS sat i ISB-ovi ostalih sustava razapinju isti prostor; ovako
+        nema singularnosti kad neki sustav nedostaje). Vraća (skup isključenih
+        indeksa u `signals`, dict integriteta za UI).
+        """
+        idx = [i for i in range(len(signals)) if i not in pre_rejected]
+        systems = sorted({signals[i].get('system', 'GPS') for i in idx})
+        G, y, sig = [], [], []
+        for i in idx:
+            _, _, diff, r_est = innovations[i]
+            row = [diff[0] / r_est, diff[1] / r_est, diff[2] / r_est]
+            row += [1.0 if signals[i].get('system', 'GPS') == s else 0.0 for s in systems]
+            G.append(row)
+            y.append(innovations[i][0])
+            sig.append(sigmas[i])
+        res = raim.run_raim(np.array(G), np.array(y), np.array(sig), lin_pos)
+        excluded = {idx[k] for k in res["excluded"]}
+        info = {
+            "status": res["status"],
+            "test": res["test"], "threshold": res["threshold"], "dof": res["dof"],
+            "hpl": res["hpl"], "vpl": res["vpl"], "hal": res["hal"], "val": res["val"],
+            "available": res["available"],
+            "excluded": [signals[i]['sat_id'] for i in sorted(excluded)],
+            "pfa": raim.RAIM_PFA, "pmd": raim.RAIM_PMD,
+        }
+        return excluded, info
 
     def solve_position(self, max_iter=10, tolerance=1.0):
         """Riješi poziciju iz mjerenja proširenim Kalmanovim filtrom (EKF) uz RAIM."""
@@ -225,6 +303,7 @@ class Receiver:
                     + [Q_ISB] * len(ISB_SYSTEMS)) * dt
 
         # Predviđanje stanja i kovarijance
+        x_before = self.x_ekf.copy()    # za "pogled iznutra" (stanje prije predikcije)
         x_pred = F @ self.x_ekf
         P_pred = F @ self.P_ekf @ F.T + Q
 
@@ -256,16 +335,40 @@ class Receiver:
             innovation = pr - h_x_val
             all_innovations.append((innovation, h_x_val, diff, r_est))
 
-        # RAIM: iterativno robusno odbacivanje outliera (vidi _raim_screen).
+        # RAIM 1. stupanj: iterativno robusno odbacivanje grubih outliera (_raim_screen).
         innov_list = [x[0] for x in all_innovations]
         rejected = (self._raim_screen(innov_list)
                     if (self.ekf_initialized and self.raim_enabled) else set())
+        worst = 0.0
         if rejected:
             kept = [innov_list[i] for i in range(len(innov_list)) if i not in rejected]
             med_kept = np.median(kept) if kept else 0.0
             worst = max(abs(innov_list[i] - med_kept) for i in rejected)
+
+        # RAIM 2. stupanj: statistički test + FDE + zaštitne granice (raim.run_raim).
+        sigmas = []
+        for sig, (_, _, diff, r_est) in zip(received_signals, all_innovations):
+            sigmas.append(RAIM_SIGMA_SCALE * meas_sigma(sig, np.dot(up, -diff / r_est)))
+        if self.raim_enabled:
+            stat_rejected, self.integrity = self._integrity(
+                received_signals, all_innovations, sigmas, rejected, x_pred[:3])
+            if rejected:
+                # i grubo odbačeni (1. stupanj) su isključeni kvarovi
+                self.integrity["excluded"] = [received_signals[i]['sat_id']
+                                              for i in sorted(rejected | stat_rejected)]
+                if self.integrity["status"] == "ok":
+                    self.integrity["status"] = "excluded"
+            rejected = rejected | stat_rejected
+            if stat_rejected:
+                worst = max([worst] + [abs(all_innovations[i][0]) for i in stat_rejected])
+        else:
+            self.integrity = {"status": "disabled"}
+        if rejected:
             ids = ", ".join(received_signals[i]['sat_id'] for i in sorted(rejected))
             self.raim_alarm = f"RAIM ALARM: Rejected {ids} (Err: {worst:.0f}m)"
+        elif self.integrity.get("status") == "alarm":
+            self.raim_alarm = (f"RAIM ALARM: kvar detektiran, ne može se izolirati "
+                               f"(T={self.integrity['test']:.1f} > {self.integrity['threshold']:.1f})")
 
         # Dijagnostika po satelitu za vanjske potrošače (web UI): rezidual inovacije
         # i je li ga RAIM odbacio. Samo se sprema — ne utječe na rješenje.
@@ -295,9 +398,8 @@ class Receiver:
 
             # Adaptivni mjerni šum: sigma raste s 1/sin(elev). diff = est - sat,
             # pa je smjer prema satelitu -diff; sin(elev) = up · (sat - est)/r.
-            sin_elev = np.dot(up, -diff / r_est)
-            sin_elev = max(sin_elev, MIN_SIN_ELEV)
-            R_diag.append((SIGMA_ZENITH / sin_elev) ** 2)
+            # C/N0 model: sigma_code(C/N0) ⊕ rezidual/sin(elev) (vidi meas_sigma).
+            R_diag.append(meas_sigma(sig, np.dot(up, -diff / r_est)) ** 2)
 
         if len(H_valid) < 4:
             return None, None  # RAIM odbacio previše satelita
@@ -337,6 +439,20 @@ class Receiver:
 
         self.ekf_last_time = current_time
         self.calc_pos = self.x_ekf[:3]
+
+        # Snimka epohe za "pogled iznutra" (inspect.py -> /api/inspect): sve
+        # međuveličine jednog EKF koraka. Samo se sprema, ne utječe na rješenje.
+        self.last_epoch = {
+            "t": float(current_time), "dt": float(dt),
+            "x_before": x_before, "x_pred": x_pred, "P_pred": P_pred,
+            "x_upd": self.x_ekf.copy(), "P_upd": self.P_ekf.copy(),
+            "H": H, "R_diag": np.array(R_diag), "Y": Y, "S": S, "K": K,
+            "signals": list(received_signals),
+            "used": [i for i in range(len(received_signals)) if i not in rejected],
+            "rejected": sorted(rejected),
+            "innovations": [float(a[0]) for a in all_innovations],
+            "raim_sigmas": [float(v) for v in sigmas],
+        }
 
         # Izračunavanje GDOP-a (aproksimativno, koristeći H)
         try:

@@ -2,8 +2,9 @@
 
 Odvojeno od estimatora (EKF/RAIM u `receiver.py`, §19.2). Ovdje je SVE što
 pretvara satelitske signale u mjerenja: vidljivost (elevacijska maska + LOS kroz
-teren), DOP selekcija satelita, RF kanal (Gold kodovi + multipath + AWGN, ili
-savršeno mjerenje u `ideal` modu), iono-free kombinacija i sve korekcije
+teren), signalni model (`signal_model.py`: link budget → C/N0, ometač i
+cross-korelacija → efektivni C/N0 i gubitak zabrave, DLL pristranost i šum; ili
+savršeno mjerenje u `ideal` modu), DOP selekcija praćenih satelita, iono-free kombinacija i sve korekcije
 mjerenja (tropo, sat prijemnika/satelita, Sagnac, inter-system bias). Sat
 prijemnika (Allanov šum) je dio mjerenja pa živi ovdje.
 
@@ -16,10 +17,13 @@ import numpy as np
 from physics_engine import (
     C, calculate_ionospheric_delay, calculate_tropospheric_delay,
     calculate_sagnac_correction, simulate_clock_noise, calculate_terrain_elevation,
+    calculate_orbital_position,
 )
-from utils import ecef_to_lla
+from utils import ecef_to_lla, ecef_to_lla_array
+import terrain
 from satellite import GNSS_SYSTEMS
 import signal_processing
+import signal_model
 
 MAX_SATS = 10           # gornja granica satelita u rješenju (vidi select_best_satellites)
 
@@ -50,8 +54,31 @@ class MeasurementModel:
 
         self.received_signals = []
 
+        # Signalni model (signal_model.py): ometač i koherentna integracija.
+        # jammer_jn_db postavlja napad (spoofing.Jamming) za TEKUĆU epohu.
+        self.jammer_jn_db = 0.0
+        # LOS kroz teren (DEM); False = bez terena (npr. sandbox studije "terrain": false).
+        self.terrain_los = True
+        self.t_coh_s = signal_model.T_COH_S
+        self.n_visible = 0
+        self.n_locked = 0
+        self._vel_ref = None
+
     def set_position(self, pos):
         self.pos = pos
+
+    @staticmethod
+    def los_clear_many(sat_positions, rec_pos):
+        """Vektorizirani check_los za više satelita: lista bool (True = put slobodan)."""
+        sp = np.asarray(sat_positions, dtype=float)
+        v = sp - rec_pos
+        n = np.linalg.norm(v, axis=1, keepdims=True)
+        n[n == 0] = 1.0
+        d = np.arange(2000, 60000, 2000, dtype=float)
+        pts = rec_pos + (v / n)[:, None, :] * d[None, :, None]      # (n_sat, n_uzoraka, 3)
+        lat, lon, alt = ecef_to_lla_array(pts)
+        h = terrain.elevation_array(lat.ravel(), lon.ravel()).reshape(lat.shape)
+        return list(np.all(alt >= h, axis=1))
 
     def check_los(self, sat_pos, rec_pos):
         """Matematički raycasting: provjerava blokira li teren (planine) putanju signala."""
@@ -108,56 +135,123 @@ class MeasurementModel:
             # Elevacijska maska: ignoriraj satelite ispod ~5°
             if elevation < np.radians(5):
                 continue
-            # LOS raycasting provjerava planine
-            if not self.check_los(sig['pos'], self.pos):
-                continue
 
             sig['true_dist'] = true_dist
             visible_signals.append((sat, sig))
 
+        # LOS raycasting kroz teren (planine) — vektorizirano za sve kandidate
+        # odjednom (jedan poziv DEM-a); iste točke uzorkovanja kao check_los.
+        if visible_signals and self.terrain_los:
+            clear = self.los_clear_many([sig['pos'] for _, sig in visible_signals], self.pos)
+            visible_signals = [p for p, ok in zip(visible_signals, clear) if ok]
+
+        iono_tow = self.iono_tow0 + current_time
+        rx_vel = self._receiver_velocity(current_time)
+
+        # --- Signalni model (signal_model.py): C/N0 svih vidljivih signala ------
+        # Svi vidljivi signali dijele antenu: jedan ChannelBank po bandu računa
+        # nominalni C/N0 (link budget), efektivni C/N0 uz ometač (J/N) i MAI
+        # (cross-korelacija ostalih satelita nakon koherentne integracije uz
+        # relativni Doppler). Satelit ispod praga zabrave na bilo kojem bandu se
+        # NE prati (gubitak zabrave) — tek se među praćenima bira podskup (DOP).
+        banks, cn0_eff = {}, {}
+        if visible_signals:
+            sat_pos = np.array([sig['pos'] for _, sig in visible_signals])
+            sat_vel = np.array([self._sat_velocity(sat, current_time) for sat, _ in visible_signals])
+            offs = np.array([float(getattr(sat, 'tx_power_offset_db', 0.0)) for sat, _ in visible_signals])
+            ids = [sig['id'] for _, sig in visible_signals]
+            ranges = [sig['true_dist'] for _, sig in visible_signals]
+            for band in signal_model.BANDS:
+                key = band.lower()
+                freq = visible_signals[0][1][key]['freq']
+                dop = signal_model.doppler_hz(sat_pos, sat_vel, self.pos, rx_vel, freq)
+                cn0 = signal_model.cn0_dbhz(sat_pos, self.pos, band, offs)
+                bank = signal_model.ChannelBank(ids, [sig[key]['prn'] for _, sig in visible_signals],
+                                                ranges, dop, cn0, t_coh=self.t_coh_s,
+                                                groups=[sat.system for sat, _ in visible_signals])
+                banks[band] = bank
+                if self.ideal:
+                    # deterministički: bez MAI (ovisi o fazama), samo link budget + ometač
+                    cn0_eff[band] = signal_model.effective_cn0_dbhz(cn0, self.jammer_jn_db)
+                else:
+                    cn0_eff[band] = bank.effective_cn0(self.jammer_jn_db)
+            locked = np.ones(len(visible_signals), bool)
+            for band in signal_model.BANDS:
+                locked &= cn0_eff[band] >= signal_model.TRACK_THRESHOLD_DBHZ
+            for idx, (sat, sig) in enumerate(visible_signals):
+                sig['_bank_idx'] = idx
+            tracked = [pair for pair, ok in zip(visible_signals, locked) if ok]
+        else:
+            tracked = []
+        self.n_visible = len(visible_signals)
+        self.n_locked = len(tracked)
+
         # Pametna selekcija najboljih satelita (DOP) iz PROCIJENJENE pozicije, ne prave.
         # Više satelita -> niži GDOP i bolja RAIM redundancija; empirijski optimum ~10
         # (preko toga su dodatni sateliti niske elevacije/bučniji).
-        selected_pairs = self.select_best_satellites(visible_signals, max_sats=MAX_SATS, ref_pos=est_pos)
-        iono_tow = self.iono_tow0 + current_time
+        selected_pairs = self.select_best_satellites(tracked, max_sats=MAX_SATS, ref_pos=est_pos)
 
-        if self.ideal:
-            # Zero-noise: savršeno mjerenje po satelitu (bez RF lanca). Vidi
-            # signal_processing.ideal_pseudorange i tests/test_consistency.py.
-            for sat, sig in selected_pairs:
-                iono_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'], gps_tow_s=iono_tow)
-                iono_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'], gps_tow_s=iono_tow)
-                tropo = calculate_tropospheric_delay(sig['pos'], self.pos)
-                m_l1 = signal_processing.ideal_pseudorange(sig['true_dist'], iono_l1 + tropo)
-                m_l2 = signal_processing.ideal_pseudorange(sig['true_dist'], iono_l2 + tropo)
-                self.received_signals.append(self._finalize(sat, sig, m_l1, m_l2, ref_pos))
-            return self.received_signals
-
-        # --- Per-satelitski kanal (zadano) ---------------------------------------
-        # Svaki satelit se dekodira iz vlastitog kanala (bez zbrajanja u zajednički
-        # antenski signal). To NIJE pojednostavljenje na štetu realizma: pravi
-        # prijemnik integrira korelaciju kroz mnogo kodnih perioda (uz relativni
-        # Doppler), pa se cross-korelacija između satelita usredni prema NULI — a
-        # per-sat kanal upravo modelira taj (dobro razdvojeni) ishod. Jedan snapshot
-        # kombiniranog signala precjenjuje cross-korelaciju (mjereno ~5→10 m, NIS↑),
-        # jer izostavlja tu vremensku integraciju. Puni model (Doppler + koherentna
-        # integracija → stvaran near-far/jamming) je u planu (vidi §10 dokumentacije).
         for sat, sig in selected_pairs:
-            true_dist = sig['true_dist']
-            svec = sig['pos'] - self.pos
-            sn = np.linalg.norm(svec)
-            rn = np.linalg.norm(self.pos)
-            elev_rad = float(np.arcsin(np.clip(np.dot(self.pos / rn, svec / sn), -1.0, 1.0))) if sn > 0 and rn > 0 else None
+            idx = sig['_bank_idx']
+            f1_2, f2_2 = sig['l1']['freq'] ** 2, sig['l2']['freq'] ** 2
+            c_if1, c_if2 = f1_2 / (f1_2 - f2_2), f2_2 / (f1_2 - f2_2)   # iono-free koeficijenti
+            cn1 = float(cn0_eff['L1'][idx])
+            cn2 = float(cn0_eff['L2'][idx])
+            # Šum koda iz C/N0 (DLL formula) — prijemnik ga zna iz vlastitih
+            # parametara petlje i procjene C/N0 (kao prStdev u pravim prijemnicima).
+            s1 = float(signal_model.dll_sigma_m(cn1, t_coh=self.t_coh_s))
+            s2 = float(signal_model.dll_sigma_m(cn2, t_coh=self.t_coh_s))
+            info = {
+                'cn0_dbhz': cn1, 'cn0_l2_dbhz': cn2,
+                'sigma_code_m': float(np.hypot(c_if1 * s1, c_if2 * s2)),
+            }
             tropo = calculate_tropospheric_delay(sig['pos'], self.pos)
             iono_l1 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l1']['freq'], gps_tow_s=iono_tow)
             iono_l2 = calculate_ionospheric_delay(sig['pos'], self.pos, sig['l2']['freq'], gps_tow_s=iono_tow)
-            # Ista geometrija odraza za obje frekvencije -> KORELIRAN L1/L2 multipath.
-            mp = signal_processing.sample_multipath(self.rng)
-            m_l1 = signal_processing.simulate_channel(sig['l1']['prn'], true_dist + iono_l1 + tropo, snr_db=-2, rng=self.rng, elev_rad=elev_rad, mp=mp)
-            m_l2 = signal_processing.simulate_channel(sig['l2']['prn'], true_dist + iono_l2 + tropo, snr_db=-2, rng=self.rng, elev_rad=elev_rad, mp=mp)
-            self.received_signals.append(self._finalize(sat, sig, m_l1, m_l2, ref_pos))
+            true_dist = sig['true_dist']
+            if self.ideal:
+                # Zero-noise: savršeno mjerenje po satelitu (bez korelatora/šuma). Vidi
+                # signal_processing.ideal_pseudorange i tests/test_consistency.py.
+                m_l1 = signal_processing.ideal_pseudorange(true_dist, iono_l1 + tropo)
+                m_l2 = signal_processing.ideal_pseudorange(true_dist, iono_l2 + tropo)
+            else:
+                elev_rad = float(np.arcsin(np.clip(np.dot(self.pos / np.linalg.norm(self.pos),
+                                                          (sig['pos'] - self.pos) / true_dist), -1.0, 1.0)))
+                mp_scale = float(np.clip(0.1 + 0.9 * (1.0 - max(np.sin(elev_rad), 0.05)), 0.1, 1.0))
+                # Ista geometrija odraza za obje frekvencije -> KORELIRAN L1/L2 multipath.
+                mp = signal_processing.sample_multipath(self.rng)
+                b1, lost1 = banks['L1'].code_bias_m(idx, current_time, mp=mp, mp_scale=mp_scale)
+                b2, lost2 = banks['L2'].code_bias_m(idx, current_time, mp=mp, mp_scale=mp_scale)
+                n1, n2 = self.rng.normal(0.0, 1.0, 2)
+                if lost1 or lost2:
+                    continue      # DLL "uhvatio" cross-korelacijski vrh -> lock detektor ga odbaci
+                m_l1 = true_dist + iono_l1 + tropo + b1 + s1 * n1
+                m_l2 = true_dist + iono_l2 + tropo + b2 + s2 * n2
+            entry = self._finalize(sat, sig, m_l1, m_l2, ref_pos)
+            entry.update(info)
+            self.received_signals.append(entry)
 
         return self.received_signals
+
+    def _sat_velocity(self, sat, t, h=0.5):
+        """ECEF brzina satelita (centralna razlika orbitalnog modela) — za Doppler."""
+        if hasattr(sat, 'velocity_at'):          # prave orbite (SGP4) znaju svoju brzinu
+            return np.asarray(sat.velocity_at(t), dtype=float)
+        if not hasattr(sat, 'a'):
+            return np.zeros(3)
+        p1, _ = calculate_orbital_position(sat.a, sat.e, sat.i, sat.lan, sat.w, sat.m0, t + h)
+        p0, _ = calculate_orbital_position(sat.a, sat.e, sat.i, sat.lan, sat.w, sat.m0, t - h)
+        return (p1 - p0) / (2.0 * h)
+
+    def _receiver_velocity(self, t):
+        """Brzina prijemnika iz promjene prave pozicije između epoha (za Doppler)."""
+        vel = np.zeros(3)
+        if self._vel_ref is not None:
+            p0, t0 = self._vel_ref
+            if t > t0 and np.linalg.norm(self.pos - p0) < 1e5:
+                vel = (self.pos - p0) / (t - t0)
+        self._vel_ref = (np.array(self.pos, float), t)
+        return vel
 
     def _finalize(self, sat, sig, measured_pr_l1, measured_pr_l2, ref_pos):
         """Iono-free kombinacija + sve korekcije mjerenja -> unos za received_signals.
