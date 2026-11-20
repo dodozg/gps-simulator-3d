@@ -85,7 +85,8 @@ def test_ekf_matches_scenario_runner():
     ref = scenario.run_scenario(scenario.Scenario(seconds=25, seed=77, attack=atk))
     tr = sandbox.simulate({"world": {"duration_s": 25}, "attack": atk},
                           {}, sandbox._locations({})[0], 77)["ekf"]
-    assert np.nanmedian(tr["err_3d"]) == ref["median_err"]
+    # isti algoritam; zadnja decimala smije se razlikovati (drugi BLAS / redoslijed zbrajanja)
+    assert np.nanmedian(tr["err_3d"]) == pytest.approx(ref["median_err"], rel=1e-9)
     assert int(tr["detect"].sum()) == ref["raim_alarms"]
 
 
