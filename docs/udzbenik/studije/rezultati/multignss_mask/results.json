@@ -1,0 +1,6787 @@
+{
+ "spec": {
+  "name": "multignss_mask",
+  "description": "Multi-GNSS vs elevacijska maska (urbani kanjon): dostupnost fixa, HPL i dostupnost integriteta uz HAL = 100 m. Sva tri skupa sustava iz iste multi-GNSS konstelacije.",
+  "world": {
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120,
+   "duration_s": 60,
+   "constellation": "multi",
+   "max_sats": 16,
+   "terrain": false,
+   "t0_random_s": 86164
+  },
+  "seeds": 8,
+  "seed_base": 1000,
+  "sweep": {
+   "mask_deg": [
+    5,
+    10,
+    15,
+    20,
+    25,
+    30,
+    35,
+    40
+   ],
+   "systems": [
+    [
+     "GPS"
+    ],
+    [
+     "GPS",
+     "GAL"
+    ],
+    [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   ]
+  },
+  "sweep_mode": "grid",
+  "estimators": [
+   "ekf"
+  ],
+  "attack": null,
+  "raim": {
+   "hal": 100
+  },
+  "metrics": [
+   "availability",
+   "integrity_availability",
+   "hpl_median",
+   "h_err_p95",
+   "gdop_median",
+   "n_sats_mean"
+  ],
+  "warmup_s": 20,
+  "save_traces": false,
+  "plot": [
+   {
+    "metric": "hpl_median",
+    "x": "mask_deg",
+    "logy": true
+   },
+   {
+    "metric": "integrity_availability",
+    "x": "mask_deg"
+   }
+  ],
+  "plugins": [],
+  "version": 1
+ },
+ "points": [
+  {
+   "index": 0,
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 1,
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 2,
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 3,
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 4,
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 5,
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 6,
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 7,
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 8,
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 9,
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 10,
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 11,
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 12,
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 13,
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 14,
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 15,
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 16,
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 17,
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 18,
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 19,
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 20,
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  },
+  {
+   "index": 21,
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   }
+  },
+  {
+   "index": 22,
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   }
+  },
+  {
+   "index": 23,
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   }
+  }
+ ],
+ "locations": [
+  {
+   "name": "default",
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120.0
+  }
+ ],
+ "runs": [
+  {
+   "idx": 0,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 37.55234803093096,
+    "h_err_p95": 4.916427519281642,
+    "gdop_median": 1.907263898382384,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 1,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 48.151827014332845,
+    "h_err_p95": 5.162360947659791,
+    "gdop_median": 2.2125118055777246,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 2,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 40.69122462467061,
+    "h_err_p95": 6.191610838590345,
+    "gdop_median": 1.9374842491218227,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 3,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 46.50176128878779,
+    "h_err_p95": 5.449501360780249,
+    "gdop_median": 1.972910114299983,
+    "n_sats_mean": 7.05
+   }
+  },
+  {
+   "idx": 4,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 31.48002057107368,
+    "h_err_p95": 4.387413947852427,
+    "gdop_median": 1.9144993767053253,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 5,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 42.27747835849564,
+    "h_err_p95": 5.363843753616176,
+    "gdop_median": 2.0757725368601534,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 6,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 32.973393362239975,
+    "h_err_p95": 5.472440063399234,
+    "gdop_median": 1.8611239970063802,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 7,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 53.364490375710275,
+    "h_err_p95": 8.69843865149417,
+    "gdop_median": 2.897697165013711,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 8,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 16.19495738670596,
+    "h_err_p95": 3.9523670862988336,
+    "gdop_median": 1.206547797837883,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 9,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.355732723840312,
+    "h_err_p95": 3.6196975981512733,
+    "gdop_median": 1.605014726071848,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 10,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.511618573105075,
+    "h_err_p95": 3.50235834700593,
+    "gdop_median": 1.35783799508149,
+    "n_sats_mean": 15.0
+   }
+  },
+  {
+   "idx": 11,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.699880945337163,
+    "h_err_p95": 3.5045576353324734,
+    "gdop_median": 1.4867676570607697,
+    "n_sats_mean": 15.05
+   }
+  },
+  {
+   "idx": 12,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.207307788354468,
+    "h_err_p95": 3.2337904088692286,
+    "gdop_median": 1.3155168573481582,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 13,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.344292255171219,
+    "h_err_p95": 4.474794286694676,
+    "gdop_median": 1.27747843259412,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 14,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.37648138236663,
+    "h_err_p95": 5.827721379220796,
+    "gdop_median": 1.308063179834849,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 15,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.793513851775547,
+    "h_err_p95": 3.7030186371358194,
+    "gdop_median": 1.6445264418530603,
+    "n_sats_mean": 15.0
+   }
+  },
+  {
+   "idx": 16,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 21.90361896513864,
+    "h_err_p95": 4.564244228886105,
+    "gdop_median": 1.0915131667600375,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 17,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 23.56987450164212,
+    "h_err_p95": 4.361633026429105,
+    "gdop_median": 1.0697033165118008,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 18,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 17.730326874030645,
+    "h_err_p95": 2.9213368625976264,
+    "gdop_median": 1.0565324461509513,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 19,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 52.47623418339623,
+    "h_err_p95": 4.1486743141806635,
+    "gdop_median": 1.1334832631965903,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 20,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 22.18595973481854,
+    "h_err_p95": 4.4474383518493585,
+    "gdop_median": 1.04212347989764,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 21,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 25.21131363918395,
+    "h_err_p95": 4.220543837223679,
+    "gdop_median": 1.0824308975665518,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 22,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 27.28653330216524,
+    "h_err_p95": 4.687482256913532,
+    "gdop_median": 0.9735327331453971,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 23,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 16.65810085033028,
+    "h_err_p95": 4.274269467648126,
+    "gdop_median": 1.2377053782665595,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 24,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 37.75603015499189,
+    "h_err_p95": 5.293697489683904,
+    "gdop_median": 2.221514905219469,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 25,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 48.151827014332845,
+    "h_err_p95": 5.162360947659791,
+    "gdop_median": 2.2125118055777246,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 26,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 51.277323372757415,
+    "h_err_p95": 7.381059051117526,
+    "gdop_median": 3.1104435790412968,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 27,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.1,
+    "hpl_median": 134.75462026006392,
+    "h_err_p95": 7.4481644441856245,
+    "gdop_median": 3.60679622344599,
+    "n_sats_mean": 5.1
+   }
+  },
+  {
+   "idx": 28,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 30.734297742972217,
+    "h_err_p95": 4.718795340082381,
+    "gdop_median": 2.307899880089427,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 29,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 41.22366038623544,
+    "h_err_p95": 5.670489416770302,
+    "gdop_median": 2.268486242555988,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 30,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 32.26813284007844,
+    "h_err_p95": 5.339725849468969,
+    "gdop_median": 2.208246768838049,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 31,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.9833333333333333,
+    "hpl_median": 67.35266544505416,
+    "h_err_p95": 6.498505424475776,
+    "gdop_median": 3.3802060086204495,
+    "n_sats_mean": 5.983333333333333
+   }
+  },
+  {
+   "idx": 32,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.63658245274075,
+    "h_err_p95": 2.7266626925315984,
+    "gdop_median": 1.5464490826136106,
+    "n_sats_mean": 14.0
+   }
+  },
+  {
+   "idx": 33,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.355732723840312,
+    "h_err_p95": 3.6196975981512733,
+    "gdop_median": 1.605014726071848,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 34,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.269517164709868,
+    "h_err_p95": 4.217051556871381,
+    "gdop_median": 1.5090979786548682,
+    "n_sats_mean": 13.416666666666666
+   }
+  },
+  {
+   "idx": 35,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.921888207720485,
+    "h_err_p95": 3.497035257410727,
+    "gdop_median": 1.727947457836886,
+    "n_sats_mean": 13.1
+   }
+  },
+  {
+   "idx": 36,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.878287118124184,
+    "h_err_p95": 3.584265035362097,
+    "gdop_median": 1.7415884863800866,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 37,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.503637768132513,
+    "h_err_p95": 4.219914383771797,
+    "gdop_median": 1.3770859610895119,
+    "n_sats_mean": 15.0
+   }
+  },
+  {
+   "idx": 38,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.057974748785625,
+    "h_err_p95": 4.68905716999636,
+    "gdop_median": 1.698726707382757,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 39,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.69853002518501,
+    "h_err_p95": 4.582494391838319,
+    "gdop_median": 1.676152179413134,
+    "n_sats_mean": 13.983333333333333
+   }
+  },
+  {
+   "idx": 40,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.532884918924275,
+    "h_err_p95": 4.58594619663414,
+    "gdop_median": 1.2045997150390986,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 41,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 17.28204638548276,
+    "h_err_p95": 3.6088163410478282,
+    "gdop_median": 1.26155160109003,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 42,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.9072943302766,
+    "h_err_p95": 3.5012302047876993,
+    "gdop_median": 1.1166856810478443,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 43,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 41.09034094376443,
+    "h_err_p95": 3.804595742565924,
+    "gdop_median": 1.1930782709011978,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 44,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 23.344043031661663,
+    "h_err_p95": 4.357187207434698,
+    "gdop_median": 1.1725249419638588,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 45,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.245324886461127,
+    "h_err_p95": 4.434396176961757,
+    "gdop_median": 1.12490337687306,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 46,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.720930492073805,
+    "h_err_p95": 4.7332590439188165,
+    "gdop_median": 1.3044058699394678,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 47,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 21.992466845003047,
+    "h_err_p95": 3.6139829732732047,
+    "gdop_median": 1.2365781361968553,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 48,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 36.547459701481856,
+    "h_err_p95": 4.5649724371149665,
+    "gdop_median": 2.681364928550422,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 49,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 48.151823076250196,
+    "h_err_p95": 5.000172678564164,
+    "gdop_median": 2.212512173889248,
+    "n_sats_mean": 6.983333333333333
+   }
+  },
+  {
+   "idx": 50,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 51.277323372757415,
+    "h_err_p95": 7.381059051117526,
+    "gdop_median": 3.1104435790412968,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 51,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 134.75458340750703,
+    "h_err_p95": 6.552558763611945,
+    "gdop_median": 3.6067965171883043,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 52,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 30.734297742972217,
+    "h_err_p95": 4.718795340082381,
+    "gdop_median": 2.307899880089427,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 53,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.9166666666666666,
+    "hpl_median": 98.30905600216809,
+    "h_err_p95": 6.455867745732076,
+    "gdop_median": 3.866541474930589,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 54,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 34.66206900977703,
+    "h_err_p95": 3.790316504018148,
+    "gdop_median": 2.626448545631744,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 55,
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 56,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.321459405245058,
+    "h_err_p95": 3.4423960720659426,
+    "gdop_median": 1.6724602206057253,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 57,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.355728865108045,
+    "h_err_p95": 3.7209044452422555,
+    "gdop_median": 1.6050149805714833,
+    "n_sats_mean": 12.983333333333333
+   }
+  },
+  {
+   "idx": 58,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.753936984794287,
+    "h_err_p95": 3.9531715911453,
+    "gdop_median": 1.9333489989628416,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 59,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.119723269913088,
+    "h_err_p95": 4.917137357379274,
+    "gdop_median": 2.0645238333767653,
+    "n_sats_mean": 11.0
+   }
+  },
+  {
+   "idx": 60,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.878287118124184,
+    "h_err_p95": 3.584265035362097,
+    "gdop_median": 1.7415884863800866,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 61,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.16771553801378,
+    "h_err_p95": 4.677949605039585,
+    "gdop_median": 2.38548750782327,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 62,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.402023854697905,
+    "h_err_p95": 4.970227814628069,
+    "gdop_median": 1.868726845574661,
+    "n_sats_mean": 12.0
+   }
+  },
+  {
+   "idx": 63,
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 30.974100482516217,
+    "h_err_p95": 3.863568657470195,
+    "gdop_median": 1.9985729238003036,
+    "n_sats_mean": 11.0
+   }
+  },
+  {
+   "idx": 64,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.346690798213274,
+    "h_err_p95": 3.237206497856704,
+    "gdop_median": 1.2520392315737636,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 65,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 12.266753112340563,
+    "h_err_p95": 2.9417105542347484,
+    "gdop_median": 1.3583500470266219,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 66,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.12716825780144,
+    "h_err_p95": 3.183103729896285,
+    "gdop_median": 1.3139462297304583,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 67,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 17.66488132903388,
+    "h_err_p95": 3.198645545779176,
+    "gdop_median": 1.3768601778995793,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 68,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.930609131709534,
+    "h_err_p95": 3.9025475767349755,
+    "gdop_median": 1.3546499483290884,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 69,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.180255652140202,
+    "h_err_p95": 5.103402879207138,
+    "gdop_median": 1.4648750302619309,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 70,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 12.178380128112984,
+    "h_err_p95": 4.428090670378194,
+    "gdop_median": 1.7002914237202227,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 71,
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 12.908983006716188,
+    "h_err_p95": 3.7341060149687286,
+    "gdop_median": 1.3593839207410388,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 72,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 138.51554135359038,
+    "h_err_p95": 5.104620755397418,
+    "gdop_median": 3.3743383034610863,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 73,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 174.23536713555944,
+    "h_err_p95": 5.3793181314379765,
+    "gdop_median": 3.3251263834534077,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 74,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 119.05004307765054,
+    "h_err_p95": 6.619183580450092,
+    "gdop_median": 3.599345254767676,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 75,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.274689316153554,
+    "gdop_median": 16.551548741162257,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 76,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 32.28113329023301,
+    "h_err_p95": 5.225684294458481,
+    "gdop_median": 2.708854465473193,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 77,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.9166666666666666,
+    "hpl_median": 98.30905600216809,
+    "h_err_p95": 6.455867745732076,
+    "gdop_median": 3.866541474930589,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 78,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 34.66206900977703,
+    "h_err_p95": 3.790316504018148,
+    "gdop_median": 2.626448545631744,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 79,
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 80,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 17.29906986297383,
+    "h_err_p95": 3.700401367012881,
+    "gdop_median": 2.0957419802105357,
+    "n_sats_mean": 11.0
+   }
+  },
+  {
+   "idx": 81,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 21.59375186146763,
+    "h_err_p95": 4.327048562392436,
+    "gdop_median": 2.301920665640596,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 82,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 23.334927186018625,
+    "h_err_p95": 5.738288392926535,
+    "gdop_median": 2.7243401400323686,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 83,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 39.24052979126867,
+    "h_err_p95": 4.885522035696952,
+    "gdop_median": 3.3659729501148363,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 84,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.140738196692226,
+    "h_err_p95": 2.960554749641072,
+    "gdop_median": 1.8914497100964003,
+    "n_sats_mean": 12.0
+   }
+  },
+  {
+   "idx": 85,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 25.623230246050824,
+    "h_err_p95": 7.021251672492863,
+    "gdop_median": 3.3522964508381143,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 86,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.402023854697905,
+    "h_err_p95": 4.970227814628069,
+    "gdop_median": 1.868726845574661,
+    "n_sats_mean": 12.0
+   }
+  },
+  {
+   "idx": 87,
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 31.659446677581876,
+    "h_err_p95": 5.734014991842875,
+    "gdop_median": 2.35577254973498,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 88,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 12.55785258997275,
+    "h_err_p95": 3.372823544860818,
+    "gdop_median": 1.5138163664822502,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 89,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 11.278832955815403,
+    "h_err_p95": 3.2382302312883646,
+    "gdop_median": 1.6516860447380108,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 90,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 22.419337348830094,
+    "h_err_p95": 2.625370187927607,
+    "gdop_median": 1.7301261651779507,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 91,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.095324141600315,
+    "h_err_p95": 2.6063794064947343,
+    "gdop_median": 2.4250374747884633,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 92,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 11.931784182401069,
+    "h_err_p95": 3.1740251062794407,
+    "gdop_median": 1.7152549717886019,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 93,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 11.308590156246568,
+    "h_err_p95": 5.818790070248106,
+    "gdop_median": 2.1632441762937815,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 94,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 12.178380128112984,
+    "h_err_p95": 4.428090670378194,
+    "gdop_median": 1.7002914237202227,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 95,
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.60878914774529,
+    "h_err_p95": 2.6800688694209693,
+    "gdop_median": 1.5933486331727025,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 96,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 138.51554135359038,
+    "h_err_p95": 5.104620755397418,
+    "gdop_median": 3.3743383034610863,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 97,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 174.23536713555944,
+    "h_err_p95": 5.3793181314379765,
+    "gdop_median": 3.3251263834534077,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 98,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 7.913752611539224,
+    "gdop_median": 7.628794024830915,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 99,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.274689316153554,
+    "gdop_median": 16.551548741162257,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 100,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 120.58792809724741,
+    "h_err_p95": 4.978596533090475,
+    "gdop_median": 3.6779764625529583,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 101,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.9166666666666666,
+    "hpl_median": 98.30905600216809,
+    "h_err_p95": 6.455867745732076,
+    "gdop_median": 3.866541474930589,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 102,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 120.5810453608658,
+    "h_err_p95": 5.420463030337615,
+    "gdop_median": 3.672967675464026,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 103,
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 104,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.054774732055577,
+    "h_err_p95": 4.842590089627396,
+    "gdop_median": 2.2218101831803825,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 105,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 23.116043821794825,
+    "h_err_p95": 4.383743434806045,
+    "gdop_median": 2.646299296192714,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 106,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 42.82028770323781,
+    "h_err_p95": 6.225578477844814,
+    "gdop_median": 4.248213658905831,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 107,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 39.24052979126867,
+    "h_err_p95": 4.885522035696952,
+    "gdop_median": 3.3659729501148363,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 108,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 20.880193168798563,
+    "h_err_p95": 5.111187589334009,
+    "gdop_median": 2.2150654831367307,
+    "n_sats_mean": 11.0
+   }
+  },
+  {
+   "idx": 109,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 25.623230246050824,
+    "h_err_p95": 7.021251672492863,
+    "gdop_median": 3.3522964508381143,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 110,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.713360924486224,
+    "h_err_p95": 4.51304429082803,
+    "gdop_median": 2.2056218725582437,
+    "n_sats_mean": 11.0
+   }
+  },
+  {
+   "idx": 111,
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 45.62621087241251,
+    "h_err_p95": 6.1574372269127,
+    "gdop_median": 3.5130553245325085,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 112,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.364340000426552,
+    "h_err_p95": 3.528853285809345,
+    "gdop_median": 1.6630957573937666,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 113,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 11.773247872435475,
+    "h_err_p95": 3.844276474298879,
+    "gdop_median": 1.765908410834889,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 114,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.862826839077904,
+    "h_err_p95": 3.4753520720367224,
+    "gdop_median": 2.0285693048823545,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 115,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.095324141600315,
+    "h_err_p95": 2.6063794064947343,
+    "gdop_median": 2.4250374747884633,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 116,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.496669435881742,
+    "h_err_p95": 3.377714607479926,
+    "gdop_median": 2.006796691360566,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 117,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.850905117224569,
+    "h_err_p95": 4.432668101410291,
+    "gdop_median": 2.7003538639771127,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 118,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.906015865000054,
+    "h_err_p95": 4.393384038830646,
+    "gdop_median": 2.0070041615696175,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 119,
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 26.59138977539955,
+    "h_err_p95": 2.619156721749494,
+    "gdop_median": 1.8705582165695498,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 120,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 138.51554135359038,
+    "h_err_p95": 5.104620755397418,
+    "gdop_median": 3.3743383034610863,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 121,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.4,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.23934469113879,
+    "gdop_median": 4.863319087936116,
+    "n_sats_mean": 3.4
+   }
+  },
+  {
+   "idx": 122,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 7.913752611539224,
+    "gdop_median": 7.628794024830915,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 123,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.274689316153554,
+    "gdop_median": 16.551548741162257,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 124,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 17.20980224699074,
+    "gdop_median": 17.35042028345371,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 125,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.722674082928119,
+    "gdop_median": 6.37036519285727,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 126,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.421703862475576,
+    "gdop_median": 17.269574640363057,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 127,
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 128,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 43.801007067813345,
+    "h_err_p95": 5.030661411086237,
+    "gdop_median": 3.047609442958248,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 129,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.4,
+    "hpl_median": 373.47228586204494,
+    "h_err_p95": 12.121629665302464,
+    "gdop_median": 11.984637467690584,
+    "n_sats_mean": 7.4
+   }
+  },
+  {
+   "idx": 130,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 42.82028770323781,
+    "h_err_p95": 6.225578477844814,
+    "gdop_median": 4.248213658905831,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 131,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 59.87874253348123,
+    "h_err_p95": 5.327833769739978,
+    "gdop_median": 5.434036797718482,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 132,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 122.07273357774261,
+    "h_err_p95": 5.556685041457929,
+    "gdop_median": 4.735344781751338,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 133,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 39.885405758839184,
+    "h_err_p95": 6.6390446274355055,
+    "gdop_median": 5.360751045095622,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 134,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 125.0353832194449,
+    "h_err_p95": 6.183948761052076,
+    "gdop_median": 4.657734898264543,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 135,
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 45.62621087241251,
+    "h_err_p95": 6.1574372269127,
+    "gdop_median": 3.5130553245325085,
+    "n_sats_mean": 9.0
+   }
+  },
+  {
+   "idx": 136,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 16.80680485321813,
+    "h_err_p95": 4.819663650478163,
+    "gdop_median": 1.9788311298405161,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 137,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 18.200875344904965,
+    "h_err_p95": 4.627105161784327,
+    "gdop_median": 2.110116068677745,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 138,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 13.976864224716952,
+    "h_err_p95": 4.108135641260435,
+    "gdop_median": 2.5467934816731344,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 139,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.905929813877684,
+    "h_err_p95": 3.86766227942716,
+    "gdop_median": 3.333936372974594,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 140,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.575519142886908,
+    "h_err_p95": 3.228425645062392,
+    "gdop_median": 3.2225197894995103,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 141,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.611092861720204,
+    "h_err_p95": 4.307430112533823,
+    "gdop_median": 3.2612178478561633,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 142,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 16.9600711529823,
+    "h_err_p95": 3.634537232270124,
+    "gdop_median": 3.240774295089847,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 143,
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 15.199513984558171,
+    "h_err_p95": 4.899186309322268,
+    "gdop_median": 2.3876997239874136,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 144,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 2.0
+   }
+  },
+  {
+   "idx": 145,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 146,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 7.913752611539224,
+    "gdop_median": 7.628794024830915,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 147,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.274689316153554,
+    "gdop_median": 16.551548741162257,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 148,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 149,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.722674082928119,
+    "gdop_median": 6.37036519285727,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 150,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 151,
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 152,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.11025434008509,
+    "gdop_median": 7.3893777693211415,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 153,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 375.93151603369444,
+    "h_err_p95": 14.176645341511382,
+    "gdop_median": 12.000457905868174,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 154,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 42.82028770323781,
+    "h_err_p95": 6.225578477844814,
+    "gdop_median": 4.248213658905831,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 155,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 59.87874253348123,
+    "h_err_p95": 5.327833769739978,
+    "gdop_median": 5.434036797718482,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 156,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 202.53163902852089,
+    "h_err_p95": 4.560672039182208,
+    "gdop_median": 4.814119150185395,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 157,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 39.885405758839184,
+    "h_err_p95": 6.6390446274355055,
+    "gdop_median": 5.360751045095622,
+    "n_sats_mean": 8.0
+   }
+  },
+  {
+   "idx": 158,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 7935.90925835724,
+    "h_err_p95": 10.300152340015174,
+    "gdop_median": 5.4157680450317685,
+    "n_sats_mean": 6.25
+   }
+  },
+  {
+   "idx": 159,
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 306.01516709975067,
+    "h_err_p95": 5.697750561337941,
+    "gdop_median": 5.895262976366934,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 160,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.3333333333333333,
+    "hpl_median": 154.0698812824369,
+    "h_err_p95": 10.525590048027297,
+    "gdop_median": 4.935607846767126,
+    "n_sats_mean": 10.333333333333334
+   }
+  },
+  {
+   "idx": 161,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 42.24050360069702,
+    "h_err_p95": 6.262051698782028,
+    "gdop_median": 6.042083204318326,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 162,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 22.961283633603735,
+    "h_err_p95": 6.6605561814595555,
+    "gdop_median": 3.777978253533097,
+    "n_sats_mean": 13.0
+   }
+  },
+  {
+   "idx": 163,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.905929813877684,
+    "h_err_p95": 3.86766227942716,
+    "gdop_median": 3.333936372974594,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 164,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 16.393441278562797,
+    "h_err_p95": 2.914948282473499,
+    "gdop_median": 3.4705541302619407,
+    "n_sats_mean": 15.0
+   }
+  },
+  {
+   "idx": 165,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 14.611092861720204,
+    "h_err_p95": 4.307430112533823,
+    "gdop_median": 3.2612178478561633,
+    "n_sats_mean": 16.0
+   }
+  },
+  {
+   "idx": 166,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 21.798166788556934,
+    "h_err_p95": 4.589501962347099,
+    "gdop_median": 4.06458245935552,
+    "n_sats_mean": 14.25
+   }
+  },
+  {
+   "idx": 167,
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 33.84412569889753,
+    "h_err_p95": 6.669188341626594,
+    "gdop_median": 3.3780539011153214,
+    "n_sats_mean": 11.683333333333334
+   }
+  },
+  {
+   "idx": 168,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 2.0
+   }
+  },
+  {
+   "idx": 169,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 2.0
+   }
+  },
+  {
+   "idx": 170,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 171,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 172,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 173,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 174,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 0.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": null,
+    "gdop_median": null,
+    "n_sats_mean": 3.0
+   }
+  },
+  {
+   "idx": 175,
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 54.637462155599025,
+    "gdop_median": 37.141161002959876,
+    "n_sats_mean": 4.0
+   }
+  },
+  {
+   "idx": 176,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": null,
+    "h_err_p95": 9.11025434008509,
+    "gdop_median": 7.3893777693211415,
+    "n_sats_mean": 5.0
+   }
+  },
+  {
+   "idx": 177,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 368.706884339464,
+    "h_err_p95": 10.176402381283015,
+    "gdop_median": 13.179018969010691,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 178,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 57.02172335315619,
+    "h_err_p95": 8.621998184280951,
+    "gdop_median": 7.964142871289984,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 179,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 60.43381319576039,
+    "h_err_p95": 7.34526723879353,
+    "gdop_median": 5.61607672949775,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 180,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 798.3129269187867,
+    "h_err_p95": 10.88732531687548,
+    "gdop_median": 5.3075794667112355,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 181,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 115.42256917251322,
+    "h_err_p95": 6.755994655104005,
+    "gdop_median": 9.262058518639437,
+    "n_sats_mean": 7.0
+   }
+  },
+  {
+   "idx": 182,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 7936.087254257408,
+    "h_err_p95": 9.416938669712207,
+    "gdop_median": 5.415765437486328,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 183,
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 306.01516709975067,
+    "h_err_p95": 5.697750561337941,
+    "gdop_median": 5.895262976366934,
+    "n_sats_mean": 6.0
+   }
+  },
+  {
+   "idx": 184,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 0.0,
+    "hpl_median": 154.069792446549,
+    "h_err_p95": 8.170513405180827,
+    "gdop_median": 4.935605864261937,
+    "n_sats_mean": 10.0
+   }
+  },
+  {
+   "idx": 185,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 43.18824098528365,
+    "h_err_p95": 6.556408911643793,
+    "gdop_median": 6.790539515208836,
+    "n_sats_mean": 12.0
+   }
+  },
+  {
+   "idx": 186,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 25.69824407011419,
+    "h_err_p95": 5.017446881861985,
+    "gdop_median": 5.374354344872531,
+    "n_sats_mean": 12.0
+   }
+  },
+  {
+   "idx": 187,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 29.03039290432666,
+    "h_err_p95": 4.820034361120597,
+    "gdop_median": 4.1782046064398255,
+    "n_sats_mean": 14.0
+   }
+  },
+  {
+   "idx": 188,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.945328315350466,
+    "h_err_p95": 3.963047627455143,
+    "gdop_median": 3.9607303060667878,
+    "n_sats_mean": 14.0
+   }
+  },
+  {
+   "idx": 189,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 19.776290897418818,
+    "h_err_p95": 4.248106585488751,
+    "gdop_median": 3.9009005421920318,
+    "n_sats_mean": 14.466666666666667
+   }
+  },
+  {
+   "idx": 190,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 21.798162485513615,
+    "h_err_p95": 4.893569660892965,
+    "gdop_median": 4.064583082359481,
+    "n_sats_mean": 14.0
+   }
+  },
+  {
+   "idx": 191,
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": 1.0,
+    "integrity_availability": 1.0,
+    "hpl_median": 39.615038750926175,
+    "h_err_p95": 8.016764977455749,
+    "gdop_median": 4.05490781178333,
+    "n_sats_mean": 11.0
+   }
+  }
+ ],
+ "aggregate": [
+  {
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 41.624067953280225,
+     "median": 41.484351491583126,
+     "p95": 51.54005819922817,
+     "std": 7.557899957976419,
+     "min": 31.48002057107368,
+     "max": 53.364490375710275,
+     "ci_lo": 35.3045014195594,
+     "ci_hi": 47.94363448700105
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 5.705254635334255,
+     "median": 5.406672557198212,
+     "p95": 7.82104891697783,
+     "std": 1.31396632465361,
+     "min": 4.387413947852427,
+     "max": 8.69843865149417,
+     "ci_lo": 4.606576740960489,
+     "ci_hi": 6.80393252970802
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.0974078928709354,
+     "median": 1.9551971817109028,
+     "p95": 2.6578822892111154,
+     "std": 0.3424065108123746,
+     "min": 1.8611239970063802,
+     "max": 2.897697165013711,
+     "ci_lo": 1.811103398409572,
+     "ci_hi": 2.3837123873322987
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 7.50625,
+     "median": 7.525,
+     "p95": 8.0,
+     "std": 0.5280946208506849,
+     "min": 7.0,
+     "max": 8.0,
+     "ci_lo": 7.064681692517464,
+     "ci_hi": 7.947818307482535
+    }
+   }
+  },
+  {
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 15.935473113332048,
+     "median": 15.57462328780793,
+     "p95": 18.633989115055932,
+     "std": 1.7988459261382532,
+     "min": 14.207307788354468,
+     "max": 18.699880945337163,
+     "ci_lo": 14.4313613127854,
+     "ci_hi": 17.439584913878694
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 3.977288172338629,
+     "median": 3.6613581176435464,
+     "p95": 5.354196896836653,
+     "std": 0.8347071914376374,
+     "min": 3.2337904088692286,
+     "max": 5.827721379220796,
+     "ci_lo": 3.2793446084127393,
+     "ci_hi": 4.675231736264518
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.4002191359602723,
+     "median": 1.3366774262148242,
+     "p95": 1.630697341329636,
+     "std": 0.1599799830215469,
+     "min": 1.206547797837883,
+     "max": 1.6445264418530603,
+     "ci_lo": 1.26645127023175,
+     "ci_hi": 1.5339870016887944
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 15.25625,
+     "median": 15.525,
+     "p95": 16.0,
+     "std": 1.0335229280752039,
+     "min": 13.0,
+     "max": 16.0,
+     "ci_lo": 14.392065908597187,
+     "ci_hi": 16.120434091402814
+    }
+   }
+  },
+  {
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 5,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 25.877745256338205,
+     "median": 22.87791711823033,
+     "p95": 43.659838874965374,
+     "std": 11.313960559961307,
+     "min": 16.65810085033028,
+     "max": 52.47623418339623,
+     "ci_lo": 16.41753449460271,
+     "ci_hi": 35.3379560180737
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 4.2032027932160245,
+     "median": 4.317951247038616,
+     "p95": 4.644348947103933,
+     "std": 0.5478703531799866,
+     "min": 2.9213368625976264,
+     "max": 4.687482256913532,
+     "ci_lo": 3.7450989326164907,
+     "ci_hi": 4.661306653815558
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.085878085186941,
+     "median": 1.0760671070391763,
+     "p95": 1.20122763799207,
+     "std": 0.07655077719632172,
+     "min": 0.9735327331453971,
+     "max": 1.2377053782665595,
+     "ci_lo": 1.0218698643332582,
+     "ci_hi": 1.1498863060406237
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.8854166666666667,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.3174098422174523,
+     "min": 0.1,
+     "max": 1.0,
+     "ci_lo": 0.6200132308572196,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 55.43981965206079,
+     "median": 44.687743700284145,
+     "p95": 111.16393607481047,
+     "std": 34.15364481720537,
+     "min": 30.734297742972217,
+     "max": 134.75462026006392,
+     "ci_lo": 26.8821208215,
+     "ci_hi": 83.99751848262159
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 5.939099745430534,
+     "median": 5.505107633119636,
+     "p95": 7.4246775566117895,
+     "std": 1.0426524052526915,
+     "min": 4.718795340082381,
+     "max": 7.4481644441856245,
+     "ci_lo": 5.067282007279019,
+     "ci_hi": 6.810917483582049
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.664513176673549,
+     "median": 2.2881930613227075,
+     "p95": 3.527489648257051,
+     "std": 0.596622590976054,
+     "min": 2.208246768838049,
+     "max": 3.60679622344599,
+     "ci_lo": 2.165644948705687,
+     "ci_hi": 3.1633814046414113
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 6.510416666666667,
+     "median": 7.0,
+     "p95": 7.0,
+     "std": 0.7295866137643475,
+     "min": 5.1,
+     "max": 7.0,
+     "ci_lo": 5.900370069935801,
+     "ci_hi": 7.120463263397533
+    }
+   }
+  },
+  {
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 15.790268776154843,
+     "median": 15.496157588290531,
+     "p95": 19.147847029763582,
+     "std": 2.2044845365550176,
+     "min": 13.503637768132513,
+     "max": 19.269517164709868,
+     "ci_lo": 13.94698072275645,
+     "ci_hi": 17.633556829553235
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 3.892022260741694,
+     "median": 3.918374577511327,
+     "p95": 4.651760197641045,
+     "std": 0.6555397542404043,
+     "min": 2.7266626925315984,
+     "max": 4.68905716999636,
+     "ci_lo": 3.3438902246661035,
+     "ci_hi": 4.440154296817284
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.6102578224303379,
+     "median": 1.640583452742491,
+     "p95": 1.7368141263899664,
+     "std": 0.12647353179491447,
+     "min": 1.3770859610895119,
+     "max": 1.7415884863800866,
+     "ci_lo": 1.5045065021725061,
+     "ci_hi": 1.7160091426881696
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 13.5625,
+     "median": 13.258333333333333,
+     "p95": 14.649999999999999,
+     "std": 0.719057473915438,
+     "min": 13.0,
+     "max": 15.0,
+     "ci_lo": 12.961257383235528,
+     "ci_hi": 14.163742616764472
+    }
+   }
+  },
+  {
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 10,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 21.889416479205963,
+     "median": 19.314112411175202,
+     "p95": 34.87913667452845,
+     "std": 8.220386342854077,
+     "min": 14.532884918924275,
+     "max": 41.09034094376443,
+     "ci_lo": 15.015909458022076,
+     "ci_hi": 28.76292350038985
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 4.079926735828009,
+     "median": 4.0808914750003105,
+     "p95": 4.681699547369179,
+     "std": 0.4978763727997234,
+     "min": 3.5012302047876993,
+     "max": 4.7332590439188165,
+     "ci_lo": 3.6636255303384004,
+     "ci_hi": 4.496227941317617
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.2017909491314267,
+     "median": 1.1988389929701482,
+     "p95": 1.2894068758421646,
+     "std": 0.06481425152546834,
+     "min": 1.1166856810478443,
+     "max": 1.3044058699394678,
+     "ci_lo": 1.1475962684494956,
+     "ci_hi": 1.2559856298133578
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 6,
+   "group": 6,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.7395833333333333,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.4573853833354197,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.3571388212848442,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 7,
+     "mean": 62.06237318755911,
+     "median": 48.151823076250196,
+     "p95": 123.82092518590532,
+     "std": 39.35106084112108,
+     "min": 30.734297742972217,
+     "max": 134.75458340750703,
+     "ci_lo": 25.667400812216115,
+     "ci_hi": 98.4573455629021
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 11.63765058448003,
+     "median": 5.72802021214812,
+     "p95": 38.09772106903047,
+     "std": 17.41650078861701,
+     "min": 3.790316504018148,
+     "max": 54.637462155599025,
+     "ci_lo": 0.0,
+     "ci_hi": 26.20052335737335
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 7.194146012785113,
+     "median": 2.8959042537958597,
+     "p95": 25.495044168149605,
+     "std": 12.11471060318704,
+     "min": 2.212512173889248,
+     "max": 37.141161002959876,
+     "ci_lo": 0.0,
+     "ci_hi": 17.323906940993005
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 5.747916666666667,
+     "median": 6.0,
+     "p95": 6.994166666666667,
+     "std": 1.0322358803579794,
+     "min": 4.0,
+     "max": 7.0,
+     "ci_lo": 4.884808745063176,
+     "ci_hi": 6.6110245882701575
+    }
+   }
+  },
+  {
+   "point": 7,
+   "group": 7,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 18.49662193980157,
+     "median": 17.237726067510565,
+     "p95": 27.047043258313536,
+     "std": 5.5568304200786365,
+     "min": 13.878287118124184,
+     "max": 30.974100482516217,
+     "ci_lo": 13.85025724173099,
+     "ci_hi": 23.142986637872152
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 4.14120257229159,
+     "median": 3.9083701243077478,
+     "p95": 4.951646154590991,
+     "std": 0.6170264779261541,
+     "min": 3.4423960720659426,
+     "max": 4.970227814628069,
+     "ci_lo": 3.6252735573531893,
+     "ci_hi": 4.6571315872299905
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.908715474636892,
+     "median": 1.9010379222687512,
+     "p95": 2.273150221766993,
+     "std": 0.2500999925126319,
+     "min": 1.6050149805714833,
+     "max": 2.38548750782327,
+     "ci_lo": 1.6995934233323347,
+     "ci_hi": 2.1178375259414493
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 11.997916666666667,
+     "median": 12.491666666666667,
+     "p95": 13.0,
+     "std": 1.1932494483685068,
+     "min": 10.0,
+     "max": 13.0,
+     "ci_lo": 11.000176643350791,
+     "ci_hi": 12.995656689982543
+    }
+   }
+  },
+  {
+   "point": 8,
+   "group": 8,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 15,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 14.075465177008509,
+     "median": 13.555432391924867,
+     "p95": 16.853514643246665,
+     "std": 1.8769061662777542,
+     "min": 12.178380128112984,
+     "max": 17.66488132903388,
+     "ci_lo": 12.506083012479445,
+     "ci_hi": 15.644847341537572
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 3.7161016836319933,
+     "median": 3.4856562564127165,
+     "p95": 4.867043606117007,
+     "std": 0.7413779684797237,
+     "min": 2.9417105542347484,
+     "max": 5.103402879207138,
+     "ci_lo": 3.096195701217161,
+     "ci_hi": 4.336007666046826
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.397549501160338,
+     "median": 1.3588669838838303,
+     "p95": 1.6178956860098204,
+     "std": 0.13607234029643048,
+     "min": 1.2520392315737636,
+     "max": 1.7002914237202227,
+     "ci_lo": 1.2837721009984244,
+     "ci_hi": 1.5113269013222517
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 9,
+   "group": 9,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.3645833333333333,
+     "median": 0.0,
+     "p95": 1.0,
+     "std": 0.5038295803461187,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.7858623357490294
+    },
+    "hpl_median": {
+     "n": 6,
+     "mean": 99.50886831149641,
+     "median": 108.67954953990932,
+     "p95": 165.30541069006716,
+     "std": 56.94478547663726,
+     "min": 32.28113329023301,
+     "max": 174.23536713555944,
+     "ci_lo": 39.739259603486495,
+     "ci_hi": 159.27847701950634
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 12.060892810405846,
+     "median": 5.917592938585026,
+     "p95": 38.76049166179308,
+     "std": 17.278026348212226,
+     "min": 3.790316504018148,
+     "max": 54.637462155599025,
+     "ci_lo": 0.0,
+     "ci_hi": 26.50797965807873
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 9.149170521479979,
+     "median": 3.486841779114381,
+     "p95": 29.934796711330698,
+     "std": 12.2377940046422,
+     "min": 2.626448545631744,
+     "max": 37.141161002959876,
+     "ci_lo": 0.0,
+     "ci_hi": 19.381848099685556
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 5.0,
+     "median": 5.0,
+     "p95": 6.0,
+     "std": 0.7559289460184544,
+     "min": 4.0,
+     "max": 6.0,
+     "ci_lo": 4.367927162877116,
+     "ci_hi": 5.632072837122884
+    }
+   }
+  },
+  {
+   "point": 10,
+   "group": 10,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 23.41171470959395,
+     "median": 22.464339523743128,
+     "p95": 36.587150701478286,
+     "std": 8.711799203535413,
+     "min": 14.140738196692226,
+     "max": 39.24052979126867,
+     "ci_lo": 16.127310972937625,
+     "ci_hi": 30.696118446250278
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 4.91716369832921,
+     "median": 4.927874925162511,
+     "p95": 6.5722145246446475,
+     "std": 1.2778083927861932,
+     "min": 2.960554749641072,
+     "max": 7.021251672492863,
+     "ci_lo": 3.848719394956703,
+     "ci_hi": 5.985608001701717
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.4945276615303116,
+     "median": 2.328846607687788,
+     "p95": 3.3611861753679837,
+     "std": 0.5998461820070629,
+     "min": 1.868726845574661,
+     "max": 3.3659729501148363,
+     "ci_lo": 1.9929640157729525,
+     "ci_hi": 2.9960913072876707
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 10.375,
+     "median": 10.0,
+     "p95": 12.0,
+     "std": 1.1877349391654208,
+     "min": 9.0,
+     "max": 12.0,
+     "ci_lo": 9.381870954337108,
+     "ci_hi": 11.368129045662892
+    }
+   }
+  },
+  {
+   "point": 11,
+   "group": 11,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 20,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 14.54736133134056,
+     "median": 12.368116359042867,
+     "p95": 21.25593272629967,
+     "std": 4.163840576308396,
+     "min": 11.278832955815403,
+     "max": 22.419337348830094,
+     "ci_lo": 11.065750340973247,
+     "ci_hi": 18.028972321707876
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 3.4929722608622793,
+     "median": 3.2061276687839024,
+     "p95": 5.332045280293636,
+     "std": 1.1125596995519258,
+     "min": 2.6063794064947343,
+     "max": 5.818790070248106,
+     "ci_lo": 2.5627012751191285,
+     "ci_hi": 4.423243246605431
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 1.8116006570202479,
+     "median": 1.7077731977544124,
+     "p95": 2.3334098203153246,
+     "std": 0.3139950718831593,
+     "min": 1.5138163664822502,
+     "max": 2.4250374747884633,
+     "ci_lo": 1.5490524942952462,
+     "ci_hi": 2.0741488197452496
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 12,
+   "group": 12,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.11458333333333333,
+     "median": 0.0,
+     "p95": 0.5958333333333328,
+     "std": 0.3240906080438342,
+     "min": 0.0,
+     "max": 0.9166666666666666,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3855729166666666
+    },
+    "hpl_median": {
+     "n": 5,
+     "mean": 130.44578758988624,
+     "median": 120.58792809724741,
+     "p95": 167.09140197916562,
+     "std": 28.328026108239204,
+     "min": 98.30905600216809,
+     "max": 174.23536713555944,
+     "ci_lo": 95.27753632571847,
+     "ci_hi": 165.614038854054
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 12.39559628491092,
+     "median": 5.938165388034845,
+     "p95": 38.76049166179308,
+     "std": 17.13614993812348,
+     "min": 4.978596533090475,
+     "max": 54.637462155599025,
+     "ci_lo": 0.0,
+     "ci_hi": 26.724052637590937
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 9.90480675860189,
+     "median": 3.772258968741774,
+     "p95": 29.934796711330698,
+     "std": 11.899504786117218,
+     "min": 3.3251263834534077,
+     "max": 37.141161002959876,
+     "ci_lo": 0.0,
+     "ci_hi": 19.854622531809262
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 4.625,
+     "median": 5.0,
+     "p95": 5.0,
+     "std": 0.5175491695067657,
+     "min": 4.0,
+     "max": 5.0,
+     "ci_lo": 4.192249311401885,
+     "ci_hi": 5.057750688598115
+    }
+   }
+  },
+  {
+   "point": 13,
+   "group": 13,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 29.509328907513122,
+     "median": 24.369637033922825,
+     "p95": 44.644137763201364,
+     "std": 11.131219361360559,
+     "min": 19.054774732055577,
+     "max": 45.62621087241251,
+     "ci_lo": 20.2019178876941,
+     "ci_hi": 38.816739927332144
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 5.392544352192851,
+     "median": 4.998354812515481,
+     "p95": 6.7427660543660455,
+     "std": 0.9533083069503008,
+     "min": 4.383743434806045,
+     "max": 7.021251672492863,
+     "ci_lo": 4.595432018552727,
+     "ci_hi": 6.189656685832975
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.97104190243242,
+     "median": 2.999297873515414,
+     "p95": 3.9909082418751676,
+     "std": 0.7606807014095077,
+     "min": 2.2056218725582437,
+     "max": 4.248213658905831,
+     "ci_lo": 2.334995867131114,
+     "ci_hi": 3.6070879377337257
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 9.5,
+     "median": 9.0,
+     "p95": 11.0,
+     "std": 1.0690449676496976,
+     "min": 8.0,
+     "max": 11.0,
+     "ci_lo": 8.606114021333177,
+     "ci_hi": 10.393885978666823
+    }
+   }
+  },
+  {
+   "point": 14,
+   "group": 14,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 25,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 16.49258988088077,
+     "median": 15.113583419752228,
+     "p95": 23.967766803569813,
+     "std": 4.567698266829909,
+     "min": 11.773247872435475,
+     "max": 26.59138977539955,
+     "ci_lo": 12.673291760543975,
+     "ci_hi": 20.311888001217568
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 3.5347230885137546,
+     "median": 3.5021026789230336,
+     "p95": 4.418918679507415,
+     "std": 0.6936159879962706,
+     "min": 2.6063794064947343,
+     "max": 4.432668101410291,
+     "ci_lo": 2.9547534660832735,
+     "ci_hi": 4.114692710944236
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.05841548517204,
+     "median": 2.0069004264650916,
+     "p95": 2.6039931277610853,
+     "std": 0.3443053904135801,
+     "min": 1.6630957573937666,
+     "max": 2.7003538639771127,
+     "ci_lo": 1.77052323537572,
+     "ci_hi": 2.34630773496836
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 15,
+   "group": 15,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 0.925,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.21213203435596423,
+     "min": 0.4,
+     "max": 1.0,
+     "ci_lo": 0.7476250000000001,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 1,
+     "mean": 138.51554135359038,
+     "median": 138.51554135359038,
+     "p95": 138.51554135359038,
+     "std": null,
+     "min": 138.51554135359038,
+     "max": 138.51554135359038,
+     "ci_lo": null,
+     "ci_hi": null
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 15.315506215277807,
+     "median": 9.348196589314565,
+     "p95": 41.537781187586106,
+     "std": 16.249310314262104,
+     "min": 5.104620755397418,
+     "max": 54.637462155599025,
+     "ci_lo": 1.7285841563690525,
+     "ci_hi": 28.902428274186562
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 13.818690159628037,
+     "median": 12.090171382996587,
+     "p95": 30.214401751132705,
+     "std": 11.076767187799335,
+     "min": 3.3743383034610863,
+     "max": 37.141161002959876,
+     "ci_lo": 4.55680952994903,
+     "ci_hi": 23.080570789307046
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 4.05,
+     "median": 4.0,
+     "p95": 4.6499999999999995,
+     "std": 0.43752550946038726,
+     "min": 3.4,
+     "max": 5.0,
+     "ci_lo": 3.6841613963390802,
+     "ci_hi": 4.415838603660919
+    }
+   }
+  },
+  {
+   "point": 16,
+   "group": 16,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.675,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.46521884251239376,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.2860055115383106,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 106.57400707437706,
+     "median": 52.752476702946865,
+     "p95": 286.5193699371348,
+     "std": 113.49207747902604,
+     "min": 39.885405758839184,
+     "max": 373.47228586204494,
+     "ci_lo": 11.677178766671474,
+     "ci_hi": 201.47083538208267
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 6.6553523726039625,
+     "median": 6.170692993982388,
+     "p95": 10.202724902049026,
+     "std": 2.272327193085412,
+     "min": 5.030661411086237,
+     "max": 12.121629665302464,
+     "ci_lo": 4.755337426265459,
+     "ci_hi": 8.555367318942466
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 5.372672927114644,
+     "median": 4.69653984000794,
+     "p95": 9.691927233200346,
+     "std": 2.7971366167856058,
+     "min": 3.047609442958248,
+     "max": 11.984637467690584,
+     "ci_lo": 3.0338366032720856,
+     "ci_hi": 7.711509250957203
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 8.05,
+     "median": 8.0,
+     "p95": 8.649999999999999,
+     "std": 0.43752550946038715,
+     "min": 7.4,
+     "max": 9.0,
+     "ci_lo": 7.684161396339081,
+     "ci_hi": 8.41583860366092
+    }
+   }
+  },
+  {
+   "point": 17,
+   "group": 17,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 30,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 16.404583922358164,
+     "median": 16.191161998052518,
+     "p95": 19.30916074973723,
+     "std": 1.9714537328666368,
+     "min": 13.976864224716952,
+     "max": 19.905929813877684,
+     "ci_lo": 14.756145453699373,
+     "ci_hi": 18.053022391016956
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 4.1865182540173365,
+     "median": 4.207782876897129,
+     "p95": 4.871353378726831,
+     "std": 0.5913595489759023,
+     "min": 3.228425645062392,
+     "max": 4.899186309322268,
+     "ci_lo": 3.692050738453007,
+     "ci_hi": 4.680985769581666
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 2.760236088699865,
+     "median": 2.8846566355863223,
+     "p95": 3.308484889183143,
+     "std": 0.5659793997640398,
+     "min": 1.9788311298405161,
+     "max": 3.333936372974594,
+     "ci_lo": 2.28699028055055,
+     "ci_hi": 3.23348189684918
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 16.0,
+     "median": 16.0,
+     "p95": 16.0,
+     "std": 0.0,
+     "min": 16.0,
+     "max": 16.0,
+     "ci_lo": 16.0,
+     "ci_hi": 16.0
+    }
+   }
+  },
+  {
+   "point": 18,
+   "group": 18,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 0.5,
+     "median": 0.5,
+     "p95": 1.0,
+     "std": 0.5345224838248488,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0530570106665888,
+     "ci_hi": 0.9469429893334111
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 0,
+     "mean": null,
+     "median": null,
+     "p95": null,
+     "std": null,
+     "min": null,
+     "max": null,
+     "ci_lo": null,
+     "ci_hi": null
+    },
+    "h_err_p95": {
+     "n": 4,
+     "mean": 20.38714454155498,
+     "median": 9.498681699540835,
+     "p95": 47.900243944698374,
+     "std": 22.846497574042242,
+     "min": 7.913752611539224,
+     "max": 54.637462155599025,
+     "ci_lo": 0.0,
+     "ci_hi": 56.73592218185619
+    },
+    "gdop_median": {
+     "n": 4,
+     "mean": 16.92296724045258,
+     "median": 12.090171382996587,
+     "p95": 34.05271916369023,
+     "std": 14.22031852030509,
+     "min": 6.37036519285727,
+     "max": 37.141161002959876,
+     "ci_lo": 0.0,
+     "ci_hi": 39.54749400625798
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 3.375,
+     "median": 3.5,
+     "p95": 4.0,
+     "std": 0.7440238091428449,
+     "min": 2.0,
+     "max": 4.0,
+     "ci_lo": 2.752881687943179,
+     "ci_hi": 3.997118312056821
+    }
+   }
+  },
+  {
+   "point": 19,
+   "group": 19,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.375,
+     "median": 0.0,
+     "p95": 1.0,
+     "std": 0.5175491695067657,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.8077506885981152
+    },
+    "hpl_median": {
+     "n": 7,
+     "mean": 1280.4245737878234,
+     "median": 202.53163902852089,
+     "p95": 5667.915935660171,
+     "std": 2937.8349417910645,
+     "min": 39.885405758839184,
+     "max": 7935.90925835724,
+     "ci_lo": 0.0,
+     "ci_hi": 3997.566609208413
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 7.754741437144013,
+     "median": 6.43231155264016,
+     "p95": 12.819872790987707,
+     "std": 3.239569459642977,
+     "min": 4.560672039182208,
+     "max": 14.176645341511382,
+     "ci_lo": 5.045963224326119,
+     "ci_hi": 10.463519649961906
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 6.319748418561669,
+     "median": 5.424902421375125,
+     "p95": 10.386579858076711,
+     "std": 2.4690736384727625,
+     "min": 4.248213658905831,
+     "max": 12.000457905868174,
+     "ci_lo": 4.255223190423758,
+     "ci_hi": 8.38427364669958
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 6.90625,
+     "median": 7.0,
+     "p95": 8.0,
+     "std": 1.1014398044637495,
+     "min": 5.0,
+     "max": 8.0,
+     "ci_lo": 5.985276956442966,
+     "ci_hi": 7.827223043557034
+    }
+   }
+  },
+  {
+   "point": 20,
+   "group": 20,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 35,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.9166666666666666,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.2357022603955158,
+     "min": 0.3333333333333333,
+     "max": 1.0,
+     "ci_lo": 0.7195833333333334,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 40.7280531197941,
+     "median": 22.379725211080334,
+     "p95": 114.92959909382789,
+     "std": 46.7178069973391,
+     "min": 14.611092861720204,
+     "max": 154.0698812824369,
+     "ci_lo": 1.66478273108941,
+     "ci_hi": 79.79132350849878
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 5.724616113334632,
+     "median": 5.425776830564564,
+     "p95": 9.175849450787048,
+     "std": 2.382849416540841,
+     "min": 2.914948282473499,
+     "max": 10.525590048027297,
+     "ci_lo": 3.7321875933229,
+     "ci_hi": 7.717044633346363
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 4.033001752022761,
+     "median": 3.6242661918975188,
+     "p95": 5.654816829175405,
+     "std": 0.9817467802437175,
+     "min": 3.2612178478561633,
+     "max": 6.042083204318326,
+     "ci_lo": 3.2121104817607624,
+     "ci_hi": 4.853893022284759
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 13.658333333333335,
+     "median": 13.625,
+     "p95": 16.0,
+     "std": 2.0332943009524502,
+     "min": 10.333333333333334,
+     "max": 16.0,
+     "ci_lo": 11.95818664060776,
+     "ci_hi": 15.35848002605891
+    }
+   }
+  },
+  {
+   "point": 21,
+   "group": 21,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 0.125,
+     "median": 0.0,
+     "p95": 0.6499999999999995,
+     "std": 0.3535533905932738,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.420625
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 0,
+     "mean": null,
+     "median": null,
+     "p95": null,
+     "std": null,
+     "min": null,
+     "max": null,
+     "ci_lo": null,
+     "ci_hi": null
+    },
+    "h_err_p95": {
+     "n": 1,
+     "mean": 54.637462155599025,
+     "median": 54.637462155599025,
+     "p95": 54.637462155599025,
+     "std": null,
+     "min": 54.637462155599025,
+     "max": 54.637462155599025,
+     "ci_lo": null,
+     "ci_hi": null
+    },
+    "gdop_median": {
+     "n": 1,
+     "mean": 37.141161002959876,
+     "median": 37.141161002959876,
+     "p95": 37.141161002959876,
+     "std": null,
+     "min": 37.141161002959876,
+     "max": 37.141161002959876,
+     "ci_lo": null,
+     "ci_hi": null
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 2.875,
+     "median": 3.0,
+     "p95": 3.6499999999999995,
+     "std": 0.6408699444616557,
+     "min": 2.0,
+     "max": 4.0,
+     "ci_lo": 2.3391341806578017,
+     "ci_hi": 3.4108658193421983
+    }
+   }
+  },
+  {
+   "point": 22,
+   "group": 22,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.25,
+     "median": 0.0,
+     "p95": 1.0,
+     "std": 0.4629100498862757,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.6370639828060916
+    },
+    "hpl_median": {
+     "n": 7,
+     "mean": 1377.4286197624058,
+     "median": 306.01516709975067,
+     "p95": 5794.754956055816,
+     "std": 2903.659569116442,
+     "min": 57.02172335315619,
+     "max": 7936.087254257408,
+     "ci_lo": 0.0,
+     "ci_hi": 4062.9625684421626
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 8.501491418434027,
+     "median": 8.86612626218302,
+     "p95": 10.638502289418117,
+     "std": 1.771410417388185,
+     "min": 5.697750561337941,
+     "max": 10.88732531687548,
+     "ci_lo": 7.020319921926407,
+     "ci_hi": 9.982662914941645
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 7.503660342290438,
+     "median": 6.642320372844038,
+     "p95": 11.80808281138075,
+     "std": 2.6954658935240183,
+     "min": 5.3075794667112355,
+     "max": 13.179018969010691,
+     "ci_lo": 5.249836376874908,
+     "ci_hi": 9.757484307705967
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 6.25,
+     "median": 6.0,
+     "p95": 7.0,
+     "std": 0.7071067811865476,
+     "min": 5.0,
+     "max": 7.0,
+     "ci_lo": 5.6587499999999995,
+     "ci_hi": 6.8412500000000005
+    }
+   }
+  },
+  {
+   "point": 23,
+   "group": 23,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "mask_deg": 40,
+    "systems": [
+     "GPS",
+     "GAL",
+     "GLO",
+     "BDS"
+    ]
+   },
+   "metrics": {
+    "availability": {
+     "n": 8,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    },
+    "integrity_availability": {
+     "n": 8,
+     "mean": 0.875,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.3535533905932738,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.579375,
+     "ci_hi": 1.0
+    },
+    "hpl_median": {
+     "n": 8,
+     "mean": 44.140186356935324,
+     "median": 27.364318487220423,
+     "p95": 115.26124943510607,
+     "std": 45.280820817966024,
+     "min": 19.776290897418818,
+     "max": 154.069792446549,
+     "ci_lo": 6.278457377759544,
+     "ci_hi": 82.0019153361111
+    },
+    "h_err_p95": {
+     "n": 8,
+     "mean": 5.710736551387477,
+     "median": 4.955508271377475,
+     "p95": 8.116701455477049,
+     "std": 1.6569721391619299,
+     "min": 3.963047627455143,
+     "max": 8.170513405180827,
+     "ci_lo": 4.325253052508356,
+     "ci_hi": 7.096220050266598
+    },
+    "gdop_median": {
+     "n": 8,
+     "mean": 4.657478259148094,
+     "median": 4.121393844399654,
+     "p95": 6.294874705591129,
+     "std": 1.010191158000145,
+     "min": 3.9009005421920318,
+     "max": 6.790539515208836,
+     "ci_lo": 3.8128031152252224,
+     "ci_hi": 5.502153403070967
+    },
+    "n_sats_mean": {
+     "n": 8,
+     "mean": 12.683333333333334,
+     "median": 13.0,
+     "p95": 14.303333333333333,
+     "std": 1.662566384878205,
+     "min": 10.0,
+     "max": 14.466666666666667,
+     "ci_lo": 11.293172184815218,
+     "ci_hi": 14.07349448185145
+    }
+   }
+  }
+ ],
+ "meta": {
+  "created": "2026-11-20T10:13:29",
+  "elapsed_s": 74.40322780609131,
+  "workers": 6,
+  "runs_done": 192,
+  "runs_total": 192,
+  "interrupted": false,
+  "cancelled": false,
+  "git": {
+   "commit": "cd2fabfdb10c94a741cb25a8cd7318653bac0996",
+   "dirty": true
+  },
+  "numpy": "2.5.5",
+  "python": "3.14.5",
+  "spec_version": 1,
+  "nondeterministic_metrics": []
+ }
+}

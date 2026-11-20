@@ -1,0 +1,11 @@
+{
+  "name": "maska",
+  "description": "Udžbenik, pogl. 7: elevacijska maska za samo GPS — manje satelita i lošija geometrija, ali bez najšumovitijih mjerenja.",
+  "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 180, "systems": ["GPS"],
+            "terrain": false, "t0_random_s": 86164},
+  "seeds": 10,
+  "sweep": {"mask_deg": [5, 10, 15, 20, 25, 30]},
+  "estimators": ["ekf"],
+  "metrics": ["availability", "h_err_p95", "v_err_p95", "gdop_median", "n_sats_mean"],
+  "warmup_s": 20
+}

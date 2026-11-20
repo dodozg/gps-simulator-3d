@@ -1,0 +1,1983 @@
+{
+ "spec": {
+  "name": "spoof_offset",
+  "description": "Koordinirani spoof: konačna greška i stopa 'misleading information' (greška > HPL bez alarma) vs pomak cilja. Konzistentna laž ne ostavlja rezidual — RAIM šuti, a HPL ne štiti.",
+  "world": {
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120,
+   "duration_s": 200,
+   "systems": [
+    "GPS"
+   ],
+   "terrain": false,
+   "t0_random_s": 86164
+  },
+  "seeds": 10,
+  "seed_base": 1000,
+  "sweep": {
+   "attack.offset_e": [
+    0,
+    50,
+    100,
+    200,
+    400,
+    800
+   ]
+  },
+  "sweep_mode": "grid",
+  "estimators": [
+   "ekf"
+  ],
+  "attack": {
+   "type": "coordinated",
+   "offset_e": 0,
+   "start": 40,
+   "end": 160
+  },
+  "raim": {},
+  "metrics": [
+   "final_err",
+   "mi_rate",
+   "mi_events",
+   "hmi_events",
+   "hpl_median",
+   "raim_detections",
+   "takeover_m",
+   "integrity_availability"
+  ],
+  "warmup_s": 30,
+  "save_traces": false,
+  "plot": [
+   {
+    "metric": "final_err"
+   },
+   {
+    "metric": "mi_rate"
+   }
+  ],
+  "plugins": [],
+  "version": 1
+ },
+ "points": [
+  {
+   "index": 0,
+   "params": {
+    "attack.offset_e": 0
+   }
+  },
+  {
+   "index": 1,
+   "params": {
+    "attack.offset_e": 50
+   }
+  },
+  {
+   "index": 2,
+   "params": {
+    "attack.offset_e": 100
+   }
+  },
+  {
+   "index": 3,
+   "params": {
+    "attack.offset_e": 200
+   }
+  },
+  {
+   "index": 4,
+   "params": {
+    "attack.offset_e": 400
+   }
+  },
+  {
+   "index": 5,
+   "params": {
+    "attack.offset_e": 800
+   }
+  }
+ ],
+ "locations": [
+  {
+   "name": "default",
+   "lat": 45.815,
+   "lon": 15.982,
+   "alt": 120.0
+  }
+ ],
+ "runs": [
+  {
+   "idx": 0,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 5.134858338020498,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.25842735268242,
+    "raim_detections": 0.0,
+    "takeover_m": 5.134858338020497,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 1,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 3.923530276539487,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 44.82279987905843,
+    "raim_detections": 0.0,
+    "takeover_m": 3.923530276539487,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 2,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 4.797304837211637,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 40.07163897105576,
+    "raim_detections": 1.0,
+    "takeover_m": 4.797304837211637,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 3,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 4.412991172616005,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 95.30443726840892,
+    "raim_detections": 0.0,
+    "takeover_m": 4.412991172616005,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 4,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 5.29215401710756,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 32.22258054870046,
+    "raim_detections": 0.0,
+    "takeover_m": 5.29215401710756,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 5,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 4.400291895680574,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 43.04691352176634,
+    "raim_detections": 0.0,
+    "takeover_m": 4.400291895680574,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 6,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 3.4271677658661956,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.22822088839196,
+    "raim_detections": 0.0,
+    "takeover_m": 3.4271677658661956,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 7,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 5.938884526053748,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 60.173386796540925,
+    "raim_detections": 0.0,
+    "takeover_m": 5.938884526053748,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 8,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 4.0215541600907505,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 28.03211229797752,
+    "raim_detections": 0.0,
+    "takeover_m": 4.0215541600907505,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 9,
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": 4.2690634650503405,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 47.96658819576538,
+    "raim_detections": 0.0,
+    "takeover_m": 4.2690634650503405,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 10,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 51.514263287284564,
+    "mi_rate": 0.4411764705882353,
+    "mi_events": 75.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.258367600097415,
+    "raim_detections": 0.0,
+    "takeover_m": 5.135075333309394,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 11,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 50.52624610568081,
+    "mi_rate": 0.31176470588235294,
+    "mi_events": 53.0,
+    "hmi_events": 0.0,
+    "hpl_median": 44.82289658109001,
+    "raim_detections": 0.0,
+    "takeover_m": 3.9236874406065096,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 12,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 47.516700141868306,
+    "mi_rate": 0.3411764705882353,
+    "mi_events": 58.0,
+    "hmi_events": 0.0,
+    "hpl_median": 40.07187976096068,
+    "raim_detections": 1.0,
+    "takeover_m": 4.797436825596738,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 13,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 49.86045114304909,
+    "mi_rate": 0.27647058823529413,
+    "mi_events": 47.0,
+    "hmi_events": 0.0,
+    "hpl_median": 95.30404059948506,
+    "raim_detections": 0.0,
+    "takeover_m": 4.4134163536465465,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 14,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 49.75910809001523,
+    "mi_rate": 0.47058823529411764,
+    "mi_events": 80.0,
+    "hmi_events": 0.0,
+    "hpl_median": 32.22267926113422,
+    "raim_detections": 0.0,
+    "takeover_m": 5.292269823809912,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 15,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 53.17938971347969,
+    "mi_rate": 0.3411764705882353,
+    "mi_events": 58.0,
+    "hmi_events": 0.0,
+    "hpl_median": 43.04675767345936,
+    "raim_detections": 0.0,
+    "takeover_m": 4.400137306185193,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 16,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 50.04811252737308,
+    "mi_rate": 0.38235294117647056,
+    "mi_events": 65.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.22833401961324,
+    "raim_detections": 0.0,
+    "takeover_m": 3.4270347467011195,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 17,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 49.365520045127546,
+    "mi_rate": 0.0,
+    "mi_events": 0.0,
+    "hmi_events": 0.0,
+    "hpl_median": 60.1734213708589,
+    "raim_detections": 0.0,
+    "takeover_m": 5.939047939877915,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 18,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 52.06203590441234,
+    "mi_rate": 0.5411764705882353,
+    "mi_events": 92.0,
+    "hmi_events": 0.0,
+    "hpl_median": 28.031919428205374,
+    "raim_detections": 0.0,
+    "takeover_m": 4.021372981517413,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 19,
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": 48.556378593562386,
+    "mi_rate": 0.15294117647058825,
+    "mi_events": 26.0,
+    "hmi_events": 0.0,
+    "hpl_median": 47.966433767975474,
+    "raim_detections": 0.0,
+    "takeover_m": 4.2689968220411085,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 20,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 101.43772016781398,
+    "mi_rate": 0.6647058823529411,
+    "mi_events": 113.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.25830784895271,
+    "raim_detections": 0.0,
+    "takeover_m": 5.135292353142805,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 21,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 100.31892365846105,
+    "mi_rate": 0.6176470588235294,
+    "mi_events": 105.0,
+    "hmi_events": 0.0,
+    "hpl_median": 44.82299328612635,
+    "raim_detections": 0.0,
+    "takeover_m": 3.9238446196459216,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 22,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 97.4079382710114,
+    "mi_rate": 0.6352941176470588,
+    "mi_events": 108.0,
+    "hmi_events": 0.0,
+    "hpl_median": 40.07212056102661,
+    "raim_detections": 1.0,
+    "takeover_m": 4.79756881952421,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 23,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 99.67848072956589,
+    "mi_rate": 0.32941176470588235,
+    "mi_events": 56.0,
+    "hmi_events": 0.0,
+    "hpl_median": 95.30364397252296,
+    "raim_detections": 0.0,
+    "takeover_m": 4.413841546942063,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 24,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 99.61802984135329,
+    "mi_rate": 0.711764705882353,
+    "mi_events": 121.0,
+    "hmi_events": 0.0,
+    "hpl_median": 32.2227779754534,
+    "raim_detections": 0.0,
+    "takeover_m": 5.292385647752977,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 25,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 103.14611545366883,
+    "mi_rate": 0.6470588235294118,
+    "mi_events": 110.0,
+    "hmi_events": 0.0,
+    "hpl_median": 43.046601836638374,
+    "raim_detections": 0.0,
+    "takeover_m": 4.39998274672845,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 26,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 99.93140553942405,
+    "mi_rate": 0.6647058823529411,
+    "mi_events": 113.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.228447153550505,
+    "raim_detections": 0.0,
+    "takeover_m": 3.426901804314671,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 27,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 99.22967804976571,
+    "mi_rate": 0.5176470588235295,
+    "mi_events": 88.0,
+    "hmi_events": 0.0,
+    "hpl_median": 60.173455950812226,
+    "raim_detections": 0.0,
+    "takeover_m": 5.939211358903558,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 28,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 101.98333578605637,
+    "mi_rate": 0.7294117647058823,
+    "mi_events": 124.0,
+    "hmi_events": 0.0,
+    "hpl_median": 28.03172656395872,
+    "raim_detections": 0.0,
+    "takeover_m": 4.021191825676234,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 29,
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": 98.5033747446578,
+    "mi_rate": 0.5941176470588235,
+    "mi_events": 101.0,
+    "hmi_events": 0.0,
+    "hpl_median": 47.966279342580535,
+    "raim_detections": 0.0,
+    "takeover_m": 4.268930190928708,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 30,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 201.39831959129384,
+    "mi_rate": 0.7941176470588235,
+    "mi_events": 135.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.25818835098476,
+    "raim_detections": 0.0,
+    "takeover_m": 5.135726448218801,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 31,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 200.21432473001727,
+    "mi_rate": 0.7823529411764706,
+    "mi_events": 133.0,
+    "hmi_events": 0.0,
+    "hpl_median": 44.823186705214056,
+    "raim_detections": 0.0,
+    "takeover_m": 3.9241590206639865,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 32,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 197.35521336662606,
+    "mi_rate": 0.7823529411764706,
+    "mi_events": 133.0,
+    "hmi_events": 0.0,
+    "hpl_median": 40.07260219164335,
+    "raim_detections": 1.0,
+    "takeover_m": 4.797832788860557,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 33,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 199.58754401247842,
+    "mi_rate": 0.611764705882353,
+    "mi_events": 104.0,
+    "hmi_events": 0.0,
+    "hpl_median": 95.30285084446405,
+    "raim_detections": 0.0,
+    "takeover_m": 4.414691954068993,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 34,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 199.54765704051988,
+    "mi_rate": 0.8411764705882353,
+    "mi_events": 143.0,
+    "hmi_events": 0.0,
+    "hpl_median": 32.22297540974851,
+    "raim_detections": 0.0,
+    "takeover_m": 5.292617324636774,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 35,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 203.1284603623687,
+    "mi_rate": 0.7823529411764706,
+    "mi_events": 133.0,
+    "hmi_events": 0.0,
+    "hpl_median": 43.04629019745705,
+    "raim_detections": 0.0,
+    "takeover_m": 4.399673741428607,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 36,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 199.87273539624428,
+    "mi_rate": 0.8058823529411765,
+    "mi_events": 137.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.228673429573426,
+    "raim_detections": 0.0,
+    "takeover_m": 3.4266361427185856,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 37,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 199.16166134892842,
+    "mi_rate": 0.7411764705882353,
+    "mi_events": 126.0,
+    "hmi_events": 0.0,
+    "hpl_median": 60.17352512762504,
+    "raim_detections": 0.0,
+    "takeover_m": 5.939538209676629,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 38,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 201.9426832437324,
+    "mi_rate": 0.8235294117647058,
+    "mi_events": 140.0,
+    "hmi_events": 0.0,
+    "hpl_median": 28.031340852040465,
+    "raim_detections": 0.0,
+    "takeover_m": 4.0208295685025135,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 39,
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": 198.4774031702456,
+    "mi_rate": 0.7823529411764706,
+    "mi_events": 133.0,
+    "hmi_events": 0.0,
+    "hpl_median": 47.96597049897623,
+    "raim_detections": 0.0,
+    "takeover_m": 4.268796944259832,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 40,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 401.37787499588876,
+    "mi_rate": 0.8705882352941177,
+    "mi_events": 148.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.25794937233287,
+    "raim_detections": 0.0,
+    "takeover_m": 5.136594869465291,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 41,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 400.16157090105486,
+    "mi_rate": 0.8647058823529412,
+    "mi_events": 147.0,
+    "hmi_events": 0.0,
+    "hpl_median": 44.823573579451725,
+    "raim_detections": 0.0,
+    "takeover_m": 3.924787985608848,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 42,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 397.3289132827664,
+    "mi_rate": 0.8588235294117647,
+    "mi_events": 146.0,
+    "hmi_events": 0.0,
+    "hpl_median": 40.07356557483404,
+    "raim_detections": 1.0,
+    "takeover_m": 4.798360675740048,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 43,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 399.5418597924404,
+    "mi_rate": 0.7647058823529411,
+    "mi_events": 130.0,
+    "hmi_events": 0.0,
+    "hpl_median": 95.30126509169054,
+    "raim_detections": 0.0,
+    "takeover_m": 4.416392883064193,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 44,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 399.51210236610916,
+    "mi_rate": 0.888235294117647,
+    "mi_events": 151.0,
+    "hmi_events": 0.0,
+    "hpl_median": 32.2233703009676,
+    "raim_detections": 0.0,
+    "takeover_m": 5.2930808493826405,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 45,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 403.1188961517656,
+    "mi_rate": 0.8705882352941177,
+    "mi_events": 148.0,
+    "hmi_events": 0.0,
+    "hpl_median": 43.0456670569465,
+    "raim_detections": 0.0,
+    "takeover_m": 4.3990561693423995,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 46,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 399.8360288490855,
+    "mi_rate": 0.8764705882352941,
+    "mi_events": 149.0,
+    "hmi_events": 0.0,
+    "hpl_median": 38.22912601421683,
+    "raim_detections": 0.0,
+    "takeover_m": 3.4261057280660268,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 47,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 399.1131417824838,
+    "mi_rate": 0.8352941176470589,
+    "mi_events": 142.0,
+    "hmi_events": 0.0,
+    "hpl_median": 60.173663548867275,
+    "raim_detections": 0.0,
+    "takeover_m": 5.94019196490286,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 48,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 401.9217173790786,
+    "mi_rate": 0.888235294117647,
+    "mi_events": 151.0,
+    "hmi_events": 0.0,
+    "hpl_median": 28.030569494497236,
+    "raim_detections": 0.0,
+    "takeover_m": 4.020105290557254,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 49,
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": 398.46436380934404,
+    "mi_rate": 0.8647058823529412,
+    "mi_events": 147.0,
+    "hmi_events": 0.0,
+    "hpl_median": 47.96535284050864,
+    "raim_detections": 0.0,
+    "takeover_m": 4.2685305584691235,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 50,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1000,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 801.3665336853471,
+    "mi_rate": 0.9058823529411765,
+    "mi_events": 154.0,
+    "hmi_events": 76.0,
+    "hpl_median": 38.25747148415921,
+    "raim_detections": 0.0,
+    "takeover_m": 5.138333059939283,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 51,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1001,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 800.1345058810662,
+    "mi_rate": 0.9,
+    "mi_events": 153.0,
+    "hmi_events": 76.0,
+    "hpl_median": 44.82434747219083,
+    "raim_detections": 0.0,
+    "takeover_m": 3.92604656339336,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 52,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1002,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 797.3150474732172,
+    "mi_rate": 0.8941176470588236,
+    "mi_events": 152.0,
+    "hmi_events": 75.0,
+    "hpl_median": 40.075492829177655,
+    "raim_detections": 1.0,
+    "takeover_m": 4.799416244210919,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 53,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1003,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 799.5183878287014,
+    "mi_rate": 0.8529411764705882,
+    "mi_events": 145.0,
+    "hmi_events": 76.0,
+    "hpl_median": 95.29809559854881,
+    "raim_detections": 0.0,
+    "takeover_m": 4.419795158765396,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 54,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1004,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 799.4933417426136,
+    "mi_rate": 0.9117647058823529,
+    "mi_events": 155.0,
+    "hmi_events": 76.0,
+    "hpl_median": 32.22416017394005,
+    "raim_detections": 0.0,
+    "takeover_m": 5.29400854945978,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 55,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1005,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 803.1129793443309,
+    "mi_rate": 0.9,
+    "mi_events": 153.0,
+    "hmi_events": 76.0,
+    "hpl_median": 43.044421327419855,
+    "raim_detections": 0.0,
+    "takeover_m": 4.397822796921075,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 56,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1006,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 799.8142159905253,
+    "mi_rate": 0.9058823529411765,
+    "mi_events": 154.0,
+    "hmi_events": 76.0,
+    "hpl_median": 38.23003131392568,
+    "raim_detections": 0.0,
+    "takeover_m": 3.42504853405814,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 57,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1007,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 799.088363103091,
+    "mi_rate": 0.888235294117647,
+    "mi_events": 151.0,
+    "hmi_events": 76.0,
+    "hpl_median": 60.17394066175752,
+    "raim_detections": 0.0,
+    "takeover_m": 5.941499701376657,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 58,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1008,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 801.9104431221967,
+    "mi_rate": 0.9117647058823529,
+    "mi_events": 155.0,
+    "hmi_events": 76.0,
+    "hpl_median": 28.02902704452598,
+    "raim_detections": 0.0,
+    "takeover_m": 4.018657683806868,
+    "integrity_availability": 1.0
+   }
+  },
+  {
+   "idx": 59,
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "seed": 1009,
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": 798.4574574318723,
+    "mi_rate": 0.9,
+    "mi_events": 153.0,
+    "hmi_events": 76.0,
+    "hpl_median": 47.96411763853462,
+    "raim_detections": 0.0,
+    "takeover_m": 4.267998171705566,
+    "integrity_availability": 1.0
+   }
+  }
+ ],
+ "aggregate": [
+  {
+   "point": 0,
+   "group": 0,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 0
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 4.56178004542368,
+     "median": 4.40664153414829,
+     "p95": 5.647855797027963,
+     "std": 0.740435674546377,
+     "min": 3.4271677658661956,
+     "max": 5.938884526053748,
+     "ci_lo": 4.032141071300603,
+     "ci_hi": 5.091419019546756
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.81271057203481,
+     "median": 41.55927624641105,
+     "p95": 79.49546455606828,
+     "std": 19.16977270257823,
+     "min": 28.03211229797752,
+     "max": 95.30443726840892,
+     "ci_lo": 33.1004340065029,
+     "ci_hi": 60.52498713756672
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.56178004542368,
+     "median": 4.40664153414829,
+     "p95": 5.647855797027963,
+     "std": 0.7404356745463769,
+     "min": 3.4271677658661956,
+     "max": 5.938884526053748,
+     "ci_lo": 4.032141071300603,
+     "ci_hi": 5.091419019546756
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  },
+  {
+   "point": 1,
+   "group": 1,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 50
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 50.238820555185306,
+     "median": 49.954281835211084,
+     "p95": 52.67658049939938,
+     "std": 1.66977344062525,
+     "min": 47.516700141868306,
+     "max": 53.17938971347969,
+     "ci_lo": 49.04441957949957,
+     "ci_hi": 51.433221530871045
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.3258823529411764,
+     "median": 0.3411764705882353,
+     "p95": 0.5094117647058822,
+     "std": 0.1574059223004023,
+     "min": 0.0,
+     "max": 0.5411764705882353,
+     "ci_lo": 0.21328876233770247,
+     "ci_hi": 0.43847594354465036
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 55.4,
+     "median": 58.0,
+     "p95": 86.6,
+     "std": 26.759006791068394,
+     "min": 0.0,
+     "max": 92.0,
+     "ci_lo": 36.25908959740943,
+     "ci_hi": 74.54091040259057
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.812673006287966,
+     "median": 41.55931871721002,
+     "p95": 79.49526194660325,
+     "std": 19.169665716590796,
+     "min": 28.031919428205374,
+     "max": 95.30404059948506,
+     "ci_lo": 33.10047296860388,
+     "ci_hi": 60.52487304397205
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.561847557329186,
+     "median": 4.40677682991587,
+     "p95": 5.647997787647313,
+     "std": 0.7405249463193696,
+     "min": 3.4270347467011195,
+     "max": 5.939047939877915,
+     "ci_lo": 4.03214472646353,
+     "ci_hi": 5.091550388194841
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  },
+  {
+   "point": 2,
+   "group": 2,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 100
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 100.12550022417784,
+     "median": 99.80494313449498,
+     "p95": 102.62286460324322,
+     "std": 1.688160073980973,
+     "min": 97.4079382710114,
+     "max": 103.14611545366883,
+     "ci_lo": 98.91794715714525,
+     "ci_hi": 101.33305329121043
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.6111764705882352,
+     "median": 0.6411764705882352,
+     "p95": 0.7214705882352941,
+     "std": 0.11555159990863646,
+     "min": 0.32941176470588235,
+     "max": 0.7294117647058823,
+     "ci_lo": 0.5285215784243958,
+     "ci_hi": 0.6938313627520746
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 103.9,
+     "median": 109.0,
+     "p95": 122.64999999999999,
+     "std": 19.643771984468202,
+     "min": 56.0,
+     "max": 124.0,
+     "ci_lo": 89.84866833214731,
+     "ci_hi": 117.9513316678527
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.812635449162244,
+     "median": 41.55936119883249,
+     "p95": 79.4950593627531,
+     "std": 19.169558742476227,
+     "min": 28.03172656395872,
+     "max": 95.30364397252296,
+     "ci_lo": 33.10051193083325,
+     "ci_hi": 60.52475896749124
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.561915091355959,
+     "median": 4.406912146835257,
+     "p95": 5.648139788885795,
+     "std": 0.7406142462430465,
+     "min": 3.426901804314671,
+     "max": 5.939211358903558,
+     "ci_lo": 4.032148383611337,
+     "ci_hi": 5.091681799100582
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  },
+  {
+   "point": 3,
+   "group": 3,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 200
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 200.06860022624548,
+     "median": 199.73013970436136,
+     "p95": 202.59486065898238,
+     "std": 1.6971346700054166,
+     "min": 197.35521336662606,
+     "max": 203.1284603623687,
+     "ci_lo": 198.85462756599912,
+     "ci_hi": 201.28257288649183
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.7747058823529411,
+     "median": 0.7823529411764706,
+     "p95": 0.8332352941176471,
+     "std": 0.06329720331667439,
+     "min": 0.611764705882353,
+     "max": 0.8411764705882353,
+     "ci_lo": 0.7294289366546644,
+     "ci_hi": 0.8199828280512179
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 131.7,
+     "median": 133.0,
+     "p95": 141.65,
+     "std": 10.76052456383465,
+     "min": 104.0,
+     "max": 143.0,
+     "ci_lo": 124.00291923129294,
+     "ci_hi": 139.39708076870704
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.812560360772686,
+     "median": 41.5594461945502,
+     "p95": 79.49465427188646,
+     "std": 19.169344829859835,
+     "min": 28.031340852040465,
+     "max": 95.30285084446405,
+     "ci_lo": 33.10058985567981,
+     "ci_hi": 60.524530865865565
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.562050214303527,
+     "median": 4.4071828477488,
+     "p95": 5.648423811408693,
+     "std": 0.7407929277644806,
+     "min": 3.4266361427185856,
+     "max": 5.939538209676629,
+     "ci_lo": 4.032155694378913,
+     "ci_hi": 5.091944734228141
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  },
+  {
+   "point": 4,
+   "group": 4,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 400
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 400.03764693100163,
+     "median": 399.68894432076297,
+     "p95": 402.58016570405647,
+     "std": 1.7024559379208346,
+     "min": 397.3289132827664,
+     "max": 403.1188961517656,
+     "ci_lo": 398.81986792946645,
+     "ci_hi": 401.2554259325368
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.8582352941176472,
+     "median": 0.8676470588235294,
+     "p95": 0.888235294117647,
+     "std": 0.03620289698485629,
+     "min": 0.7647058823529411,
+     "max": 0.888235294117647,
+     "ci_lo": 0.8323391009998725,
+     "ci_hi": 0.8841314872354219
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 145.9,
+     "median": 147.5,
+     "p95": 151.0,
+     "std": 6.1544924874255695,
+     "min": 130.0,
+     "max": 151.0,
+     "ci_lo": 141.4976471699783,
+     "ci_hi": 150.3023528300217
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 0.0,
+     "median": 0.0,
+     "p95": 0.0,
+     "std": 0.0,
+     "min": 0.0,
+     "max": 0.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.0
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.81241028743133,
+     "median": 41.55961631589027,
+     "p95": 79.49384439742003,
+     "std": 19.168917147043285,
+     "min": 28.030569494497236,
+     "max": 95.30126509169054,
+     "ci_lo": 33.10074570693932,
+     "ci_hi": 60.52407486792333
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.562320697459869,
+     "median": 4.407724526203296,
+     "p95": 5.64899196291876,
+     "std": 0.7411506194967258,
+     "min": 3.4261057280660268,
+     "max": 5.94019196490286,
+     "ci_lo": 4.032170318061392,
+     "ci_hi": 5.092471076858346
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  },
+  {
+   "point": 5,
+   "group": 5,
+   "location": "default",
+   "estimator": "ekf",
+   "params": {
+    "attack.offset_e": 800
+   },
+   "metrics": {
+    "final_err": {
+     "n": 10,
+     "mean": 800.0211275602962,
+     "median": 799.6663019096134,
+     "p95": 802.5718380443706,
+     "std": 1.7050296112591803,
+     "min": 797.3150474732172,
+     "max": 803.1129793443309,
+     "ci_lo": 798.8015075916743,
+     "ci_hi": 801.2407475289182
+    },
+    "mi_rate": {
+     "n": 10,
+     "mean": 0.8970588235294118,
+     "median": 0.9,
+     "p95": 0.9117647058823529,
+     "std": 0.017149858514250892,
+     "min": 0.8529411764705882,
+     "max": 0.9117647058823529,
+     "ci_lo": 0.8847914061397668,
+     "ci_hi": 0.9093262409190568
+    },
+    "mi_events": {
+     "n": 10,
+     "mean": 152.5,
+     "median": 153.0,
+     "p95": 155.0,
+     "std": 2.9154759474226504,
+     "min": 145.0,
+     "max": 155.0,
+     "ci_lo": 150.41453904376036,
+     "ci_hi": 154.58546095623964
+    },
+    "hmi_events": {
+     "n": 10,
+     "mean": 75.9,
+     "median": 76.0,
+     "p95": 76.0,
+     "std": 0.31622776601683794,
+     "min": 75.0,
+     "max": 76.0,
+     "ci_lo": 75.6738,
+     "ci_hi": 76.12620000000001
+    },
+    "hpl_median": {
+     "n": 10,
+     "mean": 46.81211055441803,
+     "median": 41.55995707829875,
+     "p95": 79.49222587699269,
+     "std": 19.168062350786105,
+     "min": 28.02902704452598,
+     "max": 95.29809559854881,
+     "ci_lo": 33.10105741584906,
+     "ci_hi": 60.52316369298699
+    },
+    "raim_detections": {
+     "n": 10,
+     "mean": 0.1,
+     "median": 0.0,
+     "p95": 0.5499999999999989,
+     "std": 0.31622776601683794,
+     "min": 0.0,
+     "max": 1.0,
+     "ci_lo": 0.0,
+     "ci_hi": 0.3262
+    },
+    "takeover_m": {
+     "n": 10,
+     "mean": 4.562862646363704,
+     "median": 4.408808977843235,
+     "p95": 5.650128683014062,
+     "std": 0.7418673509697831,
+     "min": 3.42504853405814,
+     "max": 5.941499701376657,
+     "ci_lo": 4.032199583777259,
+     "ci_hi": 5.093525708950149
+    },
+    "integrity_availability": {
+     "n": 10,
+     "mean": 1.0,
+     "median": 1.0,
+     "p95": 1.0,
+     "std": 0.0,
+     "min": 1.0,
+     "max": 1.0,
+     "ci_lo": 1.0,
+     "ci_hi": 1.0
+    }
+   }
+  }
+ ],
+ "meta": {
+  "created": "2026-11-20T10:15:59",
+  "elapsed_s": 44.54599595069885,
+  "workers": 6,
+  "runs_done": 60,
+  "runs_total": 60,
+  "interrupted": false,
+  "cancelled": false,
+  "git": {
+   "commit": "cd2fabfdb10c94a741cb25a8cd7318653bac0996",
+   "dirty": true
+  },
+  "numpy": "2.5.5",
+  "python": "3.14.5",
+  "spec_version": 1,
+  "nondeterministic_metrics": []
+ }
+}

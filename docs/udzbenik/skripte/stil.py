@@ -71,3 +71,33 @@ def spremi(fig, ime):
     plt.close(fig)
     print("  slika:", os.path.relpath(put, UDZBENIK))
     return put
+
+
+# --- rezultati sandbox studija (docs/udzbenik/studije/rezultati/<ime>/results.json) ---------------
+def ucitaj_studiju(ime):
+    import json
+    p = os.path.join(UDZBENIK, "studije", "rezultati", ime, "results.json")
+    if not os.path.isfile(p):
+        print(f"  (studija {ime} još nije odvrćena: python docs/udzbenik/skripte/studije.py {ime})")
+        return None
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def agregat(res, metrike, param=None, filtar=None, estimator=None):
+    """(x, mean, 95 % CI) po točki sweepa. `filtar(params)` bira podskup (npr. jedan skup sustava)."""
+    out = []
+    for red in res["aggregate"]:
+        if estimator and red.get("estimator") != estimator:
+            continue
+        if filtar and not filtar(red["params"]):
+            continue
+        st = {"x": red["params"].get(param) if param else red.get("location"),
+              "params": red["params"], "location": red.get("location"), "estimator": red.get("estimator")}
+        for k in metrike:
+            a = red["metrics"][k]
+            st[k] = {"mean": a["mean"], "median": a["median"], "ci": [a["ci_lo"], a["ci_hi"]], "n": a["n"]}
+        out.append(st)
+    if param:
+        out.sort(key=lambda s: (s["x"] is None, s["x"]))
+    return out
