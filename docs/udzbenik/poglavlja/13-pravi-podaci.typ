@@ -72,6 +72,16 @@ Dvije stvari zaslužuju pažnju.
 
 *EKF i LS daju isto.* Rješenja se razlikuju najviše #br(B.ekf_ls_max_razlika_mm, d: 0) mm. Uz razmak epoha od 30 s i procesni šum podešen za žive simulacije od 1 s, predikcija filtra nakon 30 s praktički ne nosi informaciju, pa ažuriranje ovisi samo o mjerenjima (pogl. @pog:kalman). S tisuću puta manjim procesnim šumom vertikalni medijan pada na #br(B.mali_q.v_med, d: 2) m. Filtar mora biti podešen za podatke koje obrađuje.
 
+== Kamo dalje: PPP i SBAS
+
+Dvije tehnike vode od metara iz ovog poglavlja prema decimetrima i centimetrima bez vlastite bazne stanice.
+
+*PPP* (_precise point positioning_) zamjenjuje emitirane efemeride preciznim orbitama i satovima, kakva je datoteka SP3 iz @fig:sp3[slike]. Koristi dvofrekvencijski kod i fazu u iono-free kombinaciji, a uz položaj procjenjuje i zenitno kašnjenje troposfere i float neodređenosti faze. Jedan prijemnik tako postiže točnost od decimetra do nekoliko centimetara, ali tek nakon konvergencije koja obično traje desetke minuta. Precizne proizvode objavljuje služba IGS, a neki sustavi ih emitiraju i u stvarnom vremenu (npr. Galileo HAS).
+
+*SBAS* (_satellite-based augmentation system_; u Europi EGNOS) preko geostacionarnih satelita na frekvenciji L1 emitira ispravke orbita, satova i mrežnu kartu ionosfere, uz podatke o integritetu iz kojih prijemnik računa zaštitne granice sa zajamčenim rizikom. To omogućuje zrakoplovne prilaze s vertikalnim vođenjem (LPV), uz strože granice uzbune nego za RAIM (pogl. @pog:raim): oko 40 m horizontalno i 50 m vertikalno.
+
+Simulator ne implementira ni PPP ni SBAS. Oba su dobri teme za istraživačke projekte (pogl. @pog:projekti), jer su sastavni dijelovi (precizne orbite, iono-free kombinacija, Kalmanov filtar, zaštitne granice) već u knjizi.
+
 #kljucno[
   - Algoritmi iz ove knjige rade na stvarnim mjerenjima bez izmjene. Mijenja se samo izvor pseudoudaljenosti.
   - Emitirane efemeride griješe 1–4 m u položaju satelita, a precizne IGS orbite su točne na centimetre.

@@ -16,6 +16,7 @@ import time
 
 OVDJE = os.path.dirname(os.path.abspath(__file__))
 IZLAZ = os.path.join(OVDJE, "Satelitska_navigacija_u_simulatoru.pdf")
+IZLAZ_STUDENTI = os.path.join(OVDJE, "Satelitska_navigacija_u_simulatoru_bez_rjesenja.pdf")
 
 
 def slike(filtar=None):
@@ -62,15 +63,16 @@ def popravi_izvore():
 def pdf():
     popravi_izvore()
     import typst
-    t = time.time()
-    try:
-        typst.compile(os.path.join(OVDJE, "udzbenik.typ"), output=IZLAZ,
-                      root=os.path.dirname(os.path.dirname(OVDJE)),   # korijen repozitorija (pojmovnik iz web/content)
-                      font_paths=[os.path.join(OVDJE, "fontovi")])
-    except typst.TypstError as e:
-        print(getattr(e, "diagnostic", e))
-        raise SystemExit(1)
-    print(f"PDF: {IZLAZ} ({os.path.getsize(IZLAZ) / 1e6:.1f} MB, {time.time() - t:.1f} s)")
+    korijen = os.path.dirname(os.path.dirname(OVDJE))   # korijen repozitorija (pojmovnik iz web/content)
+    for izlaz, ulazi in ((IZLAZ, {}), (IZLAZ_STUDENTI, {"rjesenja": "ne"})):
+        t = time.time()
+        try:
+            typst.compile(os.path.join(OVDJE, "udzbenik.typ"), output=izlaz, root=korijen,
+                          font_paths=[os.path.join(OVDJE, "fontovi")], sys_inputs=ulazi)
+        except typst.TypstError as e:
+            print(getattr(e, "diagnostic", e))
+            raise SystemExit(1)
+        print(f"PDF: {izlaz} ({os.path.getsize(izlaz) / 1e6:.1f} MB, {time.time() - t:.1f} s)")
 
 
 def main():

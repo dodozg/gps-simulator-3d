@@ -124,7 +124,7 @@ Dva su zaključka važna za ostatak knjige. Prvo, model šuma kojim prijemnik ot
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Proračun pogreške jednog satelita", rjesenje: [
-  Za svaki satelit pogled iznutra rastavlja pseudoudaljenost na sat prijemnika (ogroman i isti za sve satelite), Sagnac (do ±27 m, ovisno o azimutu), ISB (za GPS nula), eventualni kvar i troposferski ostatak (centimetri), a ostatak čine multipath i šum. Kod satelita nisko nad horizontom ostatak je redovito nekoliko puta veći nego kod satelita u zenitu, u skladu s @tab:budget. Pogreška efemerida duž linije pogleda je reda metra i mijenja se sporo, iz sekunde u sekundu gotovo jednako.
+  Za svaki satelit pogled iznutra rastavlja pseudoudaljenost na sat prijemnika (ogroman i isti za sve satelite), Sagnac (do ±27 m, ovisno o azimutu), ISB (za GPS nula), eventualni kvar i troposferski ostatak (centimetri), a ostatak čine multipath i šum. Kod satelita nisko nad horizontom ostatak je redovito nekoliko puta veći nego kod satelita u zenitu, u skladu s @tab:budget[tablicom]. Pogreška efemerida duž linije pogleda je reda metra i mijenja se sporo, iz sekunde u sekundu gotovo jednako.
 ])[
   Pauziraj simulaciju, otvori #ui("Pogled iznutra (matematika epohe)…"), karticu #ui("1. Mjerenja"), i klikni redak satelita s najnižom elevacijom. U odjeljku #ui("Proračun greške mjerenja (zna samo simulator)") pročitaj sve članove. Ponovi za satelit s najvišom elevacijom. Koji se članovi razlikuju i zašto? Koliko je velika pogreška efemerida duž linije pogleda? Klikni #ui("Korak +1 s") i usporedi.
 ]

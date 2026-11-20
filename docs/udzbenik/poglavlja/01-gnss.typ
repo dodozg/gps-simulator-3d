@@ -19,6 +19,11 @@ Satelit emitira signal u koji je utisnut trenutak odašiljanja prema njegovom at
 
 Upravo tu je glavni problem. Signal GPS-satelita u zenitu putuje #br(B.tau_zenit_ms) ms, a satelita blizu horizonta (elevacija 5°) #br(B.tau_5_ms) ms. Pogreška sata od jedne nanosekunde je pogreška udaljenosti od 30 cm, a od jedne mikrosekunde 300 m. Sateliti nose atomske satove, a prijemnik u telefonu jeftin kvarcni oscilator. Zato se pogreška sata prijemnika ne pokušava izmjeriti, nego se *procjenjuje kao četvrta nepoznanica*, zajedno s tri koordinate. Mjerena veličina stoga nije prava udaljenost, nego *pseudoudaljenost*: udaljenost uvećana za (nepoznatu) pogrešku sata prijemnika. Treba nam barem četiri satelita (pogl. @pog:ls).
 
+#figure(
+  image("../slike/skica-trokut.svg", width: 62%),
+  caption: [Trokut središte Zemlje (O), prijemnik (P) i satelit (S). Iz polumjera Zemlje $R$, polumjera orbite $r_s$ i elevacije el kosinusov poučak daje kosu udaljenost $d$. Što je satelit niže, to je $d$ dulji (vježba 1.3).],
+) <fig:trokut>
+
 #kljucno[
   - GNSS je *pasivan* sustav: korisnik samo prima i zato broj korisnika nije ograničen.
   - Položaj se određuje iz *vremena*. Navigacija je zapravo problem preciznog mjerenja vremena.
@@ -98,6 +103,7 @@ Simulator mjeri sve četiri, a jednu stvar koju pravi prijemnik nikad ne može: 
 Simulator je *pravi navigacijski procesor na simuliranim mjerenjima*. Algoritmi od pseudoudaljenosti naviše (najmanji kvadrati, Kalmanov filtar, RAIM, RTK) su isti kakvi bi radili na stvarnim podacima, što pokazuje poglavlje 13, u kojem isti kod obrađuje prave RINEX datoteke. Pojednostavljenja su na strani stvaranja signala:
 
 - signal se ne stvara kao niz uzoraka, nego se modelira na razini korelatora (C/N0, šum i pristranost petlje koda), pa nema praćenja faze nosioca u kodnom lancu ni navigacijskih bitova;
+- navigacijski filtar ne koristi Dopplerova mjerenja, nego brzinu zaključuje iz promjene položaja (pogl. @pog:kalman);
 - svi sustavi koriste kod nalik GPS-ovom C/A kodu, iako stvarni Galileo, GLONASS i BeiDou imaju drukčije modulacije;
 - idealizirane orbite su Keplerove elipse s precesijom zbog spljoštenosti Zemlje (J2) na sfernoj Zemlji polumjera 6371 km. Prave orbite dolaze iz SGP4 propagacije javnih elemenata, točnih na razini kilometra, ali konzistentnih unutar simulacije;
 - ionosfera je Klobucharov model, a ne mjerena karta elektronskog sadržaja, a troposfera je jednostavan model s mapiranjem $1 \/ sin "el"$.
@@ -124,7 +130,7 @@ Ta pojednostavljenja određuju gdje su granice simulatora. Ne utječu na ono št
 ])[
   Za GPS satelit na visini 20 200 km iznad sferne Zemlje polumjera 6371 km izračunaj:
   + udaljenost i vrijeme leta signala kad je satelit u zenitu;
-  + udaljenost i vrijeme leta kad je satelit na elevaciji 5° (nacrtaj trokut središte Zemlje–prijemnik–satelit);
+  + udaljenost i vrijeme leta kad je satelit na elevaciji 5° (trokut je na @fig:trokut[slici]);
   + koliko točan mora biti sat da pogreška udaljenosti bude manja od 3 m, odnosno od 30 cm. Koliko bi kvarcni sat s relativnom pogreškom frekvencije $10^(-6)$ odlutao u jednoj sekundi?
 ]
 
@@ -132,7 +138,7 @@ Ta pojednostavljenja određuju gdje su granice simulatora. Ne utječu na ono št
   S pravim orbitama u tablici je s GPS-om obično 7–12 satelita, više nego u idealiziranom modelu, jer stvarni GPS ima #B.snimka_po_sustavu.GPS satelita. Oznake satelita postaju stvarne (npr. G22, E101, R720, C04). Na globusu se vidi da prave orbite nisu savršeno pravilno raspoređene, a BeiDou ima i satelite koji stoje iznad ekvatora (geostacionarni).
 ])[
   U lijevom panelu u odjeljku #ui("Orbite") promijeni #ui("Izvor") na #ui("Prave (CelesTrak)") i klikni #ui("Sada").
-  + Koliko se sada vidi GPS satelita? Usporedi s @fig:vidljivi.
+  + Koliko se sada vidi GPS satelita? Usporedi sa @fig:vidljivi[slikom].
   + Kako su satelitima sada označeni identifikatori?
   + Uključi BeiDou i promotri globus. Vidiš li satelite koji se ne pomiču u odnosu na Zemlju? Gdje su?
 ]

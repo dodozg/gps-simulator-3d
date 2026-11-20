@@ -102,7 +102,7 @@ Ometač od 10 dB iznad šuma tako smanjuje C/N0 svih satelita za #br(B.jam_10db)
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Gold kod u Pythonu", rjesenje: [
-  Iz korijena repozitorija: #kod("import signal_processing as sp; a = sp.gold_code(5)"). Kružna korelacija preko FFT-a (#kod("np.fft.ifft(np.fft.fft(a) * np.conj(np.fft.fft(b))).real")) daje za $a$ sa samim sobom 1023 na pomaku 0, a za ostale pomake samo −65, −1 i 63. Za $a$ i drugi kod rezultat poprima isključivo vrijednosti iz istog skupa. Za slučajne nizove dobiju se vrijednosti do oko ±100, ovisno o sjemenu (u primjeru s @fig:gold #B.slucajni_max). Gold kodovi garantiraju gornju granicu, a slučajni nizovi ne.
+  Iz korijena repozitorija: #kod("import signal_processing as sp; a = sp.gold_code(5)"). Kružna korelacija preko FFT-a (#kod("np.fft.ifft(np.fft.fft(a) * np.conj(np.fft.fft(b))).real")) daje za $a$ sa samim sobom 1023 na pomaku 0, a za ostale pomake samo −65, −1 i 63. Za $a$ i drugi kod rezultat poprima isključivo vrijednosti iz istog skupa. Za slučajne nizove dobiju se vrijednosti do oko ±100, ovisno o sjemenu (u primjeru sa @fig:gold[slike] #B.slucajni_max). Gold kodovi garantiraju gornju granicu, a slučajni nizovi ne.
 ])[
   Pomoću funkcije #kod("signal_processing.gold_code(shift)") generiraj dva C/A koda i izračunaj njihovu kružnu autokorelaciju i međukorelaciju za sve pomake. Koje vrijednosti poprimaju? Ponovi s dva slučajna ±1 niza duljine 1023 i usporedi najveću međukorelaciju.
 ]
@@ -114,7 +114,7 @@ Ometač od 10 dB iznad šuma tako smanjuje C/N0 svih satelita za #br(B.jam_10db)
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Šum koda", rjesenje: [
-  Uz C/N0 = 49 dB-Hz $= 7","94 dot 10^4$ Hz: $sigma_tau^2 = 2 dot 0","5 \/ (2 dot 7","94 dot 10^4) dot (1 + 2 \/ (1","5 dot 0","02 dot 7","94 dot 10^4)) = 6","30 dot 10^(-6) dot 1","0008$, pa je $sigma_tau = 2","51 dot 10^(-3)$ čipa $approx$ #br(B.sigma_l1_49, d: 2) m. Pad na 39 dB-Hz (10 dB) povećava $sigma$ približno $sqrt(10) approx 3","2$ puta, na #br(B.sigma_l1_39, d: 2) m. Drugi član u zagradi (gubitak kvadriranja) postaje važan tek blizu praga, zato je krivulja na @fig:sumkoda u log-mjerilu gotovo pravac.
+  Uz C/N0 = 49 dB-Hz $= 7","94 dot 10^4$ Hz: $sigma_tau^2 = 2 dot 0","5 \/ (2 dot 7","94 dot 10^4) dot (1 + 2 \/ (1","5 dot 0","02 dot 7","94 dot 10^4)) = 6","30 dot 10^(-6) dot 1","0008$, pa je $sigma_tau = 2","51 dot 10^(-3)$ čipa $approx$ #br(B.sigma_l1_49, d: 2) m. Pad na 39 dB-Hz (10 dB) povećava $sigma$ približno $sqrt(10) approx 3","2$ puta, na #br(B.sigma_l1_39, d: 2) m. Drugi član u zagradi (gubitak kvadriranja) postaje važan tek blizu praga, zato je krivulja na @fig:sumkoda[slici] u log-mjerilu gotovo pravac.
 ])[
   Prema @eq:dllsigma izračunaj $sigma$ šuma koda u metrima za C/N0 = 49 dB-Hz i 39 dB-Hz ($B_L$ = 2 Hz, $d$ = 0,5, $T$ = 20 ms). Koliko puta naraste $sigma$ kad C/N0 padne za 10 dB? Zašto?
 ]
@@ -122,7 +122,7 @@ Ometač od 10 dB iznad šuma tako smanjuje C/N0 svih satelita za #br(B.jam_10db)
 #vjezba(vrsta: "vodjena", naslov: "C/N0 i elevacija uživo", rjesenje: [
   C/N0 u tablici raste s elevacijom, od oko 39 dB-Hz kod satelita blizu 5° do oko 49 dB-Hz kod satelita blizu zenita. Kad uključiš Galileo, njegovi sateliti na sličnoj elevaciji imaju oko 1 dB niži C/N0 (dalje su), a GLONASS-ovi malo viši. Isti satelit kroz vrijeme mijenja C/N0 kako mu se mijenja elevacija. Male nagle promjene (do par dB) potječu od međusobnog ometanja kad se Doppleri dvaju satelita poklope.
 ])[
-  U tablici #ui("Sateliti u vidokrugu") usporedi stupce #ui("Elev") i #ui("C/N0") za sve satelite. Nacrtaj na papiru C/N0 u ovisnosti o elevaciji i usporedi s @fig:cn0. Uključi Galileo i GLONASS. Razlikuju li se njihovi sateliti na sličnoj elevaciji?
+  U tablici #ui("Sateliti u vidokrugu") usporedi stupce #ui("Elev") i #ui("C/N0") za sve satelite. Nacrtaj na papiru C/N0 u ovisnosti o elevaciji i usporedi sa @fig:cn0[slikom]. Uključi Galileo i GLONASS. Razlikuju li se njihovi sateliti na sličnoj elevaciji?
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Near-far: jedan preglasan satelit", rjesenje: [

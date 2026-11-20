@@ -59,11 +59,11 @@ Filtar ne zna stvarnu pogrešku, ali može provjeriti jesu li inovacije onolike 
 
 $ "NIS" = bold(y)^T bold(S)^(-1) bold(y) $ <eq:nis>
 
-ima χ² razdiobu s brojem stupnjeva slobode jednakim broju mjerenja, pa je $"NIS"\/n approx 1$. Trajno veći od 1 znači da filtar podcjenjuje šum (preoptimističan je i pogrešno mu se vjeruje). Trajno manji znači da ga precjenjuje (prekonzervativan je i sporije uči). Simulator NIS prikazuje u telemetriji i u donjem doku. U statičnom testu sa @fig:konv srednji NIS/n iznosio je #br(B.konv_nis_sred, d: 2). Malo ispod 1, jer je procesni šum namjerno širok kako bi filtar mogao pratiti i let.
+ima χ² razdiobu s brojem stupnjeva slobode jednakim broju mjerenja, pa je $"NIS"\/n approx 1$. Trajno veći od 1 znači da filtar podcjenjuje šum (preoptimističan je i pogrešno mu se vjeruje). Trajno manji znači da ga precjenjuje (prekonzervativan je i sporije uči). Simulator NIS prikazuje u telemetriji i u donjem doku. U statičnom testu sa @fig:konv[slike] srednji NIS/n iznosio je #br(B.konv_nis_sred, d: 2). Malo ispod 1, jer je procesni šum namjerno širok kako bi filtar mogao pratiti i let.
 
 == Cijena kompromisa: procesni šum
 
-Izbor $bold(Q)$ je kompromis. Mali $bold(Q)$ znači da filtar jako vjeruje modelu stalne brzine i snažno usrednjava šum mjerenja, ali ne prati nagle promjene gibanja. Veliki $bold(Q)$ prati svaki manevar, ali propušta više šuma. @fig:q pokazuje taj kompromis na simulatoru. Za statičan prijemnik medijan 3D pogreške raste s #br(qs("staticki", 0.01).med) m pri $bold(Q)$ sto puta manjem od zadanog na #br(qs("staticki", 1.0).med) m pri zadanom. Za prijemnik koji leti po krugu brzinom 60 m/s isti mali $bold(Q)$ daje #br(qs("let", 0.01).med, d: 0) m, jer filtar „” da se prijemnik okreće. Zadana vrijednost u simulatoru daje u letu #br(qs("let", 1.0).med) m.
+Izbor $bold(Q)$ je kompromis. Mali $bold(Q)$ znači da filtar jako vjeruje modelu stalne brzine i snažno usrednjava šum mjerenja, ali ne prati nagle promjene gibanja. Veliki $bold(Q)$ prati svaki manevar, ali propušta više šuma. @fig:q pokazuje taj kompromis na simulatoru. Za statičan prijemnik medijan 3D pogreške raste s #br(qs("staticki", 0.01).med) m pri $bold(Q)$ sto puta manjem od zadanog na #br(qs("staticki", 1.0).med) m pri zadanom. Za prijemnik koji leti po krugu brzinom 60 m/s isti mali $bold(Q)$ daje #br(qs("let", 0.01).med, d: 0) m, jer filtar „ne vjeruje” da se prijemnik okreće. Zadana vrijednost u simulatoru daje u letu #br(qs("let", 1.0).med) m.
 
 #figure(
   image("../slike/08-q.svg", width: 90%),
@@ -71,6 +71,20 @@ Izbor $bold(Q)$ je kompromis. Mali $bold(Q)$ znači da filtar jako vjeruje model
 ) <fig:q>
 
 Pravi prijemnici zato često prilagođavaju $bold(Q)$ prema načinu rada (pješak, automobil, zrakoplov) ili ga procjenjuju adaptivno iz inovacija.
+
+== Brzina: iz položaja ili iz Dopplera
+
+Filtar u simulatoru brzinu ne mjeri. Zaključuje je samo iz toga kako se položaj mijenja kroz epohe, prema modelu stalne brzine @eq:F. Zato je procjena šumovita: u statičnom testu sa @fig:konv[slike] prijemnik miruje, a procijenjena brzina ima medijan #br(B.brzina_static_med) m/s (p95 #br(B.brzina_static_p95) m/s). Isto se vidi u telemetriji kao #ui("Brzina (procjena)").
+
+Pravi prijemnici brzinu mjere izravno. Petlja nosioca (pogl. @pog:signal) daje Dopplerov pomak $f_D$, a time i brzinu promjene pseudoudaljenosti $dot(rho)_i = -lambda f_D$:
+
+$ dot(rho)_i = bold(e)_i^T (bold(v)^i - bold(v)) + c (dot(delta t) - dot(delta t)^i) , $ <eq:doppler>
+
+gdje je $bold(e)_i$ jedinični vektor od prijemnika prema satelitu, $bold(v)^i$ brzina satelita (iz efemerida), $bold(v)$ brzina prijemnika, a $dot(delta t)$ drift njegovog sata. Jednadžba je *linearna* u nepoznanicama $(bold(v), c dot(delta t))$ i ima istu matricu geometrije kao pseudoudaljenost: retci su $(-bold(e)_i^T, 1)$. Brzina se zato rješava istim najmanjim kvadratima, a DOP vrijedi i za nju. Doppler iz petlje nosioca mnogo je manje šumovit od razlike kodnih položaja, pa je brzina iz Dopplera tipično točna na nekoliko centimetara u sekundi. U Kalmanovom filtru Dopplerova mjerenja dodaju se kao još jedan skup redaka matrice $bold(H)$, s jedinicom u stupcu drifta sata. Simulator ih ne koristi. To je jedno od pojednostavljenja navedenih u poglavlju @pog:gnss.
+
+== GNSS rijetko radi sam
+
+U automobilu, dronu ili mobitelu GNSS je gotovo uvijek povezan s inercijalnim senzorima (IMU: akcelerometri i žiroskopi). Inercijalna navigacija daje položaj i brzinu stotinama puta u sekundi i ne ovisi o signalu, ali joj se pogreška s vremenom brzo gomila. GNSS je spor i šumovit, ali ne odluta. Kalmanov filtar ih spaja: vektor stanja proširi se orijentacijom i pogreškama senzora, model gibanja postaje inercijalna mehanizacija, a GNSS mjerenja ispravljaju njezino lutanje. Kod *slabog* povezivanja filtar koristi GNSS položaje, a kod *čvrstog* izravno pseudoudaljenosti i Dopplere, pa radi i s manje od četiri satelita. Kako brzo nesigurnost raste bez satelita, računa vježba 8.2.
 
 == EKF ili snapshot?
 
@@ -92,7 +106,7 @@ Filtar dobiva najviše po visini, jer usrednjavanje kroz vrijeme najviše pomaž
 
 #kljucno[
   - Kalmanov filtar je težinski kompromis između predikcije modelom i novog mjerenja. Pojačanje $bold(K)$ određuje taj omjer.
-  - $bold(Q)$ i $bold(R)$ su „” filtra. Pogrešno podešeni daju ili šumovito ili tromo rješenje.
+  - $bold(Q)$ i $bold(R)$ su „gumbi” filtra. Pogrešno podešeni daju ili šumovito ili tromo rješenje.
   - NIS je unutarnja kontrola: prijemnik bez poznavanja istine može provjeriti je li mu model iskren.
 ]
 
@@ -115,13 +129,13 @@ Filtar dobiva najviše po visini, jer usrednjavanje kroz vrijeme najviše pomaž
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Filtar u letu", rjesenje: [
-  Uključivanjem #ui("Kinematički (let)") prijemnik se počne gibati. Pogreška u prvim trenucima naraste, jer filtar mora procijeniti novu brzinu. Zatim se vrati na nekoliko metara, ali obično ostaje malo veća nego za statičan prijemnik (usporedi @fig:q). NIS u doku pri naglim promjenama kratko skoči iznad 1: inovacije su veće nego što filtar očekuje. Pri većoj brzini simulacije efekt je izraženiji, jer je korak između epoha dulji.
+  Uključivanjem #ui("Kinematički (let)") prijemnik se počne gibati. Pogreška u prvim trenucima naraste, jer filtar mora procijeniti novu brzinu. Zatim se vrati na nekoliko metara, ali obično ostaje malo veća nego za statičan prijemnik (usporedi @fig:q[sliku]). NIS u doku pri naglim promjenama kratko skoči iznad 1: inovacije su veće nego što filtar očekuje. Pri većoj brzini simulacije efekt je izraženiji, jer je korak između epoha dulji.
 ])[
   Uključi #ui("Kinematički (let)") i prati #ui("Greška"), #ui("Brzina (procjena)") i NIS u donjem doku (#ui("Živi grafovi")). Što se događa neposredno nakon uključivanja? Ponovi uz veću brzinu simulacije. Objasni opažanja pomoću uloge procesnog šuma.
 ]
 
 #vjezba(vrsta: "istrazivacka", naslov: "EKF protiv WLS-a", rjesenje: [
-  Studija daje rezultate iz @tab:ekfwls: EKF je bolji u #B.ekfwls_ekf_bolji od #B.ekfwls_parova uparenih runova. NIS/dof EKF-a je oko 0,75–0,8, a WLS-a (χ²/redundancija) oko 1. Filtar je dakle malo prekonzervativan (široki $bold(Q)$), a snapshot gotovo idealno konzistentan. Za varijantu s kinematikom ova knjiga ne daje broj, jer ga nije izmjerila. Očekivanje je da se prednost filtra smanji, jer se model stalne brzine pri gibanju manje isplati, a s njim i usrednjavanje kroz vrijeme. Svoj rezultat usporedi s @fig:q.
+  Studija daje rezultate iz @tab:ekfwls[tablice]: EKF je bolji u #B.ekfwls_ekf_bolji od #B.ekfwls_parova uparenih runova. NIS/dof EKF-a je oko 0,75–0,8, a WLS-a (χ²/redundancija) oko 1. Filtar je dakle malo prekonzervativan (široki $bold(Q)$), a snapshot gotovo idealno konzistentan. Za varijantu s kinematikom ova knjiga ne daje broj, jer ga nije izmjerila. Očekivanje je da se prednost filtra smanji, jer se model stalne brzine pri gibanju manje isplati, a s njim i usrednjavanje kroz vrijeme. Svoj rezultat usporedi sa @fig:q[slikom].
 ])[
   Pokreni #kod("python sandbox.py run sandbox/examples/ekf_vs_wls.json --workers 4"). Usporedi horizontalnu i vertikalnu pogrešku p95 te NIS po lokacijama. Zatim dodaj kinematiku (#kod("\"kinematic\": {\"speed_mps\": 50}") unutar #kod("world")) i ponovi. Kako se mijenja prednost filtra i zašto?
 ]

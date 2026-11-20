@@ -15,7 +15,7 @@ Knjiga je namijenjena studentima tehničkih fakulteta na prvom kolegiju satelits
 
 == Struktura
 
-Poglavlja 1–5 grade model mjerenja: što je GNSS, u kojim koordinatama i vremenskim skalama radi, kako se gibaju sateliti, kako izgleda signal i koje se pogreške uvlače u pseudoudaljenost. Poglavlja 6–8 rješavaju položaj: najmanji kvadrati, geometrija i DOP, Kalmanov filtar. Poglavlja 9–12 proširuju sliku: više sustava, integritet, fazna mjerenja s centimetarskom točnošću te namjerno ometanje i lažiranje. Poglavlje 13 prelazi s simulacije na prave podatke iz RINEX datoteka. Poglavlje 14 daje istraživačke projekte za samostalan rad. Rješenja svih vježbi su u dodatku.
+Poglavlja 1–5 grade model mjerenja: što je GNSS, u kojim koordinatama i vremenskim skalama radi, kako se gibaju sateliti, kako izgleda signal i koje se pogreške uvlače u pseudoudaljenost. Poglavlja 6–8 rješavaju položaj: najmanji kvadrati, geometrija i DOP, Kalmanov filtar. Poglavlja 9–12 proširuju sliku: više sustava, integritet, fazna mjerenja s centimetarskom točnošću te namjerno ometanje i lažiranje. Poglavlje 13 prelazi sa simulacije na prave podatke iz RINEX datoteka. Poglavlje 14 daje istraživačke projekte za samostalan rad. #if s-rjesenjima [Rješenja svih vježbi su u Prilogu A.] else [Ovo je izdanje bez rješenja vježbi, namijenjeno zadavanju zadaća. Izdanje s rješenjima gradi se istim alatom.]
 
 == Tri vrste vježbi
 
@@ -54,5 +54,5 @@ Sredinom zaslona je 3D globus. *Dvoklik* na globus postavlja prijemnik, čija se
 - *Donji dok*, #ui("Živi grafovi"): pogreška, GDOP i NIS kroz vrijeme te #ui("Skyplot (uživo)").
 
 #napomena(naslov: "Sigurna početna točka")[
-  Ako se nešto „” (ugašeni sateliti, aktivan napad, čudna orbita), #ui("Poništi") vraća simulaciju u početno stanje. Lokacija prijemnika se pamti i nakon ponovnog pokretanja servera.
+  Ako se nešto „pokvari” (ugašeni sateliti, aktivan napad, čudna orbita), #ui("Poništi") vraća simulaciju u početno stanje. Lokacija prijemnika se pamti i nakon ponovnog pokretanja servera.
 ]
