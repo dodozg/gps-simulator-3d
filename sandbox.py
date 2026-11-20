@@ -72,7 +72,7 @@ import raim
 import receiver
 from measurement import MeasurementModel
 from physics_engine import calculate_sagnac_correction
-from receiver import Receiver, SIGMA_ZENITH, MIN_SIN_ELEV
+from receiver import Receiver, SIGMA_ZENITH, MIN_SIN_ELEV, meas_sigma
 from satellite import WalkerDeltaConstellation, MultiGNSSConstellation, GNSS_SYSTEMS
 from utils import lla_to_ecef, ecef_to_lla
 
@@ -247,7 +247,8 @@ class WLSEstimator:
             G[:, :3] = diff / rng_[:, None]
             if np.linalg.norm(pos) > 6.0e6:       # elevacije imaju smisla tek blizu Zemlje
                 sin_el = np.array([max(_sin_elev(sp, pos), MIN_SIN_ELEV) for sp in sats])
-                sigma = SIGMA_ZENITH / sin_el
+                # ista težina kao EKF prijemnika: C/N0 signalnog modela ako postoji
+                sigma = np.array([meas_sigma(sg, se) for sg, se in zip(signals, sin_el)])
             w = 1.0 / sigma ** 2
             GW = G.T * w
             try:
@@ -1080,6 +1081,9 @@ def simulate(spec, params, location, seed):
             gt = traj(t)
             meas.set_position(gt)
             est = driver.estimate() if hasattr(driver, "estimate") else last_pos[driver_name]
+            # ometač djeluje U SIGNALU (signal_model): J/N za ovu epohu ide u mjerni model
+            meas.jammer_jn_db = (float(attack.jammer_jn_db(t))
+                                 if attack is not None and hasattr(attack, "jammer_jn_db") else 0.0)
             signals = meas.build(_visible_view(con, gt, world), ts, est_pos=est,
                                  ref_pos=est if est is not None else gt)
             active = False
