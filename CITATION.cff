@@ -6,7 +6,7 @@ authors:
   - family-names: "Zoričić"
     given-names: "Domagoj"
   - name: "Claude (Anthropic)"
-version: "1.0.1"
+version: "1.0.2"
 date-released: "2026-11-20"
 doi: "10.5281/zenodo.24406780"
 url: "https://github.com/dodozg/gps-simulator-3d"

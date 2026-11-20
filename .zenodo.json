@@ -1,0 +1,25 @@
+{
+  "title": "GPS Simulator 3D i udžbenik „Satelitska navigacija u simulatoru”",
+  "upload_type": "software",
+  "license": "MIT",
+  "description": "<p>Simulator satelitske navigacije u Pythonu: Walker-Delta konstelacija, eliptične orbite (Kepler + J2), fizička obrada signala, dual-frequency iono-free kombinacija te navigacijski procesor s Extended Kalman filterom i RAIM zaštitom, uz 3D prikaz u web kontrolnom centru. Uz simulator ide udžbenik „Satelitska navigacija u simulatoru” (PDF i Typst izvori u <code>docs/udzbenik/</code>).</p><p><strong>Licence:</strong> kod simulatora je pod licencom MIT. Udžbenik (<code>docs/udzbenik/</code>, uključujući PDF) je pod licencom Creative Commons Attribution 4.0 International (CC BY 4.0). Fontovi su pod SIL OFL 1.1, a testni RINEX/SP3 podaci pod BSD-2 (RTKLIB).</p><p>A software-defined GNSS simulator with a real navigation processor, with a Croatian textbook. Code: MIT. Textbook: CC BY 4.0.</p>",
+  "creators": [
+    {
+      "name": "Zoričić, Domagoj"
+    },
+    {
+      "name": "Claude (Anthropic)"
+    }
+  ],
+  "keywords": [
+    "GNSS",
+    "GPS",
+    "satelitska navigacija",
+    "RAIM",
+    "RTK",
+    "Kalmanov filtar",
+    "udžbenik",
+    "simulator"
+  ],
+  "notes": "Licence: kod MIT; udžbenik u docs/udzbenik/ CC BY 4.0. / Licenses: code MIT; textbook in docs/udzbenik/ CC BY 4.0."
+}
