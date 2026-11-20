@@ -4,7 +4,7 @@
   naslov: [Satelitska\ navigacija\ u simulatoru],
   podnaslov: [GPS i GNSS od signala do integriteta: orbite, pseudoudaljenosti, Kalmanov filtar, RAIM i RTK, uz 67 vježbi u GPS Simulatoru 3D],
   autor: [Domagoj Zoričić i Claude (Anthropic)],
-  izdanje: [Izdanje 2026.11. Sve brojke i grafovi izračunati su simulatorom (stanje koda: studeni 2026.).],
+  izdanje: [Izdanje 1.0, studeni 2026. · Licenca CC BY 4.0 · Sve brojke i grafovi izračunati su simulatorom · github.com/dodozg/gps-simulator-3d],
 )
 
 #sadrzaj()
