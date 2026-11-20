@@ -57,6 +57,8 @@ class MeasurementModel:
         # Signalni model (signal_model.py): ometač i koherentna integracija.
         # jammer_jn_db postavlja napad (spoofing.Jamming) za TEKUĆU epohu.
         self.jammer_jn_db = 0.0
+        # LOS kroz teren (DEM); False = bez terena (npr. sandbox studije "terrain": false).
+        self.terrain_los = True
         self.t_coh_s = signal_model.T_COH_S
         self.n_visible = 0
         self.n_locked = 0
@@ -139,7 +141,7 @@ class MeasurementModel:
 
         # LOS raycasting kroz teren (planine) — vektorizirano za sve kandidate
         # odjednom (jedan poziv DEM-a); iste točke uzorkovanja kao check_los.
-        if visible_signals:
+        if visible_signals and self.terrain_los:
             clear = self.los_clear_many([sig['pos'] for _, sig in visible_signals], self.pos)
             visible_signals = [p for p, ok in zip(visible_signals, clear) if ok]
 

@@ -355,3 +355,14 @@ def test_t0_random_varies_geometry_not_noise_stream():
     assert tr[0]["meta"]["t0"] != tr[1]["meta"]["t0"] and 0 < tr[0]["meta"]["t0"] < 86164
     assert abs(tr[0]["gdop"][-1] - tr[1]["gdop"][-1]) > 1e-2
     assert tr[0]["fix"].all() and tr[1]["fix"].all()
+
+
+def test_terrain_false_disables_los_even_below_dem():
+    # Quito u DEM-u leži na ~4300 m; prijemnik na 2850 m bi bez isključenog
+    # terena bio "pod zemljom". terrain: false mora isključiti LOS provjeru.
+    import sandbox
+    res = sandbox.run({"world": {"duration_s": 40, "systems": ["GPS"], "terrain": False,
+                                 "locations": [{"name": "Quito", "lat": -0.18, "lon": -78.47, "alt": 2850}]},
+                       "seeds": 1, "estimators": ["ekf"], "metrics": ["availability"], "warmup_s": 10},
+                      workers=1)
+    assert float(res.table("availability")[0]) > 0.9

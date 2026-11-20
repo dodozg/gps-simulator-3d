@@ -930,6 +930,7 @@ class _SandboxMeasurement(MeasurementModel):
     def __init__(self, pos, rng, ideal, terrain):
         super().__init__(pos, rng, ideal)
         self._terrain = terrain
+        self.terrain_los = bool(terrain)      # vektorizirana LOS provjera u build()
 
     def check_los(self, sat_pos, rec_pos):
         return super().check_los(sat_pos, rec_pos) if self._terrain else True
