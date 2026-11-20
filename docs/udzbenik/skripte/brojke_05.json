@@ -1,0 +1,42 @@
+{
+ "iono_vrh_m": 3.69,
+ "iono_vrh_h": 14.0,
+ "iono_noc_m": 1.5,
+ "iono_l1_5_podne": 12.3,
+ "iono_l1_20_podne": 8.4,
+ "iono_l2_l1_omjer": 1.647,
+ "iono_if_ostatak_m": 4.201256531743071e-15,
+ "ost_5_15": {
+  "std": 6.6,
+  "sred": 0.41,
+  "model": 7.76,
+  "n": 4458
+ },
+ "ost_15_30": {
+  "std": 4.12,
+  "sred": 0.27,
+  "model": 4.53,
+  "n": 6054
+ },
+ "ost_30_60": {
+  "std": 3.07,
+  "sred": 0.22,
+  "model": 3.13,
+  "n": 6850
+ },
+ "ost_60_90": {
+  "std": 2.57,
+  "sred": 0.09,
+  "model": 2.61,
+  "n": 3949
+ },
+ "ost_sve_std": 4.27,
+ "ost_sve_sred": 0.25,
+ "eph_los_std": 1.37,
+ "tropo_zenit": 2.4,
+ "tropo_5": 27.5,
+ "tropo_10": 13.8,
+ "if_k1": 2.546,
+ "if_k2": 1.546,
+ "tecu_l1_m": 0.162
+}

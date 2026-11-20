@@ -1,0 +1,36 @@
+{
+ "cip_m": 293.1,
+ "N0_dbw_hz": -203.8,
+ "gold_vrijednosti": [
+  -65,
+  -1,
+  63
+ ],
+ "gold_max": 65,
+ "slucajni_max": 97,
+ "auto_vrh": 1023,
+ "auto_ostalo": [
+  -65,
+  -1,
+  63
+ ],
+ "gps_l1_zenit": 49.3,
+ "gps_l1_5": 39.1,
+ "gps_l1_30": 46.9,
+ "gps_l2_zenit": 46.3,
+ "GPS_l1_zenit": 49.3,
+ "GAL_l1_zenit": 48.1,
+ "GLO_l1_zenit": 49.8,
+ "c_if1": 2.546,
+ "c_if2": 1.546,
+ "pojacanje_if": 2.98,
+ "sigma_l1_49": 0.74,
+ "sigma_l1_45": 1.17,
+ "sigma_l1_39": 2.33,
+ "sigma_l1_30": 6.77,
+ "doppler_max_hz": 4201.0,
+ "jam_10db": 10.4,
+ "jam_20db": 20.0,
+ "koh_25hz": 0.637,
+ "mai_sred_db": -61.9
+}
