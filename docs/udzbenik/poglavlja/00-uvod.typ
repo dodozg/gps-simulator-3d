@@ -52,5 +52,5 @@ Sredinom zaslona je 3D globus. *Dvoklik* na globus postavlja prijemnik, čija se
 - *Donji dok*, #ui("Živi grafovi"): pogreška, GDOP i NIS kroz vrijeme te #ui("Skyplot (uživo)").
 
 #napomena(naslov: "Sigurna početna točka")[
-  Ako se nešto „pokvari" (ugašeni sateliti, aktivan napad, čudna orbita), #ui("Poništi") vraća simulaciju u početno stanje. Lokacija prijemnika se pamti i nakon ponovnog pokretanja servera.
+  Ako se nešto „” (ugašeni sateliti, aktivan napad, čudna orbita), #ui("Poništi") vraća simulaciju u početno stanje. Lokacija prijemnika se pamti i nakon ponovnog pokretanja servera.
 ]

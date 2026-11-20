@@ -1,0 +1,156 @@
+{
+ "Q": {
+  "pos": 0.5,
+  "vel": 1.0,
+  "bias": 5.0,
+  "drift": 1.0,
+  "isb": 0.01
+ },
+ "konv_unutar_2sigma": [
+  93.0,
+  97.0,
+  89.3
+ ],
+ "konv_sigma_kraj": [
+  1.99,
+  2.61,
+  3.44
+ ],
+ "konv_sigma_1s": [
+  2.5,
+  3.6,
+  5.3
+ ],
+ "konv_nis_sred": 0.75,
+ "konv_greska_med": 4.83,
+ "q_studija": {
+  "staticki": [
+   {
+    "f": 0.01,
+    "med": 3.33,
+    "p95": 5.54
+   },
+   {
+    "f": 0.1,
+    "med": 3.75,
+    "p95": 6.43
+   },
+   {
+    "f": 1.0,
+    "med": 4.23,
+    "p95": 7.82
+   },
+   {
+    "f": 10.0,
+    "med": 4.72,
+    "p95": 8.79
+   },
+   {
+    "f": 100.0,
+    "med": 4.97,
+    "p95": 9.61
+   }
+  ],
+  "let": [
+   {
+    "f": 0.01,
+    "med": 48.76,
+    "p95": 60.97
+   },
+   {
+    "f": 0.1,
+    "med": 14.11,
+    "p95": 19.64
+   },
+   {
+    "f": 1.0,
+    "med": 5.43,
+    "p95": 9.62
+   },
+   {
+    "f": 10.0,
+    "med": 4.69,
+    "p95": 8.83
+   },
+   {
+    "f": 100.0,
+    "med": 4.94,
+    "p95": 9.2
+   }
+  ]
+ },
+ "ekfwls_parova": 50,
+ "ekfwls_ekf_bolji": 50,
+ "ekfwls_tablica": {
+  "Zagreb": {
+   "ekf": {
+    "h_err_p95": 5.78,
+    "v_err_p95": 7.16,
+    "nis_mean": 0.78,
+    "runtime_ms": 2.57
+   },
+   "wls": {
+    "h_err_p95": 7.86,
+    "v_err_p95": 11.53,
+    "nis_mean": 1.08,
+    "runtime_ms": 2.02
+   }
+  },
+  "London": {
+   "ekf": {
+    "h_err_p95": 5.69,
+    "v_err_p95": 7.1,
+    "nis_mean": 0.75,
+    "runtime_ms": 1.98
+   },
+   "wls": {
+    "h_err_p95": 7.51,
+    "v_err_p95": 11.14,
+    "nis_mean": 0.95,
+    "runtime_ms": 1.94
+   }
+  },
+  "Tokio": {
+   "ekf": {
+    "h_err_p95": 5.51,
+    "v_err_p95": 8.49,
+    "nis_mean": 0.74,
+    "runtime_ms": 1.95
+   },
+   "wls": {
+    "h_err_p95": 7.66,
+    "v_err_p95": 13.18,
+    "nis_mean": 0.94,
+    "runtime_ms": 1.83
+   }
+  },
+  "Quito": {
+   "ekf": {
+    "h_err_p95": 4.88,
+    "v_err_p95": 7.88,
+    "nis_mean": 0.81,
+    "runtime_ms": 1.93
+   },
+   "wls": {
+    "h_err_p95": 6.36,
+    "v_err_p95": 12.04,
+    "nis_mean": 1.02,
+    "runtime_ms": 1.99
+   }
+  },
+  "Anchorage": {
+   "ekf": {
+    "h_err_p95": 4.93,
+    "v_err_p95": 7.36,
+    "nis_mean": 0.74,
+    "runtime_ms": 1.87
+   },
+   "wls": {
+    "h_err_p95": 6.68,
+    "v_err_p95": 11.18,
+    "nis_mean": 0.91,
+    "runtime_ms": 1.7
+   }
+  }
+ }
+}

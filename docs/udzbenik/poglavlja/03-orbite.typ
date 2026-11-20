@@ -71,7 +71,7 @@ Točnost SGP4 za GNSS satelite je reda kilometra, a nikako metra. Za navigaciju 
 
 Satelit je upotrebljiv kad je iznad horizonta. U praksi se postavlja *maska elevacije* (u simulatoru 5°), jer signali niskih satelita prolaze kroz najviše atmosfere, najslabiji su i najviše ih ometa multipath. Uz to, simulator za svaki satelit baca zraku kroz digitalni model terena (SRTM). Satelit iza planine se ne prati.
 
-Inklinacija od 55° ima posljedicu koju svaki geodet na srednjim širinama poznaje: sateliti nikad ne prolaze iznad 55° geografske širine. Promatrač u Zagrebu ih zato na sjevernom dijelu neba vidi samo nisko, preko pola. Na @fig:skyplot se iz Zagreba vidi „rupa na sjeveru". U sektoru ±30° oko sjevera iznad 10° elevacije bilo je samo #br(B.sjever_udio_posto.Zagreb)% položaja GPS satelita kroz dan, a u Quitu na ekvatoru #br(B.sjever_udio_posto.Quito)%. Na Svalbardu je situacija obrnuta: nema satelita u zenitu, ali ih ima uokolo po cijelom horizontu.
+Inklinacija od 55° ima posljedicu koju svaki geodet na srednjim širinama poznaje: sateliti nikad ne prolaze iznad 55° geografske širine. Promatrač u Zagrebu ih zato na sjevernom dijelu neba vidi samo nisko, preko pola. Na @fig:skyplot se iz Zagreba vidi „”. U sektoru ±30° oko sjevera iznad 10° elevacije bilo je samo #br(B.sjever_udio_posto.Zagreb)% položaja GPS satelita kroz dan, a u Quitu na ekvatoru #br(B.sjever_udio_posto.Quito)%. Na Svalbardu je situacija obrnuta: nema satelita u zenitu, ali ih ima uokolo po cijelom horizontu.
 
 #figure(
   image("../slike/03-skyplot-gps.svg", width: 100%),

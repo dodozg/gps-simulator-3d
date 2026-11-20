@@ -3,7 +3,7 @@
 
 = Određivanje položaja metodom najmanjih kvadrata <pog:ls>
 
-U prethodnim poglavljima smo vidjeli kako prijemnik iz signala dobiva *pseudoudaljenost* do svakog satelita i koje se pogreške u nju uvlače. Ovo poglavlje odgovara na središnje pitanje satelitske navigacije: kako iz nekoliko pseudoudaljenosti izračunati položaj. Odgovor je nelinearni sustav jednadžbi koji se rješava iterativno, metodom najmanjih kvadrata. Isti postupak koristi simulator pri „hladnom startu" prijemnika, prije nego što preuzme Kalmanov filtar (pogl. @pog:kalman).
+U prethodnim poglavljima smo vidjeli kako prijemnik iz signala dobiva *pseudoudaljenost* do svakog satelita i koje se pogreške u nju uvlače. Ovo poglavlje odgovara na središnje pitanje satelitske navigacije: kako iz nekoliko pseudoudaljenosti izračunati položaj. Odgovor je nelinearni sustav jednadžbi koji se rješava iterativno, metodom najmanjih kvadrata. Isti postupak koristi simulator pri „” prijemnika, prije nego što preuzme Kalmanov filtar (pogl. @pog:kalman).
 
 == Jednadžba pseudoudaljenosti
 
@@ -89,7 +89,7 @@ Prijemnik u simulatoru (#kod("receiver.py")) koristi najmanje kvadrate samo jedn
 Međuveličine jedne epohe vide se u prozoru #ui("Pogled iznutra (matematika epohe)…") u lijevom panelu. Kartica #ui("1. Mjerenja") prikazuje za svaki satelit izmjerenu i predviđenu pseudoudaljenost te njihovu razliku. Kartica #ui("2. Geometrija") prikazuje matricu $bold(G)$ u lokalnom sustavu istok–sjever–gore.
 
 #vjezba(vrsta: "vodjena", naslov: "Matrica geometrije uživo", rjesenje: [
-  Redaka ima onoliko koliko je satelita u rješenju (uz 6–10 satelita samo GPS-a). Prva tri stupca su komponente jediničnog vektora istok–sjever–gore, pa za svaki redak vrijedi $e_E^2 + e_N^2 + e_U^2 = 1$. Satelit visoko na nebu ima stupac „gore" blizu 1, a satelit pri horizontu blizu 0. Četvrti stupac (sat) je uvijek 1. Nakon jedne sekunde brojevi se mijenjaju tek u trećoj ili četvrtoj decimali, jer se satelit u sekundi pomakne za 3–4 km, a to je na udaljenosti od 20 000 km kut od oko 0,01°.
+  Redaka ima onoliko koliko je satelita u rješenju (uz 6–10 satelita samo GPS-a). Prva tri stupca su komponente jediničnog vektora istok–sjever–gore, pa za svaki redak vrijedi $e_E^2 + e_N^2 + e_U^2 = 1$. Satelit visoko na nebu ima stupac „” blizu 1, a satelit pri horizontu blizu 0. Četvrti stupac (sat) je uvijek 1. Nakon jedne sekunde brojevi se mijenjaju tek u trećoj ili četvrtoj decimali, jer se satelit u sekundi pomakne za 3–4 km, a to je na udaljenosti od 20 000 km kut od oko 0,01°.
 ])[
   Postavi prijemnik dvoklikom na globus (npr. na Zagreb), pokreni simulaciju gumbom #ui("Pokreni") i otvori #ui("Pogled iznutra (matematika epohe)…"). Na kartici #ui("2. Geometrija") pronađi matricu $bold(G)$.
   + Koliko ima redaka, a koliko stupaca? Što predstavlja koji stupac?
@@ -115,7 +115,7 @@ Međuveličine jedne epohe vide se u prozoru #ui("Pogled iznutra (matematika epo
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Četiri satelita nisu dosta za provjeru", rjesenje: [
-  Dok ima pet i više satelita, status integriteta je „u redu". S točno pet satelita RAIM može otkriti kvar, ali ga ne može izolirati (jedan stupanj slobode). Kad ostanu četiri, status postaje #ui("nedostupan (premalo satelita)"): rješenje postoji, ali ga se ne može provjeriti. Pogreška obično naraste, a GDOP skoči jer preostali sateliti pokrivaju manji dio neba. S tri satelita fix nestaje.
+  Dok ima pet i više satelita, status integriteta je „”. S točno pet satelita RAIM može otkriti kvar, ali ga ne može izolirati (jedan stupanj slobode). Kad ostanu četiri, status postaje #ui("nedostupan (premalo satelita)"): rješenje postoji, ali ga se ne može provjeriti. Pogreška obično naraste, a GDOP skoči jer preostali sateliti pokrivaju manji dio neba. S tri satelita fix nestaje.
 ])[
   U panelu #ui("Sustavi") ostavi samo GPS. U tablici #ui("Sateliti u vidokrugu") isključuj satelite jedan po jedan (kružić ●/○ na početku retka) dok ne ostanu četiri.
   + Prati redak #ui("Integritet") u telemetriji. Kako se mijenja status kad ostane šest, pet i četiri satelita?
@@ -126,5 +126,5 @@ Međuveličine jedne epohe vide se u prozoru #ui("Pogled iznutra (matematika epo
 #vjezba(vrsta: "racunska", naslov: "Zašto težine?", rjesenje: [
   Iz @eq:sigma, uz $sigma_("kod") = 2","5$ m u zenitu: $sigma(90°) = sqrt(2","5^2 + 0","8^2) approx 2","6$ m. Na 10° je $0","8 \/ sin 10° = 4","6$ m, pa uz $sigma_("kod") approx 6$ m (niži C/N0) dobivamo $sigma approx 7","6$ m. Omjer težina je $(7","6 \/ 2","6)^2 approx 8","5$, pa jedno zenitno mjerenje vrijedi kao osam do devet mjerenja pri horizontu.
 ])[
-  Pretpostavi da je šum koda $sigma_("kod")$ 2,5 m u zenitu i 6 m na elevaciji 10°. Prema @eq:sigma izračunaj $sigma_i$ za oba slučaja i omjer njihovih težina u @eq:wls. Koliko mjerenja pri horizontu „vrijedi" jedno zenitno mjerenje?
+  Pretpostavi da je šum koda $sigma_("kod")$ 2,5 m u zenitu i 6 m na elevaciji 10°. Prema @eq:sigma izračunaj $sigma_i$ za oba slučaja i omjer njihovih težina u @eq:wls. Koliko mjerenja pri horizontu „” jedno zenitno mjerenje?
 ]

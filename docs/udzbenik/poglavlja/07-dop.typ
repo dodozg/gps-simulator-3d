@@ -33,7 +33,7 @@ gdje je $sigma_"UERE"$ (_user equivalent range error_) ukupna standardna devijac
 
 == Geometrijska intuicija
 
-Svaki redak matrice $bold(G)$ je jedinični vektor prema satelitu, uz jedinicu za sat. Kad su sateliti raspršeni po nebu, retci su „različiti", $bold(G)^T bold(G)$ je dobro uvjetovana i $bold(Q)$ je mala. Kad su zbijeni u malom dijelu neba, retci su gotovo jednaki, $bold(G)^T bold(G)$ je gotovo singularna i DOP eksplodira. Za četiri satelita GDOP je obrnuto proporcionalan volumenu tetraedra koji razapinju vrhovi jediničnih vektora.
+Svaki redak matrice $bold(G)$ je jedinični vektor prema satelitu, uz jedinicu za sat. Kad su sateliti raspršeni po nebu, retci su „”, $bold(G)^T bold(G)$ je dobro uvjetovana i $bold(Q)$ je mala. Kad su zbijeni u malom dijelu neba, retci su gotovo jednaki, $bold(G)^T bold(G)$ je gotovo singularna i DOP eksplodira. Za četiri satelita GDOP je obrnuto proporcionalan volumenu tetraedra koji razapinju vrhovi jediničnih vektora.
 
 Dva primjera s četiri satelita:
 
@@ -99,5 +99,5 @@ Drugi način odabira je *elevacijska maska*. Viša maska izbacuje najšumovitija
 #vjezba(vrsta: "istrazivacka", naslov: "Koliko satelita?", rjesenje: [
   Studija iz #kod("docs/udzbenik/studije/max_sats.json") za četiri sustava daje sljedeće srednje vrijednosti horizontalne pogreške p95 (uz 95 % CI): #MS.map(p => [#p.x: #br(p.h_err_p95.mean, d: 1) m]).join(", "). GDOP pada od #br(nadji(MS, 4).gdop_median.mean, d: 1) (četiri satelita) do #br(nadji(MS, 20).gdop_median.mean, d: 2). Najveći skok je između pet i osam satelita, a iznad deset dobitak je manji, ali i dalje stvaran (intervali pouzdanosti se ne preklapaju između 10 i 20). Usporedbu s WLS-om i samo GPS-om dobiješ istom studijom uz izmijenjen spec. Rezultat ovisi o tvom pokretanju, a očekuje se da WLS bude lošiji od EKF-a (pogl. @pog:kalman).
 ])[
-  Pokreni studiju #kod("python sandbox.py run docs/udzbenik/studije/max_sats.json --workers 4"). Za koji broj satelita prestaje vrijediti „više je bolje"? Usporedi trend horizontalne pogreške i GDOP-a. Ponovi s estimatorom #kod("wls") i s #kod("\"systems\": [\"GPS\"]"). Što se mijenja?
+  Pokreni studiju #kod("python sandbox.py run docs/udzbenik/studije/max_sats.json --workers 4"). Za koji broj satelita prestaje vrijediti „”? Usporedi trend horizontalne pogreške i GDOP-a. Ponovi s estimatorom #kod("wls") i s #kod("\"systems\": [\"GPS\"]"). Što se mijenja?
 ]
