@@ -6,6 +6,14 @@
 
 = Geometrija i DOP <pog:dop>
 
+
+#cilj(
+  [izračunati DOP-ove iz matrice geometrije],
+  [zašto je pogreška položaja približno DOP puta pogreška mjerenja],
+  [zašto je visina gotovo uvijek lošija od položaja u ravnini],
+  [kako broj satelita i maska elevacije mijenjaju točnost],
+)
+
 Dva prijemnika s jednako dobrim mjerenjima mogu imati vrlo različitu točnost samo zato što vide satelite raspoređene na različite načine. Ovo poglavlje pokazuje kako matrica geometrije $bold(G)$ iz poglavlja @pog:ls određuje koliko se pogreška mjerenja pojača u pogrešku položaja. Ta se veličina zove DOP (_dilution of precision_). Poglavlje također pokazuje kako DOP pomaže pri odluci koje satelite uzeti u rješenje.
 
 == Od pogreške mjerenja do pogreške položaja

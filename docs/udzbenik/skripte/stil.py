@@ -20,26 +20,42 @@ os.makedirs(SLIKE, exist_ok=True)
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
-# boje usklađene s predloskom (predlozak.typ)
-PLAVA = "#1f4e79"
-SVIJETLO_PLAVA = "#1565c0"
-ZELENA = "#2e7d32"
-NARANCASTA = "#ef6c00"
-LJUBICASTA = "#8e24aa"
-CRVENA = "#c62828"
-SIVA = "#757575"
-SUSTAVI = {"GPS": "#1565c0", "GAL": "#2e7d32", "GLO": "#c62828", "BDS": "#ef6c00"}
-NIZ = [PLAVA, NARANCASTA, ZELENA, LJUBICASTA, CRVENA, SIVA]
+# boje usklađene s predloškom (predlozak.typ) — paleta knjige „Od vozača do mehaničara"
+PETROL = "#0e4f63"
+PLAVA = PETROL
+SVIJETLO_PLAVA = "#0f7c9c"
+ZELENA = "#2c6e49"
+NARANCASTA = "#c2570a"
+LJUBICASTA = "#5b3a8c"
+CRVENA = "#b3261e"
+SIVA = "#8d9ca5"
+INK = "#16222b"
+SUSTAVI = {"GPS": PETROL, "GAL": ZELENA, "GLO": CRVENA, "BDS": NARANCASTA}
+NIZ = [PETROL, NARANCASTA, ZELENA, LJUBICASTA, CRVENA, SIVA]
+
+# Barlow (isti font kao oznake u knjizi), iz docs/udzbenik/fontovi
+from matplotlib import font_manager  # noqa: E402
+for _f in ("Barlow-Regular.ttf", "Barlow-Medium.ttf", "Barlow-SemiBold.ttf", "Barlow-Italic.ttf"):
+    _p = os.path.join(UDZBENIK, "fontovi", _f)
+    if os.path.isfile(_p):
+        font_manager.fontManager.addfont(_p)
 
 plt.rcParams.update({
     "figure.figsize": (6.2, 3.4),
     "figure.dpi": 100,
     "font.size": 9,
-    "font.family": "DejaVu Sans",
+    "font.family": ["Barlow", "DejaVu Sans"],
+    "text.color": INK,
+    "axes.labelcolor": INK,
+    "axes.edgecolor": "#8d9ca5",
+    "xtick.color": "#55656f",
+    "ytick.color": "#55656f",
     "axes.titlesize": 9.5,
+    "axes.titleweight": "semibold",
+    "axes.titlecolor": PETROL,
     "axes.labelsize": 9,
     "axes.grid": True,
-    "grid.color": "#dddddd",
+    "grid.color": "#e3e9ec",
     "grid.linewidth": 0.6,
     "axes.spines.top": False,
     "axes.spines.right": False,

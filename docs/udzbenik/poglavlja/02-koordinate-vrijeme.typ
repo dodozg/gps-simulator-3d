@@ -3,6 +3,14 @@
 
 = Koordinatni sustavi i vrijeme <pog:koordinate>
 
+
+#cilj(
+  [pretvarati koordinate između ECEF-a, WGS-84 i lokalnog sustava istok–sjever–gore],
+  [računati azimut i elevaciju satelita],
+  [zašto je Sagnacova korekcija nužna i kako se njezino izostavljanje vidi u položaju],
+  [kako relativnost utječe na satove satelita],
+)
+
 Pseudoudaljenost povezuje dvije točke u prostoru i dva trenutka u vremenu. Da bi jednadžba pseudoudaljenosti (pogl. @pog:ls) imala smisla, sve četiri veličine moraju biti izražene u istom koordinatnom sustavu i istoj vremenskoj skali. Ovo poglavlje uvodi sustave koje GNSS koristi i pokazuje koliko skupo staje kad se jedan mali član izostavi.
 
 == Inercijalni i Zemljom vezani sustav

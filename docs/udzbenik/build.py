@@ -65,7 +65,8 @@ def pdf():
     t = time.time()
     try:
         typst.compile(os.path.join(OVDJE, "udzbenik.typ"), output=IZLAZ,
-                      root=os.path.dirname(os.path.dirname(OVDJE)))   # korijen repozitorija (pojmovnik iz web/content)
+                      root=os.path.dirname(os.path.dirname(OVDJE)),   # korijen repozitorija (pojmovnik iz web/content)
+                      font_paths=[os.path.join(OVDJE, "fontovi")])
     except typst.TypstError as e:
         print(getattr(e, "diagnostic", e))
         raise SystemExit(1)

@@ -5,6 +5,14 @@
 
 = Integritet: RAIM i zaštitne granice <pog:raim>
 
+
+#cilj(
+  [razliku između točnosti i integriteta te pojmove HAL, HPL, MI i HMI],
+  [kako RAIM statističkim testom otkriva i isključuje kvar],
+  [kako se računa zaštitna granica i koliko je RAIM osjetljiv],
+  [što RAIM u načelu ne može vidjeti],
+)
+
 Točnost odgovara na pitanje koliko je prijemnik obično blizu istine. Za pilota, brodara ili autonomno vozilo važnije je drugo pitanje: *smijem li ovoj procjeni vjerovati sada?* Sustav koji je 99 % vremena točan na metar, a ostatak vremena bez upozorenja pogriješi za kilometar, opasniji je od sustava koji je uvijek točan na 50 m i pouzdano javi kad nije. Ovo poglavlje uvodi *integritet* i njegovu najstariju autonomnu provjeru u prijemniku, RAIM (_receiver autonomous integrity monitoring_).
 
 == Rječnik integriteta

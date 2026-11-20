@@ -3,6 +3,14 @@
 
 = Određivanje položaja metodom najmanjih kvadrata <pog:ls>
 
+
+#cilj(
+  [linearizirati jednadžbu pseudoudaljenosti i postaviti matricu geometrije],
+  [riješiti položaj Gauss-Newtonovom metodom najmanjih kvadrata],
+  [zašto četiri satelita daju rješenje, a pet i više i provjeru],
+  [kada i koliko pomažu težinski najmanji kvadrati],
+)
+
 U prethodnim poglavljima smo vidjeli kako prijemnik iz signala dobiva *pseudoudaljenost* do svakog satelita i koje se pogreške u nju uvlače. Ovo poglavlje odgovara na središnje pitanje satelitske navigacije: kako iz nekoliko pseudoudaljenosti izračunati položaj. Odgovor je nelinearni sustav jednadžbi koji se rješava iterativno, metodom najmanjih kvadrata. Isti postupak koristi simulator pri „” prijemnika, prije nego što preuzme Kalmanov filtar (pogl. @pog:kalman).
 
 == Jednadžba pseudoudaljenosti

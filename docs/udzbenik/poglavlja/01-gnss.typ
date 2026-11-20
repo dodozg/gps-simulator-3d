@@ -3,6 +3,14 @@
 
 = Uvod u satelitsku navigaciju <pog:gnss>
 
+
+#cilj(
+  [kako se iz vremena leta signala dobiva udaljenost i zašto treba četiri satelita],
+  [od čega se sastoji GNSS i po čemu se razlikuju GPS, Galileo, GLONASS i BeiDou],
+  [kojim se mjerama ocjenjuje navigacijski sustav (točnost, integritet, kontinuitet, dostupnost)],
+  [što simulator modelira vjerno, a gdje pojednostavljuje],
+)
+
 Globalni navigacijski satelitski sustavi (GNSS, _Global Navigation Satellite Systems_) omogućuju svakom prijemniku na Zemlji ili blizu nje da u svakom trenutku, po bilo kojem vremenu i bez slanja ijednog signala odredi svoj položaj, brzinu i točno vrijeme. Ovo poglavlje daje osnovnu ideju i rječnik koji koristimo kroz cijelu knjigu te pokazuje što od toga simulator modelira.
 
 == Ideja: udaljenost iz vremena
@@ -57,9 +65,10 @@ GPS je referentni sustav ove knjige: većina primjera koristi samo njega, a osta
 
 Put od antene do položaja ima četiri stupnja. Prema njima je organiziran i ostatak knjige:
 
-#let korak(naslov, opis) = box(width: 23%, inset: 6pt, radius: 3pt, stroke: 0.6pt + boja-glavna, fill: boja-glavna.lighten(92%))[
+#let korak(naslov, opis) = box(width: 23%, inset: 6pt, radius: 2pt, stroke: 0.6pt + petrol, fill: tint)[
   #set par(justify: false)
-  #text(weight: "bold", size: 9pt, naslov) \ #text(size: 8pt, opis)
+  #set text(font: f-oznaka)
+  #text(font: f-naslov, stretch: 75%, weight: "semibold", size: 11pt, fill: petrol, naslov) \ #text(size: 8pt, opis)
 ]
 #align(center, block(width: 100%)[
   #korak([Signal], [akvizicija i praćenje koda, C/N0 (pogl. 4)])

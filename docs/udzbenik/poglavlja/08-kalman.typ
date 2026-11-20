@@ -4,6 +4,14 @@
 
 = Kalmanov filtar <pog:kalman>
 
+
+#cilj(
+  [model stanja i korake predikcije i ažuriranja Kalmanovog filtra],
+  [provjeriti iskrenost filtra pomoću NIS-a],
+  [kako procesni šum određuje kompromis između mirnoće i praćenja gibanja],
+  [koliko filtar dobiva u odnosu na snapshot rješenje],
+)
+
 Najmanji kvadrati rješavaju svaku epohu kao da prije nje ništa nije bilo. Prijemnik se ipak ne može pomaknuti 10 m u sekundi kad stoji na stolu, a njegov sat ne može preskočiti kilometar ako je u prošloj epohi lutao 300 m/s. Kalmanov filtar spaja znanje o tome kako se stanje mijenja s novim mjerenjima. Optimalno je to za linearne sustave s Gaussovim šumom, a za GNSS se koristi njegova linearizirana inačica, prošireni Kalmanov filtar (EKF). Simulator ga koristi kao glavni navigacijski procesor.
 
 == Vektor stanja i model gibanja

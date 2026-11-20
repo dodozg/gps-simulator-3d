@@ -4,6 +4,13 @@
 
 = Istraživački projekti u sandboxu <pog:projekti>
 
+
+#cilj(
+  [postaviti istraživačko pitanje kao uparenu, ponovljivu sandbox studiju],
+  [pisati vlastite procjenitelje, napade i metrike kao plugine],
+  [čitati rezultate s intervalima pouzdanosti i ne zaključivati previše],
+)
+
 Vođene vježbe pokazuju *što* se događa, a računske *zašto*. Istraživački rad postavlja pitanje *koliko*: koliko je jedan algoritam bolji od drugog, je li razlika stvarna ili slučajna, i vrijedi li zaključak na drugim mjestima i u drugim uvjetima. Ovo poglavlje uvodi istraživački sandbox simulatora i predlaže projekte za samostalan rad. Projekti nemaju unaprijed zadan odgovor. Neki od njih nastavljaju se na otvorena pitanja koja je ova knjiga otkrila.
 
 == Kako radi sandbox

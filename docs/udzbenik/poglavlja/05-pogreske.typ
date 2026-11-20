@@ -3,6 +3,14 @@
 
 = Pseudoudaljenost i izvori pogrešaka <pog:pogreske>
 
+
+#cilj(
+  [rastaviti pseudoudaljenost na geometriju, satove, atmosferu, multipath i šum],
+  [kako iono-free kombinacija uklanja ionosferu i koliko to košta],
+  [zašto sporo promjenjive pogreške štete više od bijelog šuma],
+  [procijeniti ukupnu pogrešku mjerenja po elevaciji],
+)
+
 Pseudoudaljenost iz petlje koda (pogl. @pog:signal) nije samo udaljenost uvećana za sat prijemnika. Signal prolazi kroz ionosferu i troposferu, odbija se od okolnih ploha, a prijemnik računa udaljenost do položaja satelita koji je i sam pogrešan. Ovo poglavlje rastavlja pseudoudaljenost na članove, pokazuje kako se koji uklanja i koliko od svega preostaje, jer upravo taj ostatak određuje točnost položaja.
 
 == Puna jednadžba pseudoudaljenosti

@@ -6,6 +6,13 @@
 
 = Više sustava: multi-GNSS <pog:multignss>
 
+
+#cilj(
+  [zašto svaki sustav donosi vlastitu nepoznanicu (ISB)],
+  [kako filtar procjenjuje ISB i što on zapravo upija],
+  [gdje je korist više sustava najveća: dostupnost i integritet pod zaklonjenim nebom],
+)
+
 Do sada je prijemnik koristio uglavnom samo GPS. Moderni prijemnici prate sva četiri globalna sustava istodobno i tako umjesto sedam ili osam satelita vide tridesetak (pogl. @pog:gnss). Ovo poglavlje pokazuje što to donosi, koju novu nepoznanicu uvodi i gdje je korist najveća.
 
 == Svaki sustav ima svoj sat

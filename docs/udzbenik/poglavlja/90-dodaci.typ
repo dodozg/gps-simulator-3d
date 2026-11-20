@@ -1,6 +1,7 @@
 #import "../predlozak.typ": *
 
-#heading(numbering: none)[Dodatak A — Rješenja vježbi]
+#nadnaslov[Prilog A]
+#heading(numbering: none)[Rješenja vježbi]
 
 Rješenja vođenih vježbi opisuju što bi se trebalo vidjeti. Točni brojevi ovise o trenutku i mjestu, a trendovi ne. Brojke u rješenjima računskih i istraživačkih vježbi dobivene su skriptama iz #kod("docs/udzbenik/skripte/").
 
@@ -9,7 +10,8 @@ Rješenja vođenih vježbi opisuju što bi se trebalo vidjeti. Točni brojevi ov
   #sva-rjesenja()
 ]
 
-#heading(numbering: none)[Dodatak B — Pojmovnik]
+#nadnaslov[Prilog B]
+#heading(numbering: none)[Pojmovnik]
 
 Pojmovnik je isti kao u aplikaciji (klik na plavi pojam u telemetriji), preuzet iz #kod("web/content/glossary.hr.json").
 
@@ -19,13 +21,14 @@ Pojmovnik je isti kao u aplikaciji (klik na plavi pojam u telemetriji), preuzet 
   #set par(justify: true)
   #for (kljuc, p) in pojmovi.pairs().sorted(key: x => lower(x.at(1).term)) [
     #block(breakable: false, below: 0.7em)[
-      #text(weight: "bold", fill: boja-glavna, p.term) \
+      #text(font: f-naslov, stretch: 75%, size: 11pt, weight: "semibold", fill: petrol, p.term) \
       #p.short #p.long
     ]
   ]
 ]
 
-#heading(numbering: none)[Dodatak C — Konstante i parametri simulatora]
+#nadnaslov[Prilog C]
+#heading(numbering: none)[Konstante i parametri simulatora]
 
 Stanje u trenutku izrade knjige. Stupac desno navodi gdje se vrijednost nalazi u kodu.
 
@@ -68,7 +71,8 @@ Stanje u trenutku izrade knjige. Stupac desno navodi gdje se vrijednost nalazi u
   )
 ]
 
-#heading(numbering: none)[Dodatak D — Literatura]
+#nadnaslov[Prilog D]
+#heading(numbering: none)[Literatura]
 
 #set par(hanging-indent: 1.5em, justify: false)
 #set text(size: 9.5pt)

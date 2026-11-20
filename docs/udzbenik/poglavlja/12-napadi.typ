@@ -6,6 +6,13 @@
 
 = Ometanje i lažiranje <pog:napadi>
 
+
+#cilj(
+  [kako djeluju ometanje, meaconing te naivno i koordinirano lažiranje],
+  [zašto je koordinirani lažni signal nevidljiv za RAIM],
+  [koliko više sustava pomaže pod ometanjem i koje obrane postoje],
+)
+
 GNSS signal na Zemlji je slabiji od toplinskog šuma (pogl. @pog:signal), a njegova je struktura javno objavljena. Iz toga slijede dvije ranjivosti. Signal je lako *ugušiti* (ometanje, _jamming_) i lako *oponašati* (lažiranje, _spoofing_). Oba napada danas nisu teorija: ometala za nekoliko desetaka eura prodaju se kao „zaštita privatnosti”, a lažni signali zabilježeni su u pomorstvu i zrakoplovstvu. Ovo poglavlje pokazuje kako svaki napad djeluje na prijemnik i koje ga obrane vide.
 
 == Četiri napada

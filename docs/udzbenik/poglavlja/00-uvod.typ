@@ -1,7 +1,8 @@
 #import "../predlozak.typ": *
 #set heading(numbering: none)
 
-#heading(numbering: none, outlined: false)[Predgovor]
+#nadnaslov[Uvod]
+#heading(numbering: none)[Predgovor]
 
 Satelitska navigacija je jedna od rijetkih tehnologija koju gotovo svatko koristi svaki dan, a gotovo nitko ne vidi kako radi. Telefon pokaže plavu točku na karti. Iza nje stoje atomski satovi u orbiti, signali slabiji od toplinskog šuma, korelatori, nelinearni procjenitelji i statistički testovi koji odlučuju smije li se toj točki vjerovati.
 
@@ -9,6 +10,7 @@ Ova knjiga prolazi taj lanac od signala do integriteta. Posebna je po tome što 
 
 Knjiga je namijenjena studentima tehničkih fakulteta na prvom kolegiju satelitske navigacije, ali i inženjerima koji žele brzo i konkretno razumjeti GNSS. Pretpostavlja se poznavanje linearne algebre (matrice, inverz, najmanji kvadrati u osnovnom obliku), osnova vjerojatnosti (Gaussova razdioba, varijanca) i osnovno programiranje u Pythonu. Sve ostalo se izvodi u tekstu.
 
+#nadnaslov[Uvod]
 #heading(numbering: none)[Kako koristiti knjigu]
 
 == Struktura
@@ -17,13 +19,13 @@ Poglavlja 1–5 grade model mjerenja: što je GNSS, u kojim koordinatama i vreme
 
 == Tri vrste vježbi
 
-#okvir(boja-vodjena, [▶ Vođena vježba (u simulatoru)])[
+#okvir(petrol, [Vođena vježba #h(0.3em) #cip("simulator", petrol)])[
   Radi se u web-aplikaciji: postaviš prijemnik, nešto promijeniš i promatraš. Natpisi gumba i kontrola napisani su #ui("ovako"), točno kako ih prikazuje sučelje na hrvatskom. Odgovor je opažanje uz objašnjenje.
 ]
-#okvir(boja-racunska, [✎ Računska vježba])[
+#okvir(zelena, [Računska vježba #h(0.3em) #cip("račun", zelena)])[
   Izvod na papiru ili kratki program u Pythonu. Podaci koje vježbe koriste su u mapi #kod("docs/udzbenik/podaci/") i izvezeni su iz simulatora.
 ]
-#okvir(boja-istrazivacka, [★ Istraživačka vježba (sandbox)])[
+#okvir(signal, [Istraživačka vježba #h(0.3em) #cip("sandbox", signal)])[
   Statistička studija u istraživačkom sandboxu: rešetka parametara × Monte Carlo preko sjemena × više algoritama, s intervalima pouzdanosti. Odgovor nije jedan broj nego trend i njegova pouzdanost.
 ]
 

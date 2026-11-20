@@ -3,6 +3,14 @@
 
 = Orbite i konstelacije <pog:orbite>
 
+
+#cilj(
+  [izračunati položaj satelita iz Keplerovih elemenata],
+  [kako spljoštenost Zemlje (J2) okreće orbite],
+  [kako je složena konstelacija Walker-Delta i po čemu se prave orbite razlikuju],
+  [zašto se s naših širina sateliti ne vide na sjeveru],
+)
+
 Prijemnik može riješiti položaj samo ako zna gdje su sateliti bili u trenutku odašiljanja. Navigacijska poruka zato nosi parametre orbite, a prijemnik iz njih računa položaj satelita. Ovo poglavlje pokazuje kako se iz šest brojeva dobiva položaj satelita, zašto su GNSS konstelacije složene upravo tako kako jesu i što iz toga slijedi za korisnika na Zemlji.
 
 == Keplerovi elementi

@@ -5,6 +5,14 @@
 
 = Pravi podaci: RINEX i efemeride <pog:pravi>
 
+
+#cilj(
+  [čitati RINEX opažanja i navigacijske datoteke],
+  [kako se iz emitiranih efemerida računa položaj satelita i koliko je točan],
+  [koje korekcije traži jednofrekvencijsko pozicioniranje],
+  [kako se algoritmi iz knjige ponašaju na stvarnim podacima],
+)
+
 Sve dosad radilo je na simuliranim mjerenjima. U ovom poglavlju isti procjenitelj, isti Kalmanov filtar s RAIM-om, dobiva *stvarna* mjerenja geodetskog prijemnika i stvarne navigacijske poruke satelita. Time se zatvara krug: algoritmi iz knjige nisu igračka za simulator, nego rade na podacima iz stvarnog svijeta.
 
 == Format RINEX

@@ -3,6 +3,14 @@
 
 = Signal: kod, korelacija i C/N0 <pog:signal>
 
+
+#cilj(
+  [kako su građeni C/A kod i Gold kodovi i zašto se sateliti ne miješaju],
+  [kako petlja koda mjeri kašnjenje i odakle joj šum],
+  [izračunati C/N0 iz link budgeta i šum koda iz C/N0],
+  [što su Doppler, međusobno ometanje i gubitak zabrave],
+)
+
 Pseudoudaljenost nije izmjerena ravnalom, nego korelatorom. Prijemnik pomiče lokalnu kopiju koda satelita dok se ne poravna s primljenim signalom, a pomak u trenutku poravnanja je vrijeme leta. Ovo poglavlje objašnjava kako je signal građen, kako se iz šuma izvlači mjerenje točno na metar i o čemu ovisi koliko je to mjerenje šumovito.
 
 == Građa signala

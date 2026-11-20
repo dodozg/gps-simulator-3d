@@ -2,7 +2,8 @@
 
 PDF: [`Satelitska_navigacija_u_simulatoru.pdf`](Satelitska_navigacija_u_simulatoru.pdf)
 
-Udžbenik za studente tehnike (hrvatski) s vježbama u GPS Simulatoru 3D. Pisan u
+Udžbenik za studente tehnike (hrvatski) s vježbama u GPS Simulatoru 3D. Vizualni jezik
+(fontovi, boje, naslovnica) preuzet je iz knjige *Od vozača do mehaničara*. Pisan u
 [Typstu](https://typst.app); slike i sve brojke u tekstu računa sam simulator.
 
 ## Izgradnja
@@ -26,6 +27,8 @@ python docs/udzbenik/skripte/studije.py      # ponovno odvrti sandbox studije (d
 | `skripte/studije.py` | sandbox studije koje knjiga citira → `studije/rezultati/` |
 | `studije/*.json`, `primjeri/` | specifikacije studija; primjer plugina (`plugin_ls.py`) |
 | `podaci/` | podaci za računske vježbe (izvezeni iz simulatora) |
+| `fontovi/` | Source Serif 4, Barlow, Barlow Condensed, JetBrains Mono (OFL, licence uz fontove) |
+| `skripte/slike_00_naslovnica.py` | crta ilustraciju naslovnice (pseudoudaljenosti u mreži su iz simulatora) |
 
 ## Pravila pisanja
 

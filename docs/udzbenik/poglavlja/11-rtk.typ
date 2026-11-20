@@ -6,6 +6,14 @@
 
 = Fazna mjerenja i RTK <pog:rtk>
 
+
+#cilj(
+  [zašto je faza nosioca precizna, ali dvosmislena],
+  [kako dvostruke razlike poništavaju satove i atmosferu],
+  [kako se cjelobrojne neodređenosti fiksiraju metodom LAMBDA i kada im se smije vjerovati],
+  [zašto duljina baze ograničava RTK],
+)
+
 Sve dosad radilo je s kodom: pseudoudaljenost s šumom od metra i točnošću položaja od nekoliko metara. Geodezija, poljoprivreda i strojevi koji se sami voze trebaju centimetre. Do njih se dolazi mjerenjem *faze nosioca*, a ne koda, i to relativno u odnosu na obližnju referentnu stanicu. Ovo poglavlje objašnjava RTK (_real-time kinematic_) i najvažniji pojam precizne navigacije: cjelobrojnu neodređenost.
 
 == Faza nosioca
