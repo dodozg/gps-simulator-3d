@@ -24,6 +24,7 @@ STUDIJE = {
     "raim_roc": os.path.join(REPO, "sandbox", "examples", "raim_roc.json"),
     "spoof_offset": os.path.join(REPO, "sandbox", "examples", "spoof_offset.json"),
     "jamming_jn": os.path.join(REPO, "sandbox", "examples", "jamming_jn.json"),
+    "ls_vs_wls": os.path.join(UDZBENIK, "primjeri", "ls_vs_wls.json"),
 }
 
 

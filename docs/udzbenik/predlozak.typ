@@ -140,6 +140,7 @@
   show figure.caption: set text(size: 9pt)
   show figure: set block(above: 1.2em, below: 1.2em)
 
+  show heading: set par(justify: false)
   show heading.where(level: 1): it => {
     counter(math.equation).update(0)
     counter(figure.where(kind: image)).update(0)
@@ -151,7 +152,7 @@
       text(size: 13pt, fill: boja-glavna, font: sans, weight: "bold")[Poglavlje #counter(heading).display("1")]
       v(0.2em)
     }
-    text(size: 22pt, weight: "bold", fill: boja-glavna, it.body)
+    text(size: 22pt, weight: "bold", fill: boja-glavna, hyphenate: false, it.body)
     v(0.3em)
     line(length: 100%, stroke: 1pt + boja-glavna)
     v(1.2em)

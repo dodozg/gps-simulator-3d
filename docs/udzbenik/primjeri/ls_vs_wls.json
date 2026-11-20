@@ -1,0 +1,13 @@
+{
+  "name": "ls_vs_wls",
+  "description": "Udžbenik, pogl. 14: obični LS (plugin) protiv WLS-a i EKF-a na istim mjerenjima, bez napada i s kvarom sata od 30 m.",
+  "world": {"lat": 45.815, "lon": 15.982, "alt": 120, "duration_s": 180, "systems": ["GPS"],
+            "terrain": false, "t0_random_s": 86164},
+  "seeds": 6,
+  "plugins": ["docs/udzbenik/primjeri/plugin_ls.py"],
+  "attack": {"type": "sat_fault", "bias_m": 0, "start": 60},
+  "sweep": {"attack.bias_m": [0, 30]},
+  "estimators": ["ls_obicni", "wls", "ekf"],
+  "metrics": ["h_err_median", "h_err_p95", "h_err_p99", "v_err_p95"],
+  "warmup_s": 20
+}
