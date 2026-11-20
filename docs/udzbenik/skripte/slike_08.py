@@ -104,7 +104,7 @@ def q_studija(b):
     ax.axvline(1.0, color=SIVA, lw=0.8, ls=":")
     ax.text(1.08, ax.get_ylim()[1] * 0.92, "simulator", fontsize=7.5, color=SIVA)
     ax.set_xscale("log")
-    ax.set_xlabel("faktor procesnog šuma (Q_POS, Q_VEL × faktor)")
+    ax.set_xlabel(r"faktor procesnog šuma ($Q_{\mathrm{pos}}$ i $Q_{\mathrm{vel}}$ × faktor)")
     ax.set_ylabel("3D pogreška [m]")
     ax.set_ylim(0, None)
     ax.legend(fontsize=7)

@@ -165,9 +165,9 @@ def roc(b):
     b["roc"] = out
     fig, ax = plt.subplots(figsize=(6.2, 2.9))
     for (k, niz), boja in zip(out.items(), (PLAVA, ZELENA, LJUBICASTA)):
-        oznaka = {"0.01": "10⁻²", "0.0001": "10⁻⁴", "1e-07": "10⁻⁷"}[k]
+        oznaka = {"0.01": "-2", "0.0001": "-4", "1e-07": "-7"}[k]
         ax.plot([p["x"] for p in niz], [np.nan if p["raim_pd"] is None else p["raim_pd"] for p in niz], "o-", ms=3.5, color=boja,
-                label=r"$P_{\mathrm{FA}}$ = " + oznaka)
+                label=r"$P_{\mathrm{FA}} = 10^{" + oznaka + "}$")
     ax.set_xlabel("kvar sata jednog satelita [m]")
     ax.set_ylabel("vjerojatnost detekcije po epohi")
     ax.set_ylim(-0.02, 1.02)
