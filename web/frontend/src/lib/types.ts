@@ -139,3 +139,32 @@ export interface ConstellationMeta {
   gps: { a: number; e: number; i: number; w: number; planes: number[]; n_sats: number };
   systems: Record<string, { alt: number; inc: number; isb_m: number; planes: number; sats: number }>;
 }
+
+// ---- Istraživački sandbox (web/backend/routes_sandbox.py, sandbox.py) ----
+export interface SandboxSummary {
+  n: number; mean: number | null; median: number | null; p95: number | null; std: number | null;
+  min: number | null; max: number | null; ci_lo: number | null; ci_hi: number | null;
+}
+export interface SandboxAggRow {
+  point: number; group: number; location: string; estimator: string;
+  params: Record<string, unknown>;
+  metrics: Record<string, SandboxSummary>;
+}
+export interface SandboxSize { points: number; locations: number; seeds: number; runs: number; epochs: number; }
+export interface SandboxResult {
+  spec: Record<string, unknown> & { name?: string; metrics?: string[]; sweep?: Record<string, unknown[]> };
+  points: Array<{ index: number; params: Record<string, unknown> }>;
+  aggregate: SandboxAggRow[];
+  locations: Array<{ name: string; lat: number; lon: number; alt: number }>;
+  meta: Record<string, unknown> & { elapsed_s?: number; runs_done?: number; runs_total?: number; git?: { commit: string; dirty: boolean } | null };
+}
+export interface SandboxJob {
+  id: string; status: "queued" | "running" | "done" | "error" | "cancelled";
+  done: number; total: number; error: string | null; name: string;
+  created: number; started: number | null; finished: number | null;
+  result?: SandboxResult;
+}
+export interface SandboxExample {
+  file: string; name: string; description: string;
+  spec: Record<string, unknown>; size: SandboxSize | null;
+}

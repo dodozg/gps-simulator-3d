@@ -45,6 +45,11 @@ headless `numpy` engine — live 3D globe, telemetry, guided lessons, experiment
 - **Engineering hygiene** — 60 tests, CI on Python 3.11–3.13, a single seeded
   `Generator` threaded through every noise source (byte-reproducible), headless
   engine fully decoupled from the GUI.
+- **Research sandbox** — declarative experiments from one JSON spec: parameter
+  sweeps × Monte Carlo over seeds (noise *and* constellation geometry) × several
+  estimators on the *same* measurements, 95 % confidence intervals, CSV/JSON/PNG
+  export, plugin registries for estimators/attacks/metrics, parallel and
+  bit-for-bit reproducible regardless of worker count.
 - **Educational web layer** — live globe, click-to-place receiver, glossary
   popovers over live numbers, guided lessons that drive the app, bilingual HR/EN.
 
@@ -119,6 +124,50 @@ contribution) and RAIM (T on the χ² curve, slopes, HPL). It can be frozen and 
 
 ---
 
+## Research sandbox
+
+`sandbox.py` runs a whole **study** from one JSON spec: a parameter grid (sweep) ×
+Monte Carlo over seeds (noise **and** constellation geometry via `t0_random_s`) ×
+several algorithms fed the **same** measurements. For every sweep point it reports
+mean, median, p95 and a **95 % confidence interval** across seeds, writes
+`results.json` (spec + git commit + per-run and aggregated metrics) and
+`results.csv`, and `--plot` draws the metric vs the swept parameter with a CI band.
+Results are identical for any `--workers` count.
+
+```bash
+python sandbox.py list                                   # estimators / attacks / metrics / examples
+python sandbox.py validate sandbox/examples/raim_roc.json
+python sandbox.py run sandbox/examples/spoof_offset.json --workers 4 --out results/spoof --plot
+```
+
+```python
+import sandbox
+res = sandbox.run({"world": {"duration_s": 120, "t0_random_s": 86164}, "seeds": 8,
+                   "attack": {"type": "sat_fault", "start": 30},
+                   "sweep": {"attack.bias_m": [0, 15, 30, 60], "raim.pfa": [1e-3, 1e-5]},
+                   "metrics": ["raim_pd", "mi_events", "h_err_p95"]}, workers=4)
+res.table("raim_pd")          # numpy array of means per sweep point
+```
+
+**Plugins** without touching the engine: `@register_estimator("name")`
+(`factory(world)` → object with `solve(signals, t) -> (pos_ecef | None, info)`),
+`@register_attack("name")` (`apply(signals, t, rx_pos, rng)` + `is_active(t)`),
+`@register_metric("name")` (`fn(trace) -> float`). Built in: `ekf` (the real
+`receiver.Receiver` incl. RAIM), `wls` (snapshot WLS + snapshot RAIM with FDE), all
+`spoofing.py` attacks + `sat_fault` (single-satellite clock fault) and ~40 metrics —
+accuracy, availability, integrity availability (HPL ≤ HAL), P_D, false alarms,
+time-to-detect, **misleading information** (error > HPL with no alarm), HMI,
+NIS/dof, solver runtime. Example studies (RAIM ROC, spoof vs MI, jamming, multi-GNSS
+vs mask, EKF vs WLS) live in [`sandbox/examples/`](sandbox/examples/README.md); the
+web app has the same in Experiments → **Sandbox** (edit the spec, background job,
+CI chart, CSV download).
+
+| RAIM detection probability vs fault size | Coordinated spoof: misleading-information rate |
+|---|---|
+| ![RAIM P_D vs clock-fault size for several P_FA](docs/media/sandbox_raim_roc.png) | ![Misleading-information rate vs spoof offset](docs/media/sandbox_spoof_mi.png) |
+
+---
+
 ## How it works (one diagram)
 
 ```
@@ -155,6 +204,7 @@ Full architecture, block diagrams and model derivations:
 | `web/` | Web control center + GNSS academy (FastAPI + CesiumJS) — the 3D interface |
 | `rinex.py` · `ephemeris.py` · `realdata.py` · `broadcast_constellation.py` | **Real data**: RINEX obs/nav (v2/v3) + SP3 parsers, IS-GPS-200 broadcast orbits, single-point positioning on real RINEX through the same EKF/RAIM, constellation driven by a real nav file |
 | `rtk.py` · `spoofing.py` · `multignss.py` · `iono.py` · `skyplot.py` · `scenario.py` · `benchmark.py` | Standalone headless tools |
+| `sandbox.py` · `sandbox/examples/` | Research sandbox: declarative sweep × Monte Carlo × estimator experiments, plugin registries |
 
 ---
 
