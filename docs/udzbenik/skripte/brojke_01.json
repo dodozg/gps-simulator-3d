@@ -1,0 +1,37 @@
+{
+ "snimka_po_sustavu": {
+  "GPS": 32,
+  "GAL": 32,
+  "GLO": 28,
+  "BDS": 54
+ },
+ "snimka_ukupno": 146,
+ "maska_deg": 10.0,
+ "vid": {
+  "w_gps": {
+   "min": 5,
+   "max": 8,
+   "sred": 6.7
+  },
+  "w_svi": {
+   "min": 23,
+   "max": 34,
+   "sred": 27.7
+  },
+  "p_gps": {
+   "min": 7,
+   "max": 12,
+   "sred": 9.0
+  },
+  "p_svi": {
+   "min": 33,
+   "max": 50,
+   "sred": 41.4
+  }
+ },
+ "d_zenit_km": 20200.0,
+ "d_5_km": 25247.0,
+ "tau_zenit_ms": 67.4,
+ "tau_5_ms": 84.2,
+ "m_po_ns": 0.3
+}

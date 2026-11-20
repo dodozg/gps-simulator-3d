@@ -38,8 +38,8 @@
 }
 
 // ---------------------------------------------------------------- okviri
-#let okvir(boja, naslov, tijelo) = block(
-  width: 100%, breakable: true, above: 1.1em, below: 1.1em,
+#let okvir(boja, naslov, tijelo, lomljiv: true) = block(
+  width: 100%, breakable: lomljiv, above: 1.1em, below: 1.1em,
   stroke: (left: 2.5pt + boja), fill: boja.lighten(93%),
   inset: (left: 10pt, right: 8pt, top: 7pt, bottom: 8pt),
   [#text(fill: boja, weight: "bold", font: sans, size: 0.85em, naslov)
@@ -47,8 +47,8 @@
    #tijelo],
 )
 
-#let napomena(naslov: "Napomena", tijelo) = okvir(boja-napomena, naslov, tijelo)
-#let kljucno(tijelo) = okvir(boja-glavna, "Ključne ideje", tijelo)
+#let napomena(naslov: "Napomena", tijelo) = okvir(boja-napomena, naslov, tijelo, lomljiv: false)
+#let kljucno(tijelo) = okvir(boja-glavna, "Ključne ideje", tijelo, lomljiv: false)
 
 // ---------------------------------------------------------------- vježbe
 // Tri vrste: vodjena (u web-aplikaciji), racunska (papir / Python), istrazivacka (sandbox).
@@ -68,7 +68,7 @@
     let br = brojac-vjezbi.get().first()
     let oznaka = str(pog) + "." + str(br)
     let glava = [#znak Vježba #oznaka#if naslov != none [ — #naslov] #h(0.4em)#text(weight: "regular", size: 0.9em, fill: luma(90))[(#opis)]]
-    okvir(boja, glava, tijelo)
+    okvir(boja, glava, tijelo, lomljiv: false)
     if rjesenje != none {
       [#metadata((oznaka: oznaka, naslov: naslov, rjesenje: rjesenje))<rjesenje>]
     }
