@@ -1,5 +1,6 @@
 #import "../predlozak.typ": *
 
+#if s-rjesenjima [
 #nadnaslov[Prilog A]
 #heading(numbering: none)[Rješenja vježbi]
 
@@ -9,8 +10,9 @@ Rješenja vođenih vježbi opisuju što bi se trebalo vidjeti. Točni brojevi ov
   #set text(size: 9.5pt)
   #sva-rjesenja()
 ]
+]
 
-#nadnaslov[Prilog B]
+#nadnaslov[Prilog #if s-rjesenjima [B] else [A]]
 #heading(numbering: none)[Pojmovnik]
 
 Pojmovnik je isti kao u aplikaciji (klik na plavi pojam u telemetriji), preuzet iz #kod("web/content/glossary.hr.json").
@@ -27,7 +29,7 @@ Pojmovnik je isti kao u aplikaciji (klik na plavi pojam u telemetriji), preuzet 
   ]
 ]
 
-#nadnaslov[Prilog C]
+#nadnaslov[Prilog #if s-rjesenjima [C] else [B]]
 #heading(numbering: none)[Konstante i parametri simulatora]
 
 Stanje u trenutku izrade knjige. Stupac desno navodi gdje se vrijednost nalazi u kodu.
@@ -71,7 +73,7 @@ Stanje u trenutku izrade knjige. Stupac desno navodi gdje se vrijednost nalazi u
   )
 ]
 
-#nadnaslov[Prilog D]
+#nadnaslov[Prilog #if s-rjesenjima [D] else [C]]
 #heading(numbering: none)[Literatura]
 
 #set par(hanging-indent: 1.5em, justify: false)

@@ -3,6 +3,9 @@
 // Barlow Condensed za naslove, Barlow za oznake, JetBrains Mono za kod; petrolej i
 // signalno narančasta. Fontovi su u docs/udzbenik/fontovi (OFL), build.py ih predaje Typstu.
 
+// Studentsko izdanje (bez Priloga s rješenjima): typst ... --input rjesenja=ne (build.py ga gradi uz glavno).
+#let s-rjesenjima = sys.inputs.at("rjesenja", default: "da") != "ne"
+
 // ---------------------------------------------------------------- boje i fontovi
 #let petrol = rgb("#0e4f63")
 #let signal = rgb("#c2570a")

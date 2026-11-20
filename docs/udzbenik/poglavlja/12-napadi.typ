@@ -68,10 +68,10 @@ Studija ometanja (#kod("sandbox/examples/jamming_jn.json"), Zagreb, 6 sjemena, o
 
 Ometač istim $J\/N$ pogađa sve sustave, pa multi-GNSS ne pomaže jer bi bio „jači”, nego zato što preživi više satelita. Nekoliko decibela tolerancije više znači, uz $1\/r^2$ slabljenje snage ometala, primjetno manji polumjer u kojem ometalo onesposobljava prijemnik.
 
-Studija otkriva i jedan kompromis. Bez ometanja medijan HPL-a sa četiri sustava (#br(jm("četiri sustava", 0).hpl_median, d: 0) m) veći je nego samo s GPS-om (#br(jm("GPS", 0).hpl_median, d: 0) m). Uz granicu od deset satelita u rješenju (pogl. @pog:dop) četiri sustava znače četiri sata, odnosno tri nepoznanice više, pa ostaje manje redundancije za zaštitnu granicu. Više sustava, ali premalo satelita po sustavu, može oslabiti integritet.
+Studija otkriva i jedan kompromis. Bez ometanja medijan HPL-a s četiri sustava (#br(jm("četiri sustava", 0).hpl_median, d: 0) m) veći je nego samo s GPS-om (#br(jm("GPS", 0).hpl_median, d: 0) m). Uz granicu od deset satelita u rješenju (pogl. @pog:dop) četiri sustava znače četiri sata, odnosno tri nepoznanice više, pa ostaje manje redundancije za zaštitnu granicu. Više sustava, ali premalo satelita po sustavu, može oslabiti integritet.
 
 #vjezba(vrsta: "vodjena", naslov: "Četiri napada uživo", rjesenje: [
-  Ishodi odgovaraju @fig:napadi. Uz koordinirani lažni signal procjena (na globusu) glatko odšeta od stvarnog položaja dok #ui("Integritet") cijelo vrijeme pokazuje #ui("u redu"), a krug HPL-a ostaje zelen i mali. Uz naivni napad u tablici se pojave sateliti #ui("RAIM odbacio"), a status je #ui("kvar isključen"). Meaconing ne mijenja položaj, ali se pomak vidi u procjeni sata prijemnika (#ui("Sat prijemnika")), koja kroz rampu napada naraste za kašnjenje od 4 km. Ometanje smanjuje C/N0 svih satelita, sateliti nestaju iz tablice počevši od najnižih, a na kraju nestaje i fix.
+  Ishodi odgovaraju @fig:napadi[slici]. Uz koordinirani lažni signal procjena (na globusu) glatko odšeta od stvarnog položaja dok #ui("Integritet") cijelo vrijeme pokazuje #ui("u redu"), a krug HPL-a ostaje zelen i mali. Uz naivni napad u tablici se pojave sateliti #ui("RAIM odbacio"), a status je #ui("kvar isključen"). Meaconing ne mijenja položaj, ali se pomak vidi u procjeni sata prijemnika (#ui("Sat prijemnika")), koja kroz rampu napada naraste za kašnjenje od 4 km. Ometanje smanjuje C/N0 svih satelita, sateliti nestaju iz tablice počevši od najnižih, a na kraju nestaje i fix.
 ])[
   U lijevom panelu pod #ui("Napad") redom odaberi #ui("koordinirani spoof"), #ui("naivni multi-SV"), #ui("meaconing") i #ui("jamming"). Za svaki napad pričekaj da prozor napada prođe (#ui("NAPAD AKTIVAN")) i prati #ui("Greška"), #ui("Integritet"), tablicu satelita i krug HPL-a na globusu. Između napada vrati #ui("bez napada").
 ]
@@ -95,7 +95,7 @@ Studija otkriva i jedan kompromis. Bez ometanja medijan HPL-a sa četiri sustava
 ]
 
 #vjezba(vrsta: "istrazivacka", naslov: "Napad koji RAIM vidi napola", rjesenje: [
-  Djelomično koordiniran napad, kada se pomakne samo dio satelita, ostavlja rezidual proporcionalan dijelu koji nije usklađen. RAIM ga otkriva kad taj dio prijeđe prag sličan onome iz @fig:roc. Odgovor ovisi o tvom pluginu i nije unaprijed izračunat u ovoj knjizi. Očekuje se da napadač koji kontrolira samo pola satelita ne može glatko preuzeti položaj bez alarma.
+  Djelomično koordiniran napad, kada se pomakne samo dio satelita, ostavlja rezidual proporcionalan dijelu koji nije usklađen. RAIM ga otkriva kad taj dio prijeđe prag sličan onome iz @fig:roc[slike]. Odgovor ovisi o tvom pluginu i nije unaprijed izračunat u ovoj knjizi. Očekuje se da napadač koji kontrolira samo pola satelita ne može glatko preuzeti položaj bez alarma.
 ])[
   Napiši vlastiti napad u sandboxu (#kod("@register_attack"), pogl. @pog:projekti) koji koordinirano laže samo na polovici satelita, a ostale ostavlja netaknute. Usporedi #kod("raim_detections"), #kod("mi_rate") i #kod("final_err") s potpuno koordiniranim napadom. Što zaključuješ o tome koliko satelita napadač mora kontrolirati?
 ]

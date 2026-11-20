@@ -51,7 +51,7 @@ Studija u sandboxu (#kod("sandbox/examples/multignss_mask.json"), Zagreb, 8 sjem
   caption: [Multi-GNSS i elevacijska maska (sandbox, EKF, srednje vrijednosti preko 8 sjemena). Lijevo: broj satelita u rješenju (najviše 16). Sredina: medijan zaštitne granice HPL (log-mjerilo). Desno: udio epoha u kojima je HPL ≤ 100 m.],
 ) <fig:mgstudija>
 
-Jedna pojedinost s @fig:mgstudija zaslužuje pažnju. S četiri sustava HPL je uz masku 5° *veći* (#mm("četiri sustava", 5, "hpl_median", d: 0) m) nego uz masku od 15° do 25°. Broj satelita je u svim tim točkama isti (16, granica odabira). Razlika je u tome koje satelite odabir uzme: pri niskoj maski među njima je više niskih, šumovitijih satelita, pa im prijemnik pridružuje veće $sigma$ i zaštitna granica raste. Više kandidata ne znači nužno bolji izbor ako se bira samo po geometriji. Istraživačka vježba na kraju poglavlja traži da to provjeriš.
+Jedna pojedinost sa @fig:mgstudija[slike] zaslužuje pažnju. S četiri sustava HPL je uz masku 5° *veći* (#mm("četiri sustava", 5, "hpl_median", d: 0) m) nego uz masku od 15° do 25°. Broj satelita je u svim tim točkama isti (16, granica odabira). Razlika je u tome koje satelite odabir uzme: pri niskoj maski među njima je više niskih, šumovitijih satelita, pa im prijemnik pridružuje veće $sigma$ i zaštitna granica raste. Više kandidata ne znači nužno bolji izbor ako se bira samo po geometriji. Istraživačka vježba na kraju poglavlja traži da to provjeriš.
 
 #kljucno[
   - Svaki dodatni sustav donosi jednu nepoznanicu (ISB) i mnogo satelita. Isplati se čim sustav ima barem dva satelita u rješenju.
@@ -80,5 +80,5 @@ Jedna pojedinost s @fig:mgstudija zaslužuje pažnju. S četiri sustava HPL je u
 #vjezba(vrsta: "istrazivacka", naslov: "Zašto je HPL uz nisku masku veći?", rjesenje: [
   Ova knjiga to *objašnjava*, ali ne *dokazuje*. Dokaz je tvoj zadatak. Prijedlog: u kopiji speca #kod("multignss_mask.json") za četiri sustava dodaj sweep po #kod("max_sats") (npr. 10, 16, 24) i metriku #kod("n_sats_mean"). Ako je objašnjenje točno, s više dopuštenih satelita HPL uz nisku masku trebao bi pasti, jer se uz geometrijski najbolje mogu zadržati i mirniji visoki sateliti. Druga provjera je usporediti medijan elevacije odabranih satelita, što zahtijeva vlastitu metriku (#kod("@register_metric"), pogl. @pog:projekti).
 ])[
-  Na @fig:mgstudija HPL sa četiri sustava ne pada monotono s nižom maskom. Postavi hipotezu i osmisli sandbox studiju kojom je provjeravaš. Odvrti je i zaključi.
+  Na @fig:mgstudija[slici] HPL s četiri sustava ne pada monotono s nižom maskom. Postavi hipotezu i osmisli sandbox studiju kojom je provjeravaš. Odvrti je i zaključi.
 ]

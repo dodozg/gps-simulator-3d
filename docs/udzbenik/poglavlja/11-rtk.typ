@@ -3,6 +3,7 @@
 #let T3 = B.tijek.tri
 #let TG = B.tijek.gps
 #let bz(km) = B.baze.filter(p => p.km == km).first()
+#let K = json("../skripte/brojke_skice.json").lambda
 
 = Fazna mjerenja i RTK <pog:rtk>
 
@@ -14,7 +15,7 @@
   [zašto duljina baze ograničava RTK],
 )
 
-Sve dosad radilo je s kodom: pseudoudaljenost s šumom od metra i točnošću položaja od nekoliko metara. Geodezija, poljoprivreda i strojevi koji se sami voze trebaju centimetre. Do njih se dolazi mjerenjem *faze nosioca*, a ne koda, i to relativno u odnosu na obližnju referentnu stanicu. Ovo poglavlje objašnjava RTK (_real-time kinematic_) i najvažniji pojam precizne navigacije: cjelobrojnu neodređenost.
+Sve dosad radilo je s kodom: pseudoudaljenost sa šumom od metra i točnošću položaja od nekoliko metara. Geodezija, poljoprivreda i strojevi koji se sami voze trebaju centimetre. Do njih se dolazi mjerenjem *faze nosioca*, a ne koda, i to relativno u odnosu na obližnju referentnu stanicu. Ovo poglavlje objašnjava RTK (_real-time kinematic_) i najvažniji pojam precizne navigacije: cjelobrojnu neodređenost.
 
 == Faza nosioca
 
@@ -32,6 +33,21 @@ $ nabla Delta Phi^(i j) = nabla Delta rho^(i j) + lambda nabla Delta N^(i j) + n
 
 gdje je $nabla Delta$ razlika (rover − baza) razlike (satelit $j$ − referentni satelit $i$). Ostaju samo geometrija, cijeli broj $nabla Delta N^(i j)$ i milimetarski šum. Ostatak atmosfere raste s duljinom baze. Simulator ga modelira kao oko #B.atmo_ppm mm po kilometru (1 ppm).
 
+#figure(
+  image("../slike/skica-dvostruke.svg", width: 88%),
+  caption: [Geometrija dvostrukih razlika: baza i rover istodobno mjere iste satelite. Razlika rover − baza uklanja ono što je zajedničko satelitu, a razlika dvaju satelita ono što je zajedničko prijemniku.],
+) <fig:dd>
+
+=== Matrica dizajna
+
+Lineariziramo oko približnog položaja rovera $hat(bold(x))$, kao u poglavlju @pog:ls. Neka je $bold(e)_k$ jedinični vektor od rovera prema satelitu $k$, a satelit $1$ referentni. Za $n$ satelita postoji $n - 1$ dvostrukih razlika faze i isto toliko razlika koda:
+
+$ bold(y)_Phi = mat(bold(D), lambda bold(I)) vec(delta bold(x), bold(N)) + bold(epsilon)_Phi , quad
+  bold(y)_P = mat(bold(D), bold(0)) vec(delta bold(x), bold(N)) + bold(epsilon)_P , quad
+  bold(D) = - mat((bold(e)_2 - bold(e)_1)^T; dots.v; (bold(e)_n - bold(e)_1)^T) , $ <eq:dddizajn>
+
+gdje su $bold(y)$ razlike izmjerenih i predviđenih dvostrukih razlika, a $bold(N)$ vektor od $n - 1$ cjelobrojnih neodređenosti. Satova u modelu više nema. Ključna je *brojka nepoznanica*: faza jedne epohe daje $n - 1$ jednadžbi, a nepoznanica je $3 + (n - 1)$. Fazna mjerenja jedne epohe sama ne mogu odrediti ni položaj ni neodređenosti. Pomaže kod, koji ne sadrži $bold(N)$, ali je oko sto puta šumovitiji, i pomaže *vrijeme*: neodređenosti su iste u svim epohama, a matrica $bold(D)$ se mijenja kako se sateliti gibaju. Zato float rješenju treba vremena da se suzi, i zato više satelita (više redaka, različitih smjerova) skraćuje to vrijeme (@fig:rtktijek).
+
 == Float, fix i LAMBDA
 
 RTK filtar u simulatoru (#kod("rtk.RTKFilter")) procjenjuje položaj rovera i neodređenosti zajedno, iz DD koda (glađenog, #br(B.kod_m, d: 1) m u zenitu) i DD faze. Postupak ima dva stupnja:
@@ -44,6 +60,25 @@ Prijemnik smije prihvatiti cijele brojeve samo ako je siguran. Simulator traži 
 - vjerojatnost uspjeha (_bootstrapping_) od barem #br(B.p_boot * 100, d: 1) %.
 
 Prihvaćeni cijeli brojevi se zatim „drže” (_fix-and-hold_). Pogrešan fiks je opasan, jer daje rješenje koje izgleda centimetarski, a pogrešno je za desetke centimetara. Zato se rješenje nakon fiksa još provjerava preko reziduala faze.
+
+=== Kako LAMBDA traži cijele brojeve
+
+Fiksiranje je *cjelobrojni problem najmanjih kvadrata*: među svim cjelobrojnim vektorima $bold(z)$ traži se onaj koji minimizira
+
+$ (hat(bold(a)) - bold(z))^T bold(Q)_(hat(a))^(-1) (hat(bold(a)) - bold(z)) , $ <eq:ils>
+
+gdje je $hat(bold(a))$ float procjena neodređenosti, a $bold(Q)_(hat(a))$ njezina kovarijanca. Kad bi neodređenosti bile nekorelirane, rješenje bi bilo obično zaokruživanje svake komponente. Ali dvostruke razlike dijele referentni satelit i istu geometriju, pa su float neodređenosti *jako korelirane*. Područje nesigurnosti tada nije krug nego tanka, ukošena elipsa, a zaokruživanje po komponentama može promašiti.
+
+@fig:lambda[Slika] prikazuje dvodimenzionalni primjer sa standardnim devijacijama od #br(calc.sqrt(K.Q.at(0).at(0)), d: 2) i #br(calc.sqrt(K.Q.at(1).at(1)), d: 2) ciklusa i korelacijom $rho$ = #br(K.rho, d: 3). Float rješenje je $hat(bold(a))$ = (#br(K.a.at(0)); #br(K.a.at(1))). Zaokruživanje daje (#K.okr.at(0); #K.okr.at(1)), s vrijednošću @eq:ils od #br(K.d_okr), daleko izvan elipse. Cjelobrojni LS (funkcija simulatora #kod("rtk.lambda_ils")) daje (#K.ils.at(0); #K.ils.at(1)) s vrijednošću #br(K.d_ils, d: 2), a drugi najbolji kandidat #br(K.d_drugi, d: 2).
+
+Metoda LAMBDA (Teunissen) problem prvo *dekorelira*: cjelobrojnom matricom $bold(Z)$ s determinantom $plus.minus 1$, čija je i inverzna matrica cjelobrojna, prevodi neodređenosti u $bold(z) = bold(Z) hat(bold(a))$. Takva transformacija ne mijenja rešetku cijelih brojeva, ali elipsu čini okruglijom. U primjeru $bold(Z) = mat(1, 0; -1, 1)$ smanjuje korelaciju s #br(K.rho, d: 3) na #br(K.rho_z, d: 2). U dekoreliranom prostoru pretraga je mala i brza, a rješenje se vraća s $bold(Z)^(-1)$.
+
+#figure(
+  image("../slike/11-lambda.svg", width: 94%),
+  caption: [LAMBDA u dvije dimenzije. Lijevo: float rješenje (×) i elipse 1σ i 2σ u izvornom prostoru. Zaokruživanje (narančasti krug) i cjelobrojni LS (zeleno) daju različite cijele brojeve. Desno: isti problem nakon cjelobrojne Z-transformacije, s gotovo okruglom elipsom.],
+) <fig:lambda>
+
+Primjer pokazuje i zašto postoje provjere. Omjer drugog i najboljeg kandidata je #br(K.omjer, d: 2), manje od praga #br(B.ratio_min, d: 0) koji simulator traži, a vjerojatnost uspjeha bootstrappinga je #br(K.p_boot * 100, d: 0) %. Simulator ovdje *ne bi* fiksirao, nego bi pričekao da se float rješenje suzi kroz još nekoliko epoha. To je ispravna odluka.
 
 #figure(
   image("../slike/11-tijek.svg", width: 94%),
@@ -85,7 +120,7 @@ U praksi se zato za RTK koriste mreže referentnih stanica na razmaku od nekolik
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Daleka baza", rjesenje: [
-  Uz bazu na 2–5 km FIX dolazi brzo. Uz bazu na više od 20 km status ostaje #ui("FLOAT"), a float greška je decimetarska, kao na @fig:baze. Simulator pri tome ne prijavljuje lažni FIX: varijanca atmosfere raste s duljinom baze, pa ratio test i provjera vjerojatnosti uspjeha ne prolaze. Vraćanjem na #ui("Automatska baza") (oko 4 km) FIX se vraća.
+  Uz bazu na 2–5 km FIX dolazi brzo. Uz bazu na više od 20 km status ostaje #ui("FLOAT"), a float greška je decimetarska, kao na @fig:baze[slici]. Simulator pri tome ne prijavljuje lažni FIX: varijanca atmosfere raste s duljinom baze, pa ratio test i provjera vjerojatnosti uspjeha ne prolaze. Vraćanjem na #ui("Automatska baza") (oko 4 km) FIX se vraća.
 ])[
   Uz uključen RTK postavi baznu stanicu ručno: Shift + dvoklik na globus, redom na 2 km, 10 km i 30 km od rovera (#ui("Duljina baze") u telemetriji). Pričekaj nekoliko minuta simulacije za svaku. Kako se ponaša status? Vrati automatsku bazu gumbom #ui("Automatska baza").
 ]
@@ -105,5 +140,5 @@ U praksi se zato za RTK koriste mreže referentnih stanica na razmaku od nekolik
 #vjezba(vrsta: "vodjena", naslov: "Eksperiment RTK i jedna nedosljednost", rjesenje: [
   Eksperiment daje gotovo iste brojke za bazu od 5, 30 i 60 km. Za zadanu masku od 15° i 10 epoha razmaka 30 s float pogreška je oko 6 cm, fiksna oko 1 mm, a #ui("Višeznačnost fiksirana") je uvijek #ui("DA"). S više epoha float se suzi (oko 1 cm uz 40 epoha). Razlog za neovisnost o duljini baze: offline model u eksperimentu (#kod("rtk.rtk_solve")) *ne uključuje ostatak diferencijalne atmosfere*, pa je svaka baza „kratka”. Živi RTK (#kod("rtk.LiveRTK")) atmosferu modelira i zato iznad 20 km ne fiksira (@fig:baze). Ova knjiga je tu razliku otkrila pri pisanju i predložena je kao ispravak simulatora. Pouka: rezultat modela vrijedi samo onoliko koliko i njegove pretpostavke.
 ])[
-  U #ui("Eksperimenti…") otvori karticu #ui("RTK"). Pokreni ga za #ui("Baza istočno [km]") = 5, 30 i 60, svaki put uz #ui("Epohe") = 10 i 40. Zabilježi #ui("Float greška"), #ui("Fixed greška") i #ui("Višeznačnost fiksirana"). Usporedi s @fig:baze. Što je drukčije i zašto? Pogledaj izvorni kod #kod("rtk.rtk_solve") i #kod("rtk.CarrierPhaseSim.observe").
+  U #ui("Eksperimenti…") otvori karticu #ui("RTK"). Pokreni ga za #ui("Baza istočno [km]") = 5, 30 i 60, svaki put uz #ui("Epohe") = 10 i 40. Zabilježi #ui("Float greška"), #ui("Fixed greška") i #ui("Višeznačnost fiksirana"). Usporedi sa @fig:baze[slikom]. Što je drukčije i zašto? Pogledaj izvorni kod #kod("rtk.rtk_solve") i #kod("rtk.CarrierPhaseSim.observe").
 ]

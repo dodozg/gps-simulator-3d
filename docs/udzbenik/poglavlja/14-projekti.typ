@@ -82,7 +82,7 @@ Bez kvara obični i težinski LS gotovo su jednaki (pogl. @pog:ls), a filtar je 
 ]
 
 #vjezba(vrsta: "istrazivacka", naslov: "Prilagodljivi procesni šum", rjesenje: [
-  Otvoreno pitanje. Jedan pristup: ako je pomični prosjek NIS/n trajno iznad 1, povećaj $bold(Q)$, a ako je ispod, smanji ga, unutar granica. Uspjeh se mjeri na statičnom i na kinematičkom scenariju istodobno, jer je cilj nadmašiti kompromis s @fig:q.
+  Otvoreno pitanje. Jedan pristup: ako je pomični prosjek NIS/n trajno iznad 1, povećaj $bold(Q)$, a ako je ispod, smanji ga, unutar granica. Uspjeh se mjeri na statičnom i na kinematičkom scenariju istodobno, jer je cilj nadmašiti kompromis sa @fig:q[slike].
 ])[
   @fig:q pokazuje da je najbolji procesni šum za statičan prijemnik loš za let. Napiši procjenitelj koji $bold(Q)$ prilagođava prema NIS-u (pogl. @pog:kalman) i usporedi ga sa zadanim EKF-om na statičnom i kinematičkom scenariju (#kod("world.kinematic.speed_mps")).
 ]
@@ -96,7 +96,7 @@ Bez kvara obični i težinski LS gotovo su jednaki (pogl. @pog:ls), a filtar je 
 #vjezba(vrsta: "istrazivacka", naslov: "RTK eksperiment s atmosferom", rjesenje: [
   Otvoreno pitanje i ujedno ispravak simulatora. Offline RTK (#kod("rtk.rtk_solve")) ne uključuje ostatak diferencijalne atmosfere, za razliku od živog RTK-a (pogl. @pog:rtk). Ispravak bi u generiranje faze i koda dodao isti član kao #kod("CarrierPhaseSim.observe") (#kod("ATMO_PPM")), a odluku o fiksiranju doveo na ratio test. Rezultat se provjerava tako da se reproducira @fig:baze.
 ])[
-  Uskladi offline RTK eksperiment s modelom atmosfere iz živog RTK-a. Napiši test koji pokazuje da duljina baze utječe na uspjeh fiksiranja, i usporedi rezultate s @fig:baze.
+  Uskladi offline RTK eksperiment s modelom atmosfere iz živog RTK-a. Napiši test koji pokazuje da duljina baze utječe na uspjeh fiksiranja, i usporedi rezultate sa @fig:baze[slikom].
 ]
 
 #vjezba(vrsta: "istrazivacka", naslov: "Jednofrekvencijski prijemnik", rjesenje: [

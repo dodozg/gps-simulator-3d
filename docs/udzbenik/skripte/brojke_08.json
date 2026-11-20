@@ -23,6 +23,8 @@
  ],
  "konv_nis_sred": 0.75,
  "konv_greska_med": 4.83,
+ "brzina_static_med": 1.1,
+ "brzina_static_p95": 2.05,
  "q_studija": {
   "staticki": [
    {

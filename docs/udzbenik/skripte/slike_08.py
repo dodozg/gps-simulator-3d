@@ -29,7 +29,7 @@ def konvergencija(b):
     e, n, u = enu_basis(gt)
     Rm = np.vstack([e, n, u])
     T = 300
-    err, sig, nis = [], [], []
+    err, sig, nis, brz = [], [], [], []
     for t in range(T):
         con.update_all(float(t))
         rx.receive_signals(con, float(t))
@@ -43,6 +43,7 @@ def konvergencija(b):
         P = Rm @ rx.P_ekf[:3, :3] @ Rm.T
         sig.append(np.sqrt(np.diag(P)))
         nis.append(rx.nis / rx.nis_dof if rx.nis_dof else np.nan)
+        brz.append(float(np.linalg.norm(rx.x_ekf[3:6])))   # prijemnik miruje: prava brzina je 0
     err, sig, nis = np.array(err), np.array(sig), np.array(nis)
     t = np.arange(T)
     fig, axs = plt.subplots(3, 1, figsize=(6.4, 4.6), sharex=True)
@@ -62,7 +63,8 @@ def konvergencija(b):
              konv_sigma_kraj=[round(float(x), 2) for x in sig[-1]],
              konv_sigma_1s=[round(float(x), 1) for x in sig[1]],
              konv_nis_sred=round(float(np.nanmean(nis[30:])), 2),
-             konv_greska_med=round(float(np.nanmedian(np.linalg.norm(err[30:], axis=1))), 2))
+             konv_greska_med=round(float(np.nanmedian(np.linalg.norm(err[30:], axis=1))), 2),
+             brzina_static_med=round(float(np.median(brz[30:])), 2), brzina_static_p95=round(float(np.percentile(brz[30:], 95)), 2))
 
 
 def q_studija(b):

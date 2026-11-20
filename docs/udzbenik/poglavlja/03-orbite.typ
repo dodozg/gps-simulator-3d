@@ -51,7 +51,7 @@ Za GPS to je $dot(Omega)$ = #br(B.GPS.lan_dot_deg_dan, d: 4)°/dan i $dot(omega)
 
 == Konstelacija Walker-Delta
 
-Za globalno pokrivanje treba rasporediti dvadesetak satelita tako da se iz svake točke uvijek vidi barem četiri, po mogućnosti dobro raspršena. Standardni recept je *Walker-Delta* konstelacija $T\/P\/F$: $T$ satelita u $P$ jednako razmaknutih ravnina iste inklinacije, po $T\/P$ jednako razmaknutih u svakoj ravnini, uz pomak faze između susjednih ravnina od $F dot 360° \/ T$. Idealizirani GPS u simulatoru je $24\/6\/1$ na 55° (#kod("satellite.WalkerDeltaConstellation")), a Galileo, GLONASS i BeiDou su $24\/3\/1$ s nazivnim visinama i inklinacijama iz @tab:sustavi.
+Za globalno pokrivanje treba rasporediti dvadesetak satelita tako da se iz svake točke uvijek vidi barem četiri, po mogućnosti dobro raspršena. Standardni recept je *Walker-Delta* konstelacija $T\/P\/F$: $T$ satelita u $P$ jednako razmaknutih ravnina iste inklinacije, po $T\/P$ jednako razmaknutih u svakoj ravnini, uz pomak faze između susjednih ravnina od $F dot 360° \/ T$. Idealizirani GPS u simulatoru je $24\/6\/1$ na 55° (#kod("satellite.WalkerDeltaConstellation")), a Galileo, GLONASS i BeiDou su $24\/3\/1$ s nazivnim visinama i inklinacijama iz @tab:sustavi[tablice].
 
 #napomena(naslov: "Bug pronađen pišući ovu knjigu")[
   Prilikom pripreme ovog poglavlja provjeren je razmak satelita unutar jedne ravnine. Umjesto očekivanih 0°/90°/180°/270° sateliti su stajali na 0°, 118°, 128° i 10°, dakle u dva zbijena para (@fig:faze). Uzrok: $M_0$ je zadan u stupnjevima, a u @eq:keplereq zbrajao se kao da je u radijanima. Nakon ispravka medijan pogreške položaja (samo GPS, četiri lokacije) pao je s 6,2 m na 3,9 m, a GDOP s 3,1 na 2,3. Pouka: provjeri ulazne pretpostavke modela jednostavnim, neovisnim mjerenjem. Ovdje je to bio kut između dva vektora.
@@ -79,7 +79,7 @@ Točnost SGP4 za GNSS satelite je reda kilometra, a nikako metra. Za navigaciju 
 
 Satelit je upotrebljiv kad je iznad horizonta. U praksi se postavlja *maska elevacije* (u simulatoru 5°), jer signali niskih satelita prolaze kroz najviše atmosfere, najslabiji su i najviše ih ometa multipath. Uz to, simulator za svaki satelit baca zraku kroz digitalni model terena (SRTM). Satelit iza planine se ne prati.
 
-Inklinacija od 55° ima posljedicu koju svaki geodet na srednjim širinama poznaje: sateliti nikad ne prolaze iznad 55° geografske širine. Promatrač u Zagrebu ih zato na sjevernom dijelu neba vidi samo nisko, preko pola. Na @fig:skyplot se iz Zagreba vidi „”. U sektoru ±30° oko sjevera iznad 10° elevacije bilo je samo #br(B.sjever_udio_posto.Zagreb)% položaja GPS satelita kroz dan, a u Quitu na ekvatoru #br(B.sjever_udio_posto.Quito)%. Na Svalbardu je situacija obrnuta: nema satelita u zenitu, ali ih ima uokolo po cijelom horizontu.
+Inklinacija od 55° ima posljedicu koju svaki geodet na srednjim širinama poznaje: sateliti nikad ne prolaze iznad 55° geografske širine. Promatrač u Zagrebu ih zato na sjevernom dijelu neba vidi samo nisko, preko pola. Na @fig:skyplot[slici] se iz Zagreba vidi „rupa na sjeveru”. U sektoru ±30° oko sjevera iznad 10° elevacije bilo je samo #br(B.sjever_udio_posto.Zagreb)% položaja GPS satelita kroz dan, a u Quitu na ekvatoru #br(B.sjever_udio_posto.Quito)%. Na Svalbardu je situacija obrnuta: nema satelita u zenitu, ali ih ima uokolo po cijelom horizontu.
 
 #figure(
   image("../slike/03-skyplot-gps.svg", width: 100%),
@@ -97,7 +97,7 @@ Rupa na sjeveru ima izravnu posljedicu za točnost: kad nijedan satelit nije na 
 #vjezba(vrsta: "racunska", naslov: "Ophodna vremena", rjesenje: [
   Iz @eq:kepler3 uz $R = 6371$ km: GPS $a$ = #br(B.GPS.a_km, d: 0) km, $T$ = #br(B.GPS.T_h, d: 2) h (#br(B.GPS.ophoda_po_zv_danu, d: 2) ophoda po zvjezdanom danu); Galileo #br(B.GAL.T_h, d: 2) h (#br(B.GAL.ophoda_po_zv_danu, d: 2)); GLONASS #br(B.GLO.T_h, d: 2) h (#br(B.GLO.ophoda_po_zv_danu, d: 2)); BeiDou MEO #br(B.BDS.T_h, d: 2) h (#br(B.BDS.ophoda_po_zv_danu, d: 2)). Brzine su redom #br(B.GPS.v_kms, d: 2), #br(B.GAL.v_kms, d: 2), #br(B.GLO.v_kms, d: 2) i #br(B.BDS.v_kms, d: 2) km/s. Samo GPS ima cjelobrojan omjer (2:1). Galileo ponavlja trag tek nakon 10 dana (17 ophoda), a GLONASS nakon 8 dana (17 ophoda). Geostacionarna visina iznad sferne Zemlje je $a - R approx$ #br(B.geo_visina_km_sfera, d: 0) km.
 ])[
-  Za nazivne visine iz @tab:sustavi (iznad sfere $R = 6371$ km) izračunaj ophodno vrijeme, broj ophoda po zvjezdanom danu (86 164 s) i brzinu po kružnoj orbiti $v = sqrt(mu \/ a)$ za sva četiri sustava. Koji sustav ima trag po Zemlji koji se ponavlja svaki dan? Na kojoj bi visini satelit bio geostacionaran?
+  Za nazivne visine iz @tab:sustavi[tablice] (iznad sfere $R = 6371$ km) izračunaj ophodno vrijeme, broj ophoda po zvjezdanom danu (86 164 s) i brzinu po kružnoj orbiti $v = sqrt(mu \/ a)$ za sva četiri sustava. Koji sustav ima trag po Zemlji koji se ponavlja svaki dan? Na kojoj bi visini satelit bio geostacionaran?
 ]
 
 #vjezba(vrsta: "racunska", naslov: "Keplerova jednadžba", rjesenje: [
@@ -113,7 +113,7 @@ Rupa na sjeveru ima izravnu posljedicu za točnost: kad nijedan satelit nije na 
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Geostacionarni satelit iz GPS-a", rjesenje: [
-  Uz visinu od oko 35 790 km i inklinaciju 0° satelit miruje nad jednom točkom ekvatora: ophodno vrijeme jednako je zvjezdanom danu, a ravnina orbite je ekvatorska. S inklinacijom većom od nule satelit crta osmicu sjever–jug oko te točke (kao IGSO na @fig:tragovi). Iz Zagreba je takav satelit vidljiv samo ako mu je dužina unutar otprilike ±70° od 16° E, i uvijek nisko na južnom nebu. Satelitu se pritom ne mijenja signal, nego geometrija: stoji na mjestu, pa se njegov doprinos ne mijenja kroz vrijeme.
+  Uz visinu od oko 35 790 km i inklinaciju 0° satelit miruje nad jednom točkom ekvatora: ophodno vrijeme jednako je zvjezdanom danu, a ravnina orbite je ekvatorska. S inklinacijom većom od nule satelit crta osmicu sjever–jug oko te točke (kao IGSO na @fig:tragovi[slici]). Iz Zagreba je takav satelit vidljiv samo ako mu je dužina unutar otprilike ±70° od 16° E, i uvijek nisko na južnom nebu. Satelitu se pritom ne mijenja signal, nego geometrija: stoji na mjestu, pa se njegov doprinos ne mijenja kroz vrijeme.
 ])[
   S idealiziranim orbitama klikni na redak jednog GPS satelita u tablici da otvoriš editor satelita. Postavi #ui("Visina orbite [km]") na 35790 i #ui("Inklinacija [°]") na 0. Promatraj satelit na globusu (#ui("Fokusiraj kameru")) dok simulacija teče ubrzano. Što se dogodi kad inklinaciju postaviš na 30°? Je li satelit vidljiv iz Zagreba?
 ]

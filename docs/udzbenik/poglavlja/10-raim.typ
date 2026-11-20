@@ -43,7 +43,7 @@ Ključna pretpostavka je da prijemnik zna stvarnu razinu šuma. Ako podcjenjuje 
 
 #figure(
   image("../slike/10-kalibracija.svg", width: 86%),
-  caption: [Histogram testne statistike u čistoj simulaciji i teorijska χ² razdioba. Model šuma prijemnika (C/N0 i elevacija, @eq:sigma) dobro odgovara stvarnom šumu, pa je test ispravno kalibriran.],
+  caption: [Histogram testne statistike u čistoj simulaciji i teorijska χ² razdioba. Model šuma prijemnika iz C/N0 i elevacije @eq:sigma dobro odgovara stvarnom šumu, pa je test ispravno kalibriran.],
 ) <fig:kal>
 
 == Isključivanje kvara (FDE)
@@ -99,7 +99,7 @@ Zato zrakoplovstvo za strože operacije koristi vanjsku provjeru integriteta (SB
 ]
 
 #vjezba(vrsta: "vodjena", naslov: "Ubrizgaj kvar", rjesenje: [
-  Kvar od 30 m otkriva se otprilike u svakoj drugoj epohi (usporedi @fig:roc): status povremeno prelazi u #ui("kvar isključen"), a satelit u tablici tada postaje #ui("RAIM odbacio"). Kvar od 60 m isključuje se gotovo u svakoj epohi, a pogreška položaja ostaje nekoliko metara. Kvar od 5 m obično prolazi neotkriven, a pogreška naraste tek za metar ili dva, jer je mali u odnosu na šum. Kad uz pet satelita ubrizgaš 100 m, status postaje #ui("KVAR — ne može se izolirati"): test vidi kvar, ali s jednim stupnjem slobode ne zna koji je satelit kriv, pa se položaj ne može popraviti.
+  Kvar od 30 m otkriva se otprilike u svakoj drugoj epohi (usporedi @fig:roc[sliku]): status povremeno prelazi u #ui("kvar isključen"), a satelit u tablici tada postaje #ui("RAIM odbacio"). Kvar od 60 m isključuje se gotovo u svakoj epohi, a pogreška položaja ostaje nekoliko metara. Kvar od 5 m obično prolazi neotkriven, a pogreška naraste tek za metar ili dva, jer je mali u odnosu na šum. Kad uz pet satelita ubrizgaš 100 m, status postaje #ui("KVAR — ne može se izolirati"): test vidi kvar, ali s jednim stupnjem slobode ne zna koji je satelit kriv, pa se položaj ne može popraviti.
 ])[
   Uz samo GPS i RAIM uključen otvori editor satelita koji se koristi u rješenju. U #ui("Greška sata (kvar) [m]") upiši 30. Prati redak #ui("Integritet"), krug HPL-a na globusu i #ui("Greška") barem minutu simulacije. Ponovi s kvarovima od 60 m i 5 m. Zatim isključi satelite dok ih ne ostane pet i ubrizgaj 100 m. Na kraju poništi kvar gumbom #ui("Zdrav (poništi kvarove)").
 ]
@@ -123,7 +123,7 @@ Zato zrakoplovstvo za strože operacije koristi vanjsku provjeru integriteta (SB
 ]
 
 #vjezba(vrsta: "istrazivacka", naslov: "ROC krivulja", rjesenje: [
-  Rezultati su na @fig:roc. Uz kvar od 60 m detekcija je za $P_"FA" >= 10^(-4)$ gotovo sigurna (#br(pd("0.0001", 60) * 100, d: 0) % epoha). Stopa ispravnog isključivanja (#kod("correct_exclusion_rate")) zaostaje za vjerojatnošću detekcije, jer se pri malim kvarovima ponekad isključi pogrešan satelit. Za dodatnu studiju s rampom kvara koristi #kod("\"rate_mps\"") u napadu #kod("sat_fault").
+  Rezultati su na @fig:roc[slici]. Uz kvar od 60 m detekcija je za $P_"FA" >= 10^(-4)$ gotovo sigurna (#br(pd("0.0001", 60) * 100, d: 0) % epoha). Stopa ispravnog isključivanja (#kod("correct_exclusion_rate")) zaostaje za vjerojatnošću detekcije, jer se pri malim kvarovima ponekad isključi pogrešan satelit. Za dodatnu studiju s rampom kvara koristi #kod("\"rate_mps\"") u napadu #kod("sat_fault").
 ])[
   Pokreni #kod("python sandbox.py run sandbox/examples/raim_roc.json --workers 4 --plot"). Usporedi #kod("raim_pd") i #kod("correct_exclusion_rate"). Zašto se razlikuju? Zatim osmisli studiju u kojoj kvar raste brzinom (#kod("rate_mps")) 0,1, 0,5 i 2 m/s i mjeri #kod("time_to_detect") i #kod("mi_events"). Koliki kvar je dosegnut u trenutku detekcije?
 ]

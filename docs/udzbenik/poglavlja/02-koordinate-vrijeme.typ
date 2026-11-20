@@ -44,13 +44,18 @@ uz polumjer zakrivljenosti u prvom vertikalu $N = a \/ sqrt(1 - e^2 sin^2 phi)$.
 
 *Geodetska* širina (kut normale na elipsoid prema ekvatoru) nije isto što i *geocentrična* širina (kut spojnice sa središtem Zemlje). Za Zagreb (45,815°) geocentrična širina je #br(B.geocentricna_sirina_deg, d: 3)°, dakle manja za gotovo 0,2°. To je na tlu oko 21 km. Karte i GNSS prijemnici uvijek prikazuju geodetsku širinu.
 
+#figure(
+  image("../slike/skica-koordinate.svg", width: 72%),
+  caption: [Meridijanski presjek elipsoida (spljoštenost je pretjerana). Normala na elipsoid u točki P određuje geodetsku širinu $phi$ i smjer „gore” lokalnog sustava, a spojnica sa središtem geocentričnu širinu $phi'$. Os istoka gleda iz ravnine crteža.],
+) <fig:koordinate>
+
 #napomena(naslov: "Gdje simulator pojednostavljuje")[
-  Idealizirane orbite računaju se na sfernoj Zemlji polumjera 6371 km, a modeli ionosfere i troposfere elevaciju računaju iz geocentričnog „”. Položaji prijemnika, pretvorbe koordinata i sve pogreške u lokalnom sustavu (ENU) koriste WGS-84. Razlika u elevaciji je ispod 0,2° i ne utječe na zaključke ove knjige.
+  Idealizirane orbite računaju se na sfernoj Zemlji polumjera 6371 km, a modeli ionosfere i troposfere elevaciju računaju iz geocentričnog „gore”. Položaji prijemnika, pretvorbe koordinata i sve pogreške u lokalnom sustavu (ENU) koriste WGS-84. Razlika u elevaciji je ispod 0,2° i ne utječe na zaključke ove knjige.
 ]
 
 == Lokalni sustav istok–sjever–gore
 
-Pogreška od „” ne govori mnogo. Zanima nas je li prijemnik pogriješio vodoravno ili po visini, i u kojem smjeru. Zato se razlike položaja izražavaju u *lokalnom* sustavu ENU (_East–North–Up_) s ishodištem u prijemniku. Jedinični vektori u točki $(phi, lambda)$ su
+Pogreška od „5 m u ECEF-u” ne govori mnogo. Zanima nas je li prijemnik pogriješio vodoravno ili po visini, i u kojem smjeru. Zato se razlike položaja izražavaju u *lokalnom* sustavu ENU (_East–North–Up_) s ishodištem u prijemniku. Jedinični vektori u točki $(phi, lambda)$ su
 
 $ bold(e) = vec(-sin lambda, cos lambda, 0), quad
   bold(n) = vec(-sin phi cos lambda, -sin phi sin lambda, cos phi), quad

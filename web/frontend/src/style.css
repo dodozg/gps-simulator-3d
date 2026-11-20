@@ -45,11 +45,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
   position: absolute; top: 68px; bottom: 16px; width: 300px;
   background: var(--panel); backdrop-filter: blur(10px);
   border: 1px solid var(--border); border-radius: 14px;
-  padding: 14px; overflow-y: auto; color: var(--text);
+  padding: 14px; overflow-y: auto; overflow-x: hidden; color: var(--text);
   box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 .panel-left { left: 16px; }
-.panel-right { right: 16px; width: 320px; }
+.panel-right { right: 16px; width: 352px; }
+
+/* trake za pomicanje: tanke i tamne; na panelima vidljive tek kad je miš iznad njih */
+* { scrollbar-width: thin; scrollbar-color: rgba(140,160,180,0.35) transparent; }
+.panel { scrollbar-color: transparent transparent; transition: scrollbar-color 0.2s; }
+.panel:hover { scrollbar-color: rgba(140,160,180,0.35) transparent; }
 .panel-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--cyan); margin-bottom: 12px; }
 .panel-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--dim); margin: 14px 0 6px; }
 
@@ -101,8 +106,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 /* sat table */
 .sat-table-wrap { margin-top: 4px; }
 .sat-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.sat-table th { text-align: left; color: var(--dim); font-weight: 500; padding: 4px 4px; border-bottom: 1px solid var(--border); }
-.sat-table td { padding: 3px 4px; border-bottom: 1px solid rgba(30,40,54,0.4); }
+.sat-table th { text-align: left; color: var(--dim); font-weight: 500; padding: 4px 3px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.sat-table td { padding: 3px 3px; border-bottom: 1px solid rgba(30,40,54,0.4); white-space: nowrap; }
 .sat-table tr.tracked td { color: var(--green); }
 .sat-table tr.rejected td { color: var(--red); }
 .sat-table tr.sat-disabled td { opacity: 0.4; }
@@ -113,7 +118,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 
 /* editor pojedinog satelita — plutajuća kartica lijevo od desnog panela */
 .sat-editor {
-  position: fixed; right: 344px; top: 92px; width: 260px; z-index: 1200;
+  position: fixed; right: 376px; top: 92px; width: 260px; z-index: 1200;
   max-height: calc(100vh - 108px); overflow-y: auto;
   background: var(--panel-solid); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: 0 16px 44px rgba(0,0,0,0.6); padding: 12px 14px; pointer-events: auto;
@@ -171,7 +176,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
 
 /* donji dok — živi grafovi */
-.dock { position: fixed; bottom: 0; left: 332px; right: 352px; z-index: 20; display: flex; flex-direction: column; align-items: stretch; }
+.dock { position: fixed; bottom: 0; left: 332px; right: 384px; z-index: 20; display: flex; flex-direction: column; align-items: stretch; }
 .dock-handle { align-self: center; background: var(--panel); border: 1px solid var(--border); border-bottom: none; border-radius: 10px 10px 0 0; color: var(--cyan); font-size: 12px; padding: 5px 18px; cursor: pointer; font-family: var(--sans); backdrop-filter: blur(10px); }
 .dock-body { display: none; gap: 12px; background: var(--panel); backdrop-filter: blur(10px); border: 1px solid var(--border); border-bottom: none; border-radius: 12px 12px 0 0; padding: 10px 12px; grid-template-columns: 190px repeat(3, 1fr); box-shadow: 0 -8px 30px rgba(0,0,0,0.35); }
 .dock.open .dock-body { display: grid; }
@@ -250,7 +255,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 
 /* kontrole globusa (Google-Earth stil) — dolje-desno */
 .globe-controls {
-  position: absolute; right: 344px; top: 50%; transform: translateY(-50%); z-index: 850;
+  position: absolute; right: 376px; top: 50%; transform: translateY(-50%); z-index: 850;
   display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: auto;
 }
 .gc-btn {
