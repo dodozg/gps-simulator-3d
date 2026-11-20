@@ -1,0 +1,214 @@
+{
+ "vremenski": {
+  "coordinated": {
+   "pogreska_kraj": 599.6,
+   "alarmi": 0,
+   "bez_fixa": 0,
+   "sateliti_min": 7,
+   "sateliti_prije": 7,
+   "cilj_kraj": 3.5,
+   "prvi_alarm": null
+  },
+  "naive": {
+   "pogreska_kraj": 4.7,
+   "alarmi": 239,
+   "bez_fixa": 0,
+   "sateliti_min": 7,
+   "sateliti_prije": 7,
+   "cilj_kraj": null,
+   "prvi_alarm": 61
+  },
+  "meaconing": {
+   "pogreska_kraj": 3.5,
+   "alarmi": 0,
+   "bez_fixa": 0,
+   "sateliti_min": 7,
+   "sateliti_prije": 7,
+   "cilj_kraj": null,
+   "prvi_alarm": null
+  },
+  "jamming": {
+   "pogreska_kraj": null,
+   "alarmi": 0,
+   "bez_fixa": 147,
+   "sateliti_min": 0,
+   "sateliti_prije": 7,
+   "cilj_kraj": null,
+   "prvi_alarm": null
+  }
+ },
+ "spoof": [
+  {
+   "x": 0,
+   "final_err": 4.562,
+   "mi_rate": 0.0,
+   "hmi_events": 0.0,
+   "hpl_median": 46.813,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  },
+  {
+   "x": 50,
+   "final_err": 50.239,
+   "mi_rate": 0.326,
+   "hmi_events": 0.0,
+   "hpl_median": 46.813,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  },
+  {
+   "x": 100,
+   "final_err": 100.126,
+   "mi_rate": 0.611,
+   "hmi_events": 0.0,
+   "hpl_median": 46.813,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  },
+  {
+   "x": 200,
+   "final_err": 200.069,
+   "mi_rate": 0.775,
+   "hmi_events": 0.0,
+   "hpl_median": 46.813,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  },
+  {
+   "x": 400,
+   "final_err": 400.038,
+   "mi_rate": 0.858,
+   "hmi_events": 0.0,
+   "hpl_median": 46.812,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  },
+  {
+   "x": 800,
+   "final_err": 800.021,
+   "mi_rate": 0.897,
+   "hmi_events": 75.9,
+   "hpl_median": 46.812,
+   "raim_detections": 0.1,
+   "integrity_availability": 1.0
+  }
+ ],
+ "jam": {
+  "GPS": [
+   {
+    "x": 0,
+    "win_availability": 1.0,
+    "h_err_p95": 5.345,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 7.504,
+    "hpl_median": 41.526
+   },
+   {
+    "x": 6,
+    "win_availability": 1.0,
+    "h_err_p95": 8.539,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 7.504,
+    "hpl_median": 79.968
+   },
+   {
+    "x": 9,
+    "win_availability": 1.0,
+    "h_err_p95": 11.003,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 7.133,
+    "hpl_median": 125.691
+   },
+   {
+    "x": 12,
+    "win_availability": 1.0,
+    "h_err_p95": 14.339,
+    "integrity_availability": 0.944,
+    "n_sats_mean": 6.472,
+    "hpl_median": 235.49
+   },
+   {
+    "x": 14,
+    "win_availability": 1.0,
+    "h_err_p95": 22.288,
+    "integrity_availability": 0.629,
+    "n_sats_mean": 5.65,
+    "hpl_median": 440.006
+   },
+   {
+    "x": 16,
+    "win_availability": 0.833,
+    "h_err_p95": 26.353,
+    "integrity_availability": 0.258,
+    "n_sats_mean": 4.854,
+    "hpl_median": 171.613
+   },
+   {
+    "x": 18,
+    "win_availability": 0.0,
+    "h_err_p95": 4.714,
+    "integrity_availability": 0.258,
+    "n_sats_mean": 2.807,
+    "hpl_median": 40.816
+   }
+  ],
+  "četiri sustava": [
+   {
+    "x": 0,
+    "win_availability": 1.0,
+    "h_err_p95": 5.891,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "hpl_median": 118.174
+   },
+   {
+    "x": 6,
+    "win_availability": 1.0,
+    "h_err_p95": 8.968,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "hpl_median": 217.03
+   },
+   {
+    "x": 9,
+    "win_availability": 1.0,
+    "h_err_p95": 10.176,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "hpl_median": 153.597
+   },
+   {
+    "x": 12,
+    "win_availability": 1.0,
+    "h_err_p95": 11.24,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "hpl_median": 165.719
+   },
+   {
+    "x": 14,
+    "win_availability": 1.0,
+    "h_err_p95": 13.577,
+    "integrity_availability": 1.0,
+    "n_sats_mean": 10.0,
+    "hpl_median": 182.838
+   },
+   {
+    "x": 16,
+    "win_availability": 1.0,
+    "h_err_p95": 17.314,
+    "integrity_availability": 0.876,
+    "n_sats_mean": 10.0,
+    "hpl_median": 376.885
+   },
+   {
+    "x": 18,
+    "win_availability": 0.333,
+    "h_err_p95": 16.519,
+    "integrity_availability": 0.258,
+    "n_sats_mean": 5.056,
+    "hpl_median": 118.667
+   }
+  ]
+ }
+}
